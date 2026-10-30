@@ -1,0 +1,17 @@
+---
+// A ring mark that swaps to its light version when the reader's system is in light mode.
+interface Props {
+  name: string;
+  size: number;
+  alt?: string;
+  class?: string;
+  eager?: boolean;
+}
+
+const { name, size, alt = '', class: className, eager = false } = Astro.props;
+---
+
+<picture class={className}>
+  <source srcset={`/logos/${name}-light.svg`} media="(prefers-color-scheme: light)" />
+  <img src={`/logos/${name}.svg`} width={size} height={size} alt={alt} loading={eager ? 'eager' : 'lazy'} decoding="async" />
+</picture>

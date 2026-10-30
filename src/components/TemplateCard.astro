@@ -1,0 +1,35 @@
+---
+import type { Template } from '../data/templates';
+import CopyCommand from './CopyCommand.astro';
+import Icon from './Icon.astro';
+import Mark from './Mark.astro';
+
+interface Props {
+  template: Template;
+}
+
+const { template: t } = Astro.props;
+const repo = `https://github.com/stphnwlsh/${t.repo}`;
+const nuget = `https://www.nuget.org/packages/${t.package}`;
+---
+
+<article class="card template" style={`--hue-dark: var(--lmca-${t.hue}-400); --hue-light: var(--lmca-${t.hue}-700);`}>
+  <div class="template-head">
+    <Mark name={t.key} size={72} />
+    <div>
+      <h3><a href={repo}>{t.name}</a></h3>
+      <p class="subject">{t.subject}</p>
+    </div>
+  </div>
+  <ul class="highlights">
+    {t.highlights.map((h) => <li>{h}</li>)}
+  </ul>
+  <div class="commands">
+    <CopyCommand command={`dotnet new install ${t.package}`} />
+    <CopyCommand command={`dotnet new ${t.shortName} --name Acme.Movies`} />
+  </div>
+  <p class="links">
+    <a href={repo}><Icon name="github" /> Repository</a>
+    <a href={nuget}><Icon name="package" /> NuGet</a>
+  </p>
+</article>
