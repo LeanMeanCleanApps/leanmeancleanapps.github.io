@@ -1,0 +1,19 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+  command: string;
+}
+
+const { command } = Astro.props;
+// Each word is kept whole, so a long command wraps at spaces and never inside a package name or an option.
+const words = command.split(' ');
+---
+
+<div class="command">
+  <code><span class="prompt" aria-hidden="true">$</span> {words.map((w, i) => <Fragment>{i > 0 && ' '}<span class="word">{w}</span></Fragment>)}</code>
+  <button type="button" class="copy" data-copy={command} aria-label={`Copy ${command}`} title="Copy">
+    <span class="when-idle"><Icon name="copy" /></span>
+    <span class="when-done"><Icon name="check" /></span>
+  </button>
+</div>

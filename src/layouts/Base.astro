@@ -1,0 +1,119 @@
+---
+import '@fontsource-variable/bricolage-grotesque';
+import '@fontsource-variable/inter';
+import '@fontsource-variable/jetbrains-mono';
+import '../styles/tokens.css';
+import '../styles/site.css';
+import Icon from '../components/Icon.astro';
+import { templates } from '../data/templates';
+
+interface Props {
+  title?: string;
+  description?: string;
+  noindex?: boolean;
+}
+
+const org = 'Lean Mean Clean Apps';
+const tagline = 'Clean Architecture templates for .NET, minus the ceremony.';
+const { title, description = tagline, noindex = false } = Astro.props;
+const fullTitle = title ? `${title} | ${org}` : org;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const image = new URL('/og-image.png', Astro.site);
+const github = 'https://github.com/LeanMeanCleanApps';
+const community = `${github}/.github/blob/main`;
+---
+
+<!doctype html>
+<html lang="en-AU">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#0B132A" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={org} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={image} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${org}: ${tagline}`} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={image} />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="/">
+          <img src="/logos/org-slate-small-tile.svg" width="32" height="32" alt="" />
+          <span>Lean Mean Clean Apps</span>
+        </a>
+        <nav aria-label="Main">
+          <a href="/#templates">Templates</a>
+          <a href="/#how">How they work</a>
+          <a href="/#team">Team</a>
+          <a class="icon-link" href={github} aria-label="Lean Mean Clean Apps on GitHub"><Icon name="github" /></a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <div class="footer-brand">
+          <a class="brand" href="/">
+            <img src="/logos/org-slate-small-tile.svg" width="32" height="32" alt="" />
+            <span>Lean Mean Clean Apps</span>
+          </a>
+          <p>{tagline}</p>
+        </div>
+        <nav class="footer-links" aria-label="Templates">
+          <h2>Templates</h2>
+          {templates.map((t) => <a href={`https://github.com/stphnwlsh/${t.repo}`}>{t.name}</a>)}
+        </nav>
+        <nav class="footer-links" aria-label="Organisation">
+          <h2>Organisation</h2>
+          <a href={github}>GitHub</a>
+          <a href="/brand/">Brand</a>
+          <a href={`${community}/SUPPORT.md`}>Support</a>
+          <a href={`${community}/SECURITY.md`}>Security</a>
+          <a href="https://github.com/sponsors/stphnwlsh">Sponsor</a>
+        </nav>
+        <p class="footer-note">
+          Made by Stephen Walsh with strong coffee and a healthy disregard for ceremony. Not affiliated with Uncle Bob, a
+          certain billionaire's chest piece, or anyone with a marketing budget. <a
+            href="https://github.com/LeanMeanCleanApps/leanmeancleanapps.github.io">Source</a
+          > under the MIT licence.
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      for (const button of document.querySelectorAll<HTMLButtonElement>('button[data-copy]')) {
+        button.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(button.dataset.copy ?? '');
+            button.classList.add('done');
+            setTimeout(() => button.classList.remove('done'), 1500);
+          } catch {
+            // Clipboard access can be blocked. The command is still there to select by hand.
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

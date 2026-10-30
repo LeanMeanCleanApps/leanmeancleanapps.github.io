@@ -1,0 +1,19 @@
+---
+import Icon from '../components/Icon.astro';
+import Mark from '../components/Mark.astro';
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Page not found" description="This page doesn't exist." noindex>
+  <section class="hero not-found">
+    <div class="wrap">
+      <Mark name="org-spectrum" size={160} eager />
+      <p class="eyebrow">404</p>
+      <h1>We cleaned this page up. <span>A bit too thoroughly.</span></h1>
+      <p class="lede">The page you're after doesn't exist, or it moved when nobody was looking.</p>
+      <div class="actions">
+        <a class="button primary" href="/">Back to the templates <Icon name="arrow" /></a>
+      </div>
+    </div>
+  </section>
+</Base>

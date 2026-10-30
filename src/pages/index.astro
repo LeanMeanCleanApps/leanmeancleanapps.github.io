@@ -1,0 +1,146 @@
+---
+import CopyCommand from '../components/CopyCommand.astro';
+import Icon from '../components/Icon.astro';
+import Mark from '../components/Mark.astro';
+import TemplateCard from '../components/TemplateCard.astro';
+import Base from '../layouts/Base.astro';
+import { shared, templates } from '../data/templates';
+---
+
+<Base>
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">dotnet new templates for .NET 10</p>
+        <h1>Clean Architecture templates for .NET, <span>minus the ceremony.</span></h1>
+        <p class="lede">
+          Five templates, one sensible core. Each one builds the same small movie review app on the same Application and
+          Infrastructure layers. Only the front door changes, so once you've learned one, you've learned the lot.
+        </p>
+        <div class="actions">
+          <a class="button primary" href="#templates">Pick a template <Icon name="arrow" /></a>
+          <a class="button" href="https://github.com/LeanMeanCleanApps"><Icon name="github" /> GitHub</a>
+        </div>
+        <div class="commands terminal" aria-label="Getting started">
+          <CopyCommand command="dotnet new install CleanMinimalApi.Template" />
+          <CopyCommand command="dotnet new cleanminimalapi --name Acme.Movies" />
+          <CopyCommand command="cd Acme.Movies && docker compose up -d" />
+        </div>
+      </div>
+      <Mark name="org-spectrum" size={480} class="hero-mark" eager />
+    </div>
+  </section>
+
+  <section id="templates" class="section">
+    <div class="wrap">
+      <header class="section-head">
+        <p class="eyebrow">The templates</p>
+        <h2>Same core, five front doors</h2>
+        <p>
+          Pick how your app talks to the world. Everything behind that is identical, right down to the tests, and every
+          template has its own colour so you can tell them apart at a glance.
+        </p>
+      </header>
+      <div class="template-grid">
+        {templates.map((t) => <TemplateCard template={t} />)}
+        <article class="card shared">
+          <h3>In every one of them</h3>
+          <p>The Application and Infrastructure layers are shared, so all five come with the same kit.</p>
+          <ul class="chips">
+            {shared.map((s) => <li>{s}</li>)}
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" class="section">
+    <div class="wrap">
+      <header class="section-head">
+        <p class="eyebrow">How they work</p>
+        <h2>Three layers, no ceremony</h2>
+        <p>
+          The templates are loosely based on Clean Architecture, inspired by{' '}
+          <a href="https://github.com/jasontaylordev/CleanArchitecture">Jason Taylor's Clean Architecture template</a>,
+          with some ideas taken further and others scaled back. It's by no means perfect, which is why we call it Lean
+          Mean Clean Architecture.
+        </p>
+      </header>
+      <ol class="layers">
+        <li class="card">
+          <span class="layer-tag">Changes per template</span>
+          <h3>Presentation</h3>
+          <p>
+            Minimal APIs, controllers, GraphQL, MCP tools or Lambda handlers. It sends commands and queries through
+            Mediator and turns errors into whatever its protocol expects.
+          </p>
+        </li>
+        <li class="card">
+          <span class="layer-tag">Shared</span>
+          <h3>Application</h3>
+          <p>
+            Owns the domain and the business rules. Commands and queries are validated and handled here, against
+            repository interfaces it doesn't care how you fulfil.
+          </p>
+        </li>
+        <li class="card">
+          <span class="layer-tag">Shared</span>
+          <h3>Infrastructure</h3>
+          <p>
+            Owns the data, with EF Core and SQLite behind those interfaces. Every class is internal, so Presentation can
+            wire it up but can't reach in by accident.
+          </p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="team" class="section">
+    <div class="wrap">
+      <header class="section-head">
+        <p class="eyebrow">The team</p>
+        <h2>Small team, strong opinions</h2>
+        <p>These are personal open source projects, built and looked after in spare time. Help is always welcome.</p>
+      </header>
+      <div class="team-grid">
+        <article class="card person">
+          <img
+            class="avatar"
+            src="https://avatars.githubusercontent.com/u/868017?s=160&v=4"
+            width="80"
+            height="80"
+            alt=""
+            loading="lazy"
+          />
+          <h3>Stephen Walsh</h3>
+          <p class="role">Maintainer</p>
+          <p>Builds and looks after every template, keeps them current with each .NET release, and drinks the coffee.</p>
+          <p class="links">
+            <a href="https://github.com/stphnwlsh"><Icon name="github" /> stphnwlsh</a>
+            <a href="https://stphnwlsh.github.io">Website</a>
+          </p>
+        </article>
+        <article class="card">
+          <h3>You, maybe</h3>
+          <p>
+            Found a bug, got an idea, or want a template for something we haven't built yet? Open an issue on the template
+            it's about. Pull requests are welcome too.
+          </p>
+          <p class="links">
+            <a href="https://github.com/LeanMeanCleanApps/.github/blob/main/SUPPORT.md">Getting help</a>
+            <a href="https://github.com/LeanMeanCleanApps/.github/blob/main/CODE_OF_CONDUCT.md">Code of conduct</a>
+          </p>
+        </article>
+        <article class="card sponsor">
+          <h3>Keep the lights on</h3>
+          <p>
+            If the templates save you some time, sponsoring helps keep every one of them current with each .NET release.
+          </p>
+          <p class="links">
+            <a class="button primary" href="https://github.com/sponsors/stphnwlsh"><Icon name="heart" /> Sponsor on GitHub</a>
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+</Base>
