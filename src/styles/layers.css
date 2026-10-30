@@ -1,0 +1,5 @@
+/*
+ * Starlight's cascade layers, declared before any other stylesheet so their order holds whichever file the
+ * browser meets first. Without this the search popover's CSS can land ahead of Starlight's reset and lose to it.
+ */
+@layer starlight.base, starlight.reset, starlight.core, starlight.content, starlight.components, starlight.utils;

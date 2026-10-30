@@ -84,6 +84,7 @@ export default defineConfig({
       lastUpdated: true,
       credits: false,
       customCss: [
+        './src/styles/layers.css',
         '@fontsource-variable/bricolage-grotesque',
         '@fontsource-variable/inter',
         '@fontsource-variable/jetbrains-mono',

@@ -1,0 +1,33 @@
+/*
+ * The search popover on the front page. The popover is Starlight's, so it expects Starlight's variables;
+ * these are the ones it uses, mapped onto the site's tokens. The docs pages get them from Starlight itself.
+ */
+
+:root {
+  --sl-color-accent-low: color-mix(in srgb, var(--accent) 25%, var(--bg));
+  --sl-color-accent: var(--accent);
+  --sl-color-accent-high: color-mix(in srgb, var(--accent) 60%, white);
+  --sl-color-text: var(--sl-color-gray-2);
+  --sl-color-text-accent: var(--sl-color-accent-high);
+  --sl-color-text-invert: var(--sl-color-accent-low);
+  --sl-color-backdrop-overlay: hsla(223, 13%, 10%, 0.66);
+  --sl-shadow-lg: 0px 25px 7px hsla(0, 0%, 0%, 0.03), 0px 16px 6px hsla(0, 0%, 0%, 0.1),
+    0px 9px 5px hsla(223, 13%, 10%, 0.33), 0px 4px 4px hsla(0, 0%, 0%, 0.75), 0px 4px 2px hsla(0, 0%, 0%, 0.25);
+  --sl-text-2xs: 0.75rem;
+  --sl-text-sm: 0.875rem;
+  --sl-text-base: 1rem;
+  --sl-text-xl: 1.25rem;
+  --__sl-font: var(--sl-font);
+  --cl-hue: var(--accent);
+}
+
+/* Starlight's utility classes the popover's cancel button relies on. */
+.sl-flex {
+  display: flex;
+}
+
+@media (min-width: 50rem) {
+  .md\:sl-hidden {
+    display: none;
+  }
+}
