@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/LeanMeanCleanApps/brand/main/assets/banners/png/site.png" alt="Lean Mean Clean Apps: the website. The home page and the docs for every template, minus the ceremony." width="100%">
+</p>
+
 # leanmeancleanapps.github.io
 
 The website for [Lean Mean Clean Apps](https://github.com/LeanMeanCleanApps), published at [leanmeancleanapps.github.io](https://leanmeancleanapps.github.io). It's a home page that points people at the templates and the people behind them, plus the docs for every template. One site, no framework drama, no cookie banner.
