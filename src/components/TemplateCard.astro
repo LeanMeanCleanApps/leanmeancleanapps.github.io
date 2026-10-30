@@ -9,6 +9,7 @@ interface Props {
 }
 
 const { template: t } = Astro.props;
+const home = `/${t.key}/`;
 const repo = `https://github.com/stphnwlsh/${t.repo}`;
 const nuget = `https://www.nuget.org/packages/${t.package}`;
 ---
@@ -17,7 +18,7 @@ const nuget = `https://www.nuget.org/packages/${t.package}`;
   <div class="template-head">
     <Mark name={t.key} size={72} />
     <div>
-      <h3><a href={repo}>{t.name}</a></h3>
+      <h3><a href={home}>{t.name}</a></h3>
       <p class="subject">{t.subject}</p>
     </div>
   </div>
@@ -29,6 +30,7 @@ const nuget = `https://www.nuget.org/packages/${t.package}`;
     <CopyCommand command={`dotnet new ${t.shortName} --name Acme.Movies`} />
   </div>
   <p class="links">
+    <a href={home}><Icon name="book" /> Docs</a>
     <a href={repo}><Icon name="github" /> Repository</a>
     <a href={nuget}><Icon name="package" /> NuGet</a>
   </p>

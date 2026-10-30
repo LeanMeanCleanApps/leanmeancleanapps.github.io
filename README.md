@@ -1,6 +1,14 @@
 # leanmeancleanapps.github.io
 
-The website for [Lean Mean Clean Apps](https://github.com/LeanMeanCleanApps), published at [leanmeancleanapps.github.io](https://leanmeancleanapps.github.io). It's one page that points people at the templates and the people behind them. One page, no framework drama, no cookie banner.
+The website for [Lean Mean Clean Apps](https://github.com/LeanMeanCleanApps), published at [leanmeancleanapps.github.io](https://leanmeancleanapps.github.io). It's a home page that points people at the templates and the people behind them, plus the docs for every template. One site, no framework drama, no cookie banner.
+
+| Template | Home page |
+| --- | --- |
+| Clean Minimal API | [/minimalapi/](https://leanmeancleanapps.github.io/minimalapi/) |
+| Clean Web API | [/webapi/](https://leanmeancleanapps.github.io/webapi/) |
+| Clean GraphQL API | [/graphql/](https://leanmeancleanapps.github.io/graphql/) |
+| Clean Model Context Protocol | [/mcp/](https://leanmeancleanapps.github.io/mcp/) |
+| Clean Lambda Function | [/lambda/](https://leanmeancleanapps.github.io/lambda/) |
 
 ## Running it locally
 
@@ -11,7 +19,13 @@ npm ci
 npm run dev
 ```
 
-The page is `src/pages/index.astro`, the templates it lists are in `src/data/templates.ts`, and the styles are in `src/styles/site.css`.
+The home page is `src/pages/index.astro`, the templates it lists are in `src/data/templates.ts`, and its styles are in `src/styles/site.css`.
+
+## The docs
+
+The template docs are built with [Starlight](https://starlight.astro.build). Each template has a folder in `src/content/docs` named after its key, and its `index.mdx` is the template's home page, the one its repository links to. Each template also gets its own sidebar, set in `astro.config.mjs`, and its own colour, which `src/components/docs/Head.astro` picks from the first part of the page's path. Same site, five outfits.
+
+To add a page, drop a Markdown or MDX file in the template's folder and add it to that template's sidebar. Templates without full docs yet get an overview page and links to their README until somebody writes them.
 
 ## Updating the brand files
 

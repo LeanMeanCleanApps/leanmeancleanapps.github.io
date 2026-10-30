@@ -1,0 +1,82 @@
+---
+title: Clean Minimal API
+description: A .NET 10 dotnet new template for an ASP.NET Core Minimal API, built with Clean Architecture minus the ceremony.
+template: splash
+prev: false
+next: false
+hero:
+  title: Clean Architecture for Minimal APIs, minus the ceremony
+  tagline: A .NET 10 template that gives you a tested, layered HTTP API in two commands. Fewer layers than an onion, more than a sandwich.
+  image:
+    dark: ../../../assets/logos/minimalapi.svg
+    light: ../../../assets/logos/minimalapi-light.svg
+    alt: The Clean Minimal API logo, emerald rings like the Clean Architecture diagram
+  actions:
+    - text: Read the README
+      link: https://github.com/stphnwlsh/CleanMinimalApi#readme
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/stphnwlsh/CleanMinimalApi
+      icon: external
+      variant: minimal
+---
+
+import { Aside, Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import Family from '../../../components/docs/Family.astro';
+
+## Two commands and you're in business
+
+```bash
+dotnet new install CleanMinimalApi.Template
+dotnet new cleanminimalapi --name Acme.Movies --authorName "Your Name"
+```
+
+That's a solution with three layers, four test projects, a Dockerfile and a CI pipeline. Now go and tell your team you've been working on it all week.
+
+## What's in the box
+
+<CardGrid>
+  <Card title="Endpoints, not boilerplate" icon="puzzle">
+    Minimal API endpoints grouped by feature. Each one sends a command or query through Mediator and gets out of the way.
+  </Card>
+  <Card title="Docs that write themselves" icon="document">
+    OpenAPI comes from the XML comments you were going to write anyway, and Scalar turns it into an API reference you can actually click around in.
+  </Card>
+  <Card title="Errors with manners" icon="warning">
+    Validation lives in the Application layer with FluentValidation, and every failure comes back as Problem Details (RFC 9457). No mystery 500s.
+  </Card>
+  <Card title="Tested like it matters" icon="approve-check">
+    xUnit, Shouldly and a 95% coverage gate. Every test gets its own throwaway SQLite database, so nobody steps on anybody's toes.
+  </Card>
+</CardGrid>
+
+## Run it
+
+```bash
+cd Acme.Movies
+docker compose up -d
+```
+
+Then open the Scalar API reference at [http://localhost:8080/scalar](http://localhost:8080/scalar) and start poking. The logs go to Seq at [http://localhost:5341](http://localhost:5341), because `Console.WriteLine` is not an observability strategy.
+
+Want it locked down? Pass `--authority` and `--audience` when you create the solution and every movie, author and review endpoint needs a JWT bearer token. Leave them off and it runs wide open, which is lovely on a laptop and less lovely in production.
+
+<Aside title="The full guides are on their way">
+  Clean Lambda Function got its guides first, because it asked nicely. Until this one catches up, the README and the
+  running guide on GitHub cover everything.
+</Aside>
+
+<CardGrid>
+  <LinkCard title="README" description="Getting started, the architecture, every feature and the Docker build options." href="https://github.com/stphnwlsh/CleanMinimalApi#readme" />
+  <LinkCard title="Running guide" description="Every way to run, configure and test the solution." href="https://github.com/stphnwlsh/CleanMinimalApi/blob/main/docs/RUN.md" />
+  <LinkCard title="NuGet" description="The package, with its version history." href="https://www.nuget.org/packages/CleanMinimalApi.Template" />
+  <LinkCard title="Releases" description="What changed in each monthly release." href="https://github.com/stphnwlsh/CleanMinimalApi/releases" />
+</CardGrid>
+
+## One of five
+
+Clean Minimal API is one of five [Lean Mean Clean Apps](/) templates. They share the same Application and Infrastructure layers, the same tests and the same pipeline. Only Presentation changes. Like a family, really. Same genes, different haircuts.
+
+<Family />
+
+<p class="cl-aside-quip">Each template gets the same ring logo in its own colour. The rings follow the Clean Architecture diagram, from the entities in the core out to the frameworks and drivers on the edge. Minimal APIs drew emerald, which suits something that keeps everything lean and green. The logos, colours and everything else live in the <a href="/brand/">brand kit</a>.</p>

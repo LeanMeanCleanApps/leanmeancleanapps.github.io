@@ -1,0 +1,82 @@
+---
+title: Clean GraphQL API
+description: A .NET 10 dotnet new template for a GraphQL API on Hot Chocolate, built with Clean Architecture minus the ceremony.
+template: splash
+prev: false
+next: false
+hero:
+  title: Clean Architecture for GraphQL, minus the ceremony
+  tagline: A .NET 10 template that gives you a tested, layered GraphQL API on Hot Chocolate in two commands. Your clients ask for exactly what they need. Revolutionary.
+  image:
+    dark: ../../../assets/logos/graphql.svg
+    light: ../../../assets/logos/graphql-light.svg
+    alt: The Clean GraphQL API logo, pink rings like the Clean Architecture diagram
+  actions:
+    - text: Read the README
+      link: https://github.com/stphnwlsh/CleanGraphQLApi#readme
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/stphnwlsh/CleanGraphQLApi
+      icon: external
+      variant: minimal
+---
+
+import { Aside, Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import Family from '../../../components/docs/Family.astro';
+
+## Two commands and you're in business
+
+```bash
+dotnet new install CleanGraphQLApi.Template
+dotnet new cleangraphqlapi --name Acme.Movies --authorName "Your Name"
+```
+
+That's a solution with three layers, three test projects, a Dockerfile and a CI pipeline. Now go and tell your team you've been working on it all week.
+
+## What's in the box
+
+<CardGrid>
+  <Card title="Hot Chocolate, served hot" icon="puzzle">
+    A source-generated Hot Chocolate schema with the Nitro IDE built in, and descriptions pulled from the XML comments on your models.
+  </Card>
+  <Card title="Paging done properly" icon="magnifier">
+    Relay-style cursor paging and search on movies, authors and reviews, with a DataLoader so a page of 50 movies takes three queries, not 52.
+  </Card>
+  <Card title="Errors with manners" icon="warning">
+    Validation lives in the Application layer with FluentValidation, and failures come back as GraphQL errors with proper codes in the extensions.
+  </Card>
+  <Card title="Tested like it matters" icon="approve-check">
+    xUnit, Shouldly, a schema snapshot test and a 95% coverage gate. Every test gets its own throwaway SQLite database.
+  </Card>
+</CardGrid>
+
+## Run it
+
+```bash
+cd Acme.Movies
+docker compose up -d
+```
+
+Then open Nitro, the GraphQL IDE, at [http://localhost:8080/graphql](http://localhost:8080/graphql) and start querying. The logs go to Seq at [http://localhost:5341](http://localhost:5341), because `Console.WriteLine` is not an observability strategy.
+
+Want it locked down? Pass `--authority` and `--audience` when you create the solution and the movie, author and review queries and the review mutations need a JWT bearer token. Leave them off and it runs wide open, which is lovely on a laptop and less lovely in production.
+
+<Aside title="The full guides are on their way">
+  Clean Lambda Function got its guides first, because it asked nicely. Until this one catches up, the README and the
+  running guide on GitHub cover everything.
+</Aside>
+
+<CardGrid>
+  <LinkCard title="README" description="Getting started, the architecture, every feature and the Docker build options." href="https://github.com/stphnwlsh/CleanGraphQLApi#readme" />
+  <LinkCard title="Running guide" description="Every way to run, configure and test the solution." href="https://github.com/stphnwlsh/CleanGraphQLApi/blob/main/docs/RUN.md" />
+  <LinkCard title="NuGet" description="The package, with its version history." href="https://www.nuget.org/packages/CleanGraphQLApi.Template" />
+  <LinkCard title="Releases" description="What changed in each monthly release." href="https://github.com/stphnwlsh/CleanGraphQLApi/releases" />
+</CardGrid>
+
+## One of five
+
+Clean GraphQL API is one of five [Lean Mean Clean Apps](/) templates. They share the same Application and Infrastructure layers, the same tests and the same pipeline. Only Presentation changes. Like a family, really. Same genes, different haircuts.
+
+<Family />
+
+<p class="cl-aside-quip">Each template gets the same ring logo in its own colour. The rings follow the Clean Architecture diagram, from the entities in the core out to the frameworks and drivers on the edge. GraphQL drew pink, which is only fitting for the one that lets clients pick and choose. The logos, colours and everything else live in the <a href="/brand/">brand kit</a>.</p>

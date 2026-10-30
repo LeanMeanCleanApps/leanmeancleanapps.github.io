@@ -1,0 +1,89 @@
+---
+// The five templates sit at the top of the sidebar, each with its ring logo, and the sidebar below belongs to the one you're in.
+import Default from '@astrojs/starlight/components/Sidebar.astro';
+import { templates } from '../../data/templates';
+
+const { topics } = Astro.locals.starlightSidebarTopics;
+const keyOf = (link: string) => link.split('/').filter(Boolean)[0];
+---
+
+<nav aria-label="Templates">
+  <ul class="cl-topics">
+    {
+      topics.map((topic) => {
+        const key = keyOf(topic.link);
+        const t = templates.find((x) => x.key === key);
+        return (
+          <li>
+            <a
+              href={topic.link}
+              aria-current={topic.isCurrent ? 'true' : undefined}
+              style={`--cl-topic-hue: var(--lmca-${key})`}
+            >
+              <img class="light:sl-hidden" src={`/logos/${key}-small.svg`} alt="" width="24" height="24" />
+              <img class="dark:sl-hidden" src={`/logos/${key}-small-light.svg`} alt="" width="24" height="24" />
+              <span>{topic.label}</span>
+              {t && <small>{t.subject}</small>}
+            </a>
+          </li>
+        );
+      })
+    }
+  </ul>
+</nav>
+<Default><slot /></Default>
+
+<style>
+  .cl-topics {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem;
+    display: grid;
+    gap: 0.2rem;
+  }
+
+  .cl-topics::after {
+    content: '';
+    display: block;
+    margin-top: 0.8rem;
+    border-top: 1px solid var(--sl-color-hairline-light);
+  }
+
+  .cl-topics a {
+    display: grid;
+    grid-template-columns: 1.5rem 1fr;
+    column-gap: 0.6rem;
+    align-items: center;
+    padding: 0.35rem 0.6rem;
+    border-radius: 0.75rem;
+    border: 1px solid transparent;
+    color: var(--sl-color-gray-2);
+    text-decoration: none;
+    font-size: var(--sl-text-sm);
+    font-weight: 600;
+  }
+
+  .cl-topics img {
+    grid-row: span 2;
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .cl-topics small {
+    grid-column: 2;
+    font-weight: 400;
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-gray-3);
+  }
+
+  .cl-topics a:hover {
+    color: var(--sl-color-white);
+    border-color: color-mix(in srgb, var(--cl-topic-hue) 45%, transparent);
+  }
+
+  .cl-topics a[aria-current='true'] {
+    color: var(--sl-color-white);
+    border-color: var(--cl-topic-hue);
+    background: color-mix(in srgb, var(--cl-topic-hue) 10%, transparent);
+  }
+</style>
