@@ -18,10 +18,10 @@ const copy = (from, to) => {
 };
 
 for (const file of ['favicon.svg', 'favicon.ico', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png']) {
-  copy(`assets/logos/org-slate/web/${file}`, `public/${file}`);
+  copy(`assets/logos/org-spectrum/web/${file}`, `public/${file}`);
 }
 copy('assets/social/png/og-image.png', 'public/og-image.png');
-copy('assets/logos/org-slate/svg/org-slate-small-tile.svg', 'public/logos/org-slate-small-tile.svg');
+copy('assets/logos/org-spectrum/svg/org-spectrum-small-tile.svg', 'public/logos/org-spectrum-small-tile.svg');
 for (const key of ['org-spectrum', ...templates.map((t) => t.key)]) {
   copy(`assets/logos/${key}/svg/${key}.svg`, `public/logos/${key}.svg`);
   copy(`assets/logos/${key}/svg/${key}-light.svg`, `public/logos/${key}-light.svg`);
