@@ -1,0 +1,55 @@
+---
+title: "Why it's built this way"
+description: "The choices behind the template, and what we'd tell you if you asked over a coffee."
+sidebar:
+  order: 2
+---
+
+Every template is a pile of opinions. Here are ours, so you can disagree with them on purpose rather than by accident.
+
+## Minimal APIs, grouped by feature
+
+Each feature is one static class with a `Map...Endpoints` method and one static handler per route. `MapGroup` carries the prefix, the tag and the authorization requirement, so a new route is a few lines and can't forget to be protected. No controllers, no filters, no base classes, nothing that needs explaining in an onboarding doc. If you'd rather have controllers, [Clean Web API](/webapi/) is the same template with them.
+
+## Built-in OpenAPI and Scalar, not Swagger
+
+The OpenAPI document comes from `Microsoft.AspNetCore.OpenApi`, which reads the XML comments you were going to write anyway. Summaries, remarks, parameter docs and response descriptions all flow through, and so do the `<param>` tags on the Application records, so the schemas are documented too. [Scalar](https://github.com/scalar/scalar) renders it, with a request builder that beats a wall of curl. Swashbuckle was fine, but this needs one less package and reads the comments properly.
+
+## Problem Details for every error
+
+Every failure, from a bad `limit` to a missing movie to an unhandled exception, comes back as [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) Problem Details with the right status code. One exception handler does the mapping. Clients get one error shape to parse, and nobody has to read a stack trace in a JSON string.
+
+## Application entities are the response
+
+The endpoints return the Application layer's records as they are, serialised in camelCase. There's no second set of DTOs to keep in step, because the entities already are the contract: a `MovieSummary` for lists, a `Movie` with its reviews for a single lookup. The only Presentation models are the two request bodies for writing reviews. If a client ever needs a different shape, that's the moment to add a mapping, not before.
+
+## Source generators where it counts
+
+- **[Mediator](https://github.com/martinothamar/Mediator)** generates its dispatch code at build time, so sending a query is a method call, not a reflection hunt.
+- **[Mapperly](https://mapperly.riok.app)** generates the Infrastructure mapping at build time, and you can read exactly what it wrote.
+- **System.Text.Json** uses a source-generated serializer context, so the response types are known at build time and nothing is discovered at runtime.
+As a bonus, MediatR and AutoMapper both moved to commercial licences in 2025, and this template didn't have to care.
+
+## FluentValidation in a pipeline behaviour
+
+Validation runs once, in one place, before any handler. Handlers only ever see valid requests, which keeps them short and keeps tests honest. Presentation just has to turn a `ValidationException` into a 400 Problem Details response, and it does that in one class.
+
+## Optional authentication, mandatory authorization
+
+Every endpoint asks for authorization. Whether that means a valid JWT bearer token or a polite wave through depends on one setting, `Authentication:Authority`. Turning security on is configuration, not a code change, and turning it off for a demo doesn't leave an endpoint behind. See [Secure the API](../../guides/secure-the-api/).
+
+## SQLite next to the app
+
+The template needs a database that works in a container and on a laptop without any setup. SQLite does that, with [real caveats](../../guides/database/). It's there to show the shape of Infrastructure, not to be your production database.
+
+## Infrastructure is internal
+
+The one rule we bend is letting Presentation reference Infrastructure for dependency injection. Making every Infrastructure class `internal` means the compiler enforces the boundary instead of a code reviewer having a bad day.
+
+## Strict builds
+
+`Directory.Build.props` turns on code style and the recommended analyzers for every project, and warnings fail the build. `Directory.Packages.props` keeps every package version in one place. It's annoying for about a day and then you never want to go back.
+
+## Tests that don't share
+
+Every test class gets its own in-memory SQLite database, built from the real migrations and the same fixed seed. Tests can run in any order, in parallel, forever, and still agree with each other.

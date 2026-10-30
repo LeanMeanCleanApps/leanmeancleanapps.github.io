@@ -1,0 +1,108 @@
+---
+title: "Get started"
+description: "Install the template, create a solution and run your first query in Nitro."
+sidebar:
+  order: 1
+---
+
+import { Steps, FileTree, LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+By the end of this page you'll have your own solution, a GraphQL API running on your machine, and a page of movies on your screen. It takes about five minutes, or ten if NuGet decides to download the internet first.
+
+## Before you start
+
+You need the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0). [Docker](https://www.docker.com/products/docker-desktop) is optional, but it gets you Seq for the logs and a container you can ship, so it's worth having around.
+
+## Make it yours
+
+<Steps>
+
+1. Install the template from NuGet.
+
+   ```bash
+   dotnet new install CleanGraphQLApi.Template
+   ```
+
+2. Create a solution. The name becomes your namespace, project names and folder, so pick something you're happy to see a lot of.
+
+   ```bash
+   dotnet new cleangraphqlapi --name Acme.Movies --authorName "Your Name"
+   cd Acme.Movies
+   ```
+
+3. Have a look around. Everything you need is already here.
+
+   <FileTree>
+   - Acme.Movies.sln
+   - Dockerfile
+   - docker-compose.yml
+   - src/
+     - Application/ the rules, queries and validation
+     - Infrastructure/ the database and repositories
+     - Presentation/ the GraphQL schema
+   - tests/
+     - Application.Tests.Unit/
+     - Infrastructure.Tests.Integration/
+     - Presentation.Tests.Integration/
+   </FileTree>
+
+4. Run it. The `local` environment seeds sample data and logs to the console, so there's nothing to set up.
+
+   ```bash
+   dotnet run --project ./src/Presentation
+   ```
+
+5. Open Nitro, the GraphQL IDE, at [http://localhost:5032/graphql](http://localhost:5032/graphql). The schema is on the left, with every type and field described, and the editor autocompletes as you type. Paste this in and press play:
+
+   ```graphql
+   {
+     movies(query: "global", first: 2) {
+       totalCount
+       pageInfo { hasNextPage endCursor }
+       nodes { id title reviewCount averageStars }
+     }
+   }
+   ```
+
+6. Or ask from the terminal.
+
+   ```bash
+   curl -X POST "http://localhost:5032/graphql" -H "Content-Type: application/json" \
+     -d '{"query":"{ movies(query: \"global\", first: 2) { totalCount nodes { id title reviewCount averageStars } } }"}'
+   ```
+
+   Either way you get a page of movies back:
+
+   ```json
+   {
+     "data": {
+       "movies": {
+         "totalCount": 2,
+         "pageInfo": { "hasNextPage": false, "endCursor": "b2Zmc2V0OjI=" },
+         "nodes": [
+           { "id": "30fca414-247a-779e-105a-d81aa2506f58", "title": "Assimilated global infrastructure", "reviewCount": 1, "averageStars": 1 },
+           { "id": "c27d6600-79a6-9346-2595-a52b7f07dc3e", "title": "Automated global alliance", "reviewCount": 3, "averageStars": 3.3 }
+         ]
+       }
+     }
+   }
+   ```
+
+   Yes, the movies are named by a corporate buzzword generator. *Assimilated global infrastructure* only got one star. Critics can be harsh.
+
+7. Run the tests while you're here.
+
+   ```bash
+   dotnet test
+   ```
+
+</Steps>
+
+## Where to next
+
+<CardGrid>
+  <LinkCard title="Run it locally" description="Docker Compose, Seq, the health checks and the Dockerfile stages." href="../guides/run-locally/" />
+  <LinkCard title="Add a field" description="Put a new resolver on a type, update the schema snapshot and test it." href="../guides/add-a-field/" />
+  <LinkCard title="Schema reference" description="Every query, mutation, type and error, and how paging works." href="../reference/schema/" />
+  <LinkCard title="How the layers fit" description="Why there are three rings and who's allowed to talk to whom." href="../explanation/architecture/" />
+</CardGrid>

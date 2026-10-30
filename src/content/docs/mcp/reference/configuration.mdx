@@ -1,0 +1,46 @@
+---
+title: "Configuration"
+description: "Environment variables, Docker build arguments and the Docker Compose services."
+sidebar:
+  order: 4
+---
+
+## Environment variables
+
+Every setting in `appsettings.json` can be overridden with an environment variable, using `__` where the JSON nests.
+
+| Variable | Default | Description |
+| --- | --- | --- |
+| `DOTNET_ENVIRONMENT` | none | Layers `appsettings.<environment>.json` over `appsettings.json`. The template ships `local` and `docker` |
+| `ASPNETCORE_URLS` | `http://+:8080` in the container | The addresses to listen on |
+| `ASPNETCORE_FORWARDEDHEADERS_ENABLED` | none | Set to `true` behind a proxy that ends TLS, so HTTPS redirection sees the original scheme |
+| `ConnectionStrings__MovieReviews` | `Data Source=movie-reviews.db` | The SQLite connection string. `appsettings.docker.json` points it at `/app/data/movie-reviews.db` |
+| `Database__SeedSampleData` | `false` | When `true`, seeds sample data into an empty database. On in `local` and `docker` |
+| `Authentication__Authority` | empty | The OAuth authorization server that issues access tokens. Setting it turns authentication on |
+| `Authentication__Audience` | empty | The audience access tokens must be issued for, usually the server's own URL |
+| `Authentication__Scopes__0`, `__1`, ... | none | The scopes clients should ask for, published in the protected resource metadata |
+| `Serilog__MinimumLevel__Default` | `Debug` | The minimum log level. `appsettings.json` also overrides `Microsoft`, `Microsoft.AspNetCore` and `System` |
+
+## Docker build arguments
+
+| Argument | Default | Description |
+| --- | --- | --- |
+| `VERSION_PREFIX` | `1.0.0.0` | The version stamped into the assemblies |
+| `VERSION_SUFFIX` | none | A prerelease label added to the version |
+| `ENVIRONMENT` | `docker` | Sets `DOTNET_ENVIRONMENT` during the build and tests |
+| `BASE_IMAGE_REPO`, `BASE_IMAGE_BUILD`, `BASE_IMAGE_BUILD_TAG` | `mcr.microsoft.com`, `dotnet/sdk`, `10.0-alpine` | The SDK image used to build and test |
+| `BASE_IMAGE_RUNTIME`, `BASE_IMAGE_RUNTIME_TAG` | `dotnet/aspnet`, `10.0-alpine` | The runtime image the server runs on |
+
+## Docker Compose services
+
+| Service | What it is | Port |
+| --- | --- | --- |
+| `api` | The image, built from the `run` stage | 8080 |
+| `inspector` | The MCP Inspector, pointed at the server | 6274, on localhost only |
+| `seq` | Seq, for the logs | 5341 |
+
+The `api` service runs with `DOTNET_ENVIRONMENT=docker`, mounts the `movie-reviews-data` volume at `/app/data`, and sends its logs to the `seq` service.
+
+## Ports when running with dotnet run
+
+`src/Presentation/Properties/launchSettings.json` sets `DOTNET_ENVIRONMENT=local` and listens on `http://localhost:5032` and `https://localhost:7032`.

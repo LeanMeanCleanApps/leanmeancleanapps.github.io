@@ -5,11 +5,57 @@ import starlightLlmsTxt from 'starlight-llms-txt';
 import starlightSidebarTopics from 'starlight-sidebar-topics';
 import { templates } from './src/data/templates.ts';
 
-const github = 'https://github.com/stphnwlsh';
-
-// Each template gets a home page at /<key>/ and its own sidebar. Templates without full docs yet point at their README.
+// Each template gets a home page at /<key>/ and its own sidebar.
 /** @type {Record<string, any[]>} */
 const sidebars = {
+  minimalapi: [
+    { label: 'Start here', items: ['minimalapi/getting-started', 'minimalapi/guides/run-locally'] },
+    {
+      label: 'Guides',
+      items: ['minimalapi/guides/add-an-endpoint', 'minimalapi/guides/database', 'minimalapi/guides/secure-the-api', 'minimalapi/guides/ship-the-container'],
+    },
+    { label: 'Reference', items: [{ autogenerate: { directory: 'minimalapi/reference' } }] },
+    {
+      label: 'Under the hood',
+      items: ['minimalapi/explanation/architecture', 'minimalapi/explanation/decisions', 'minimalapi/explanation/how-its-built'],
+    },
+  ],
+  webapi: [
+    { label: 'Start here', items: ['webapi/getting-started', 'webapi/guides/run-locally'] },
+    {
+      label: 'Guides',
+      items: ['webapi/guides/add-an-endpoint', 'webapi/guides/database', 'webapi/guides/secure-the-api', 'webapi/guides/ship-the-container'],
+    },
+    { label: 'Reference', items: [{ autogenerate: { directory: 'webapi/reference' } }] },
+    {
+      label: 'Under the hood',
+      items: ['webapi/explanation/architecture', 'webapi/explanation/decisions', 'webapi/explanation/how-its-built'],
+    },
+  ],
+  graphql: [
+    { label: 'Start here', items: ['graphql/getting-started', 'graphql/guides/run-locally'] },
+    {
+      label: 'Guides',
+      items: ['graphql/guides/add-a-field', 'graphql/guides/database', 'graphql/guides/secure-the-api', 'graphql/guides/ship-the-container'],
+    },
+    { label: 'Reference', items: [{ autogenerate: { directory: 'graphql/reference' } }] },
+    {
+      label: 'Under the hood',
+      items: ['graphql/explanation/architecture', 'graphql/explanation/decisions', 'graphql/explanation/how-its-built'],
+    },
+  ],
+  mcp: [
+    { label: 'Start here', items: ['mcp/getting-started', 'mcp/guides/run-locally'] },
+    {
+      label: 'Guides',
+      items: ['mcp/guides/connect-a-client', 'mcp/guides/add-a-tool', 'mcp/guides/database', 'mcp/guides/secure-the-server', 'mcp/guides/ship-the-container'],
+    },
+    { label: 'Reference', items: [{ autogenerate: { directory: 'mcp/reference' } }] },
+    {
+      label: 'Under the hood',
+      items: ['mcp/explanation/architecture', 'mcp/explanation/decisions', 'mcp/explanation/how-its-built'],
+    },
+  ],
   lambda: [
     { label: 'Start here', items: ['lambda/getting-started', 'lambda/guides/run-locally'] },
     {
@@ -23,18 +69,6 @@ const sidebars = {
     },
   ],
 };
-
-const readme = (/** @type {import('./src/data/templates.ts').Template} */ t) => [
-  { label: 'Overview', link: `/${t.key}/` },
-  {
-    label: 'On GitHub',
-    items: [
-      { label: 'README', link: `${github}/${t.repo}#readme`, attrs: { target: '_blank' } },
-      { label: 'Running guide', link: `${github}/${t.repo}/blob/main/docs/RUN.md`, attrs: { target: '_blank' } },
-      { label: 'Releases', link: `${github}/${t.repo}/releases`, attrs: { target: '_blank' } },
-    ],
-  },
-];
 
 export default defineConfig({
   site: 'https://leanmeancleanapps.github.io',
@@ -80,7 +114,7 @@ export default defineConfig({
             id: t.key,
             label: t.name,
             link: `/${t.key}/`,
-            items: sidebars[t.key] ?? readme(t),
+            items: sidebars[t.key],
           })),
         ),
         starlightLlmsTxt({

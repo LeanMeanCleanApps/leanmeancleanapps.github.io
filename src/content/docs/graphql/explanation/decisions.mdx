@@ -1,0 +1,63 @@
+---
+title: "Why it's built this way"
+description: "The choices behind the template, and what we'd tell you if you asked over a coffee."
+sidebar:
+  order: 2
+---
+
+Every template is a pile of opinions. Here are ours, so you can disagree with them on purpose rather than by accident.
+
+## Hot Chocolate, with source-generated types
+
+[Hot Chocolate](https://chillicream.com/docs/hotchocolate) is the most complete GraphQL server for .NET and the one still moving quickly. The types are `static partial` classes that the source generator turns into a schema at build time, so there's no reflection scan at startup and the compiler catches a typo in a field before a client does. Descriptions come from XML comments, which means the schema is documented by the same text as the code.
+
+## Relay connections over offset pages
+
+The Application layer pages with an offset and a limit, because that's what every one of the five templates needs. The GraphQL layer wraps those pages as Relay connections, because that's what GraphQL clients expect. The cursor is the offset in disguise, `totalCount` is included, and backward paging is off because nobody has ever needed it and it doubles the surface to test.
+
+## DataLoaders for the reviews
+
+Asking for a page of movies with their reviews is the textbook N+1 problem. `MovieSummary.reviews` and `AuthorSummary.reviews` are resolvers backed by DataLoaders that collect every id in the response and send one batch query to Application. A page of 50 movies costs three queries, not 52, and the Application layer didn't have to learn what a DataLoader is.
+
+## Errors with codes
+
+Application exceptions become GraphQL errors with a `code` in `extensions`: `VALIDATION` with the property messages, `NOT_FOUND` with the message. One `IErrorFilter` does the mapping. Clients switch on a code instead of parsing a sentence, and nobody has to read a stack trace in a JSON string.
+
+## Nitro, served from the app
+
+Nitro is embedded rather than loaded from a CDN, so it works on a laptop with no internet, in a locked-down network, and in the integration test that checks it's there. It costs a few megabytes in the image, which is a trade I'd make every time.
+
+## A schema snapshot test
+
+`tests/Presentation.Tests.Integration/GraphQL/Schema/schema.graphql` is the schema as of the last time someone meant to change it. A test compares it with `/graphql?sdl` on every build. Changing the schema on purpose is a copy and paste. Changing it by accident is a red build, which is the right way round.
+
+## Source generators where it counts
+
+- **[Mediator](https://github.com/martinothamar/Mediator)** generates its dispatch code at build time, so sending a query is a method call, not a reflection hunt.
+- **[Mapperly](https://mapperly.riok.app)** generates the Infrastructure mapping at build time, and you can read exactly what it wrote.
+- **Hot Chocolate's** types and DataLoaders are generated at build time too, so the whole Presentation layer is known before the app starts.
+As a bonus, MediatR and AutoMapper both moved to commercial licences in 2025, and this template didn't have to care.
+
+## FluentValidation in a pipeline behaviour
+
+Validation runs once, in one place, before any handler. Handlers only ever see valid requests, which keeps them short and keeps tests honest. Presentation just has to turn a `ValidationException` into a GraphQL error with the `VALIDATION` code, and it does that in one class.
+
+## Optional authentication, mandatory authorization
+
+Every query and mutation except `version` carries `[Authorize]`. Whether that means a valid JWT bearer token or a polite wave through depends on one setting, `Authentication:Authority`. Turning security on is configuration, not a code change, and turning it off for a demo doesn't leave a field behind. See [Secure the API](../../guides/secure-the-api/).
+
+## SQLite next to the app
+
+The template needs a database that works in a container and on a laptop without any setup. SQLite does that, with [real caveats](../../guides/database/). It's there to show the shape of Infrastructure, not to be your production database.
+
+## Infrastructure is internal
+
+The one rule we bend is letting Presentation reference Infrastructure for dependency injection. Making every Infrastructure class `internal` means the compiler enforces the boundary instead of a code reviewer having a bad day.
+
+## Strict builds
+
+`Directory.Build.props` turns on code style and the recommended analyzers for every project, and warnings fail the build. `Directory.Packages.props` keeps every package version in one place. It's annoying for about a day and then you never want to go back.
+
+## Tests that don't share
+
+Every test class gets its own in-memory SQLite database, built from the real migrations and the same fixed seed. Tests can run in any order, in parallel, forever, and still agree with each other.

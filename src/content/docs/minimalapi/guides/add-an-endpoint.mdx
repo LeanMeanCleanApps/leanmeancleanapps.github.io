@@ -1,0 +1,127 @@
+---
+title: "Add an endpoint"
+description: "Expose a query from the Application layer as a new endpoint, with OpenAPI docs and a test."
+sidebar:
+  order: 3
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+This guide adds `GET /api/movies/{id}/reviews`, one page of the reviews written about a movie. The Application layer already has a `GetReviewsQuery` that filters by movie, so all the work happens in Presentation. That's the point of the layers: new ways in, same rules underneath.
+
+<Aside type="note">
+  If the query you want doesn't exist yet, add it to `src/Application` first: a query class, a handler and a FluentValidation validator, next to the others. Mediator and the validation behaviour pick them up automatically.
+</Aside>
+
+<Steps>
+
+1. Add the aliases for the review types at the top of `src/Presentation/Endpoints/MovieEndpoints.cs`. The file already aliases the movie types the same way.
+
+   ```csharp ins={3-4}
+   using Entities = Application.Movies.Entities;
+   using Queries = Application.Movies.Queries;
+   using ReviewEntities = Application.Reviews.Entities;
+   using ReviewQueries = Application.Reviews.Queries;
+   ```
+
+2. Map the route in `MapMovieEndpoints`, after the existing two. The group already has the `/api/movies` prefix, the **Movies** tag and the authorization requirement, so the new route inherits all three.
+
+   ```csharp
+   _ = root.MapGet("/{id:guid}/reviews", GetMovieReviews)
+       .WithName(nameof(GetMovieReviews))
+       .Produces<Page<ReviewEntities.Review>>()
+       .ProducesValidationProblem()
+       .ProducesProblem(StatusCodes.Status500InternalServerError);
+   ```
+
+3. Add the handler to the same class. The XML comments aren't decoration: they become the summary, description, parameter docs and response descriptions in the OpenAPI document, and Scalar shows every one of them.
+
+   ```csharp
+   /// <summary>
+   /// List the Reviews of a Movie
+   /// </summary>
+   /// <remarks>
+   /// Returns one page of the reviews written about a movie, along with the author of each.
+   ///
+   /// Sample request:
+   ///
+   ///     GET /api/movies/3fa85f64-5717-4562-b3fc-2c963f66afa6/reviews?offset=0&amp;limit=10
+   /// </remarks>
+   /// <param name="id">The unique identifier of the movie.</param>
+   /// <param name="offset">The number of reviews to skip, 0 for the first page.</param>
+   /// <param name="limit">The largest number of reviews to return, from 1 to 50.</param>
+   /// <response code="200">One page of Reviews.</response>
+   /// <response code="400">The Id, the offset or the limit is not valid.</response>
+   /// <response code="500">An unexpected error occurred.</response>
+   public static async Task<Ok<Page<ReviewEntities.Review>>> GetMovieReviews(
+       [FromRoute] Guid id,
+       [FromServices] ISender sender,
+       CancellationToken cancellationToken,
+       [FromQuery] int offset = 0,
+       [FromQuery] int limit = Paging.DefaultLimit)
+   {
+       return TypedResults.Ok(await sender.Send(new ReviewQueries.GetReviews.GetReviewsQuery
+       {
+           MovieId = id,
+           Offset = offset,
+           Limit = limit
+       }, cancellationToken));
+   }
+   ```
+
+   Leave the `ISender` parameter undocumented on purpose. The .NET 10 XML comment generator would otherwise attach its description to the request body, which is nobody's idea of helpful.
+
+4. Test it in `tests/Presentation.Tests.Integration/Endpoints/MovieEndpointTests.cs`. Add `using ReviewEntities = Application.Reviews.Entities;` next to the existing alias, then pick a movie that has reviews and ask for them.
+
+   ```csharp
+   [Fact]
+   public async Task GetMovieReviews_ShouldReturn_Ok()
+   {
+       // Arrange
+       using var client = this.application.CreateClient();
+       using var movieResponse = await client.GetAsync("/api/movies?limit=50");
+       var movie = (await movieResponse.Content.ReadAsStringAsync())
+           .Deserialize<Page<Entities.MovieSummary>>().Items
+           .First(m => m.ReviewCount > 0);
+
+       // Act
+       using var response = await client.GetAsync($"/api/movies/{movie.Id}/reviews?limit=50");
+       var result = (await response.Content.ReadAsStringAsync()).Deserialize<Page<ReviewEntities.Review>>();
+
+       // Assert
+       response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+       result.TotalCount.ShouldBe(movie.ReviewCount);
+       result.Items.ShouldAllBe(r => r.ReviewedMovie!.Id == movie.Id);
+   }
+   ```
+
+5. Run it.
+
+   ```bash
+   dotnet test
+   dotnet run --project ./src/Presentation
+   curl "http://localhost:5032/api/movies/e159975e-4e6a-1ffd-713e-1eb9d8d4a593/reviews?limit=2"
+   ```
+
+   ```json
+   {
+     "items": [
+       { "id": "969cb90c-95ae-9189-1e52-0b38d34a911b", "stars": 4, "reviewedMovie": { "id": "e159975e-4e6a-1ffd-713e-1eb9d8d4a593", "title": "Assimilated disintermediate adapter" }, "reviewAuthor": { "id": "1cc2ad51-61c5-63ee-dd6e-15308cfe6e51", "firstName": "Caroline", "lastName": "Bins" } },
+       { "id": "a5ebd747-0408-0a96-1af1-eb5cb93bc814", "stars": 1, "reviewedMovie": { "id": "e159975e-4e6a-1ffd-713e-1eb9d8d4a593", "title": "Assimilated disintermediate adapter" }, "reviewAuthor": { "id": "1cc2ad51-61c5-63ee-dd6e-15308cfe6e51", "firstName": "Caroline", "lastName": "Bins" } }
+     ],
+     "offset": 0,
+     "limit": 2,
+     "totalCount": 6
+   }
+   ```
+
+   Caroline gave the same movie a 4 and a 1. Sample data has no continuity editor.
+
+</Steps>
+
+Open Scalar and the new endpoint is there under **Movies**, documented, with a working **Send** button. A `limit` of 99 comes back as a 400 Problem Details response and an unknown movie id comes back as an empty page, both before your code has to worry about it.
+
+<Aside type="caution" title="Don't forget the coverage gate">
+  The pipeline fails under 95% line coverage overall, and under 90% on the lines your pull request changes. The test is not optional, sorry.
+</Aside>

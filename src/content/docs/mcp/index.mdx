@@ -12,8 +12,8 @@ hero:
     light: ../../../assets/logos/mcp-light.svg
     alt: The Clean Model Context Protocol logo, violet rings like the Clean Architecture diagram
   actions:
-    - text: Read the README
-      link: https://github.com/stphnwlsh/CleanModelContextProtocol#readme
+    - text: Get started
+      link: getting-started/
       icon: right-arrow
     - text: View on GitHub
       link: https://github.com/stphnwlsh/CleanModelContextProtocol
@@ -21,7 +21,7 @@ hero:
       variant: minimal
 ---
 
-import { Aside, Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import Family from '../../../components/docs/Family.astro';
 
 ## Two commands and you're in business
@@ -61,16 +61,11 @@ Then open the MCP Inspector at [http://localhost:6274](http://localhost:6274). I
 
 Want it locked down? Pass `--authority` and `--audience` when you create the solution and `/mcp` needs a bearer token, with protected resource metadata so MCP clients can find your authorization server and sign in. Leave them off and it runs wide open, which is lovely on a laptop and less lovely in production.
 
-<Aside title="The full guides are on their way">
-  Clean Lambda Function got its guides first, because it asked nicely. Until this one catches up, the README and the
-  running guide on GitHub cover everything.
-</Aside>
-
 <CardGrid>
-  <LinkCard title="README" description="Getting started, the architecture, every feature and the Docker build options." href="https://github.com/stphnwlsh/CleanModelContextProtocol#readme" />
-  <LinkCard title="Running guide" description="Every way to run, configure and test the solution." href="https://github.com/stphnwlsh/CleanModelContextProtocol/blob/main/docs/RUN.md" />
-  <LinkCard title="NuGet" description="The package, with its version history." href="https://www.nuget.org/packages/CleanModelContextProtocol.Template" />
-  <LinkCard title="Releases" description="What changed in each monthly release." href="https://github.com/stphnwlsh/CleanModelContextProtocol/releases" />
+  <LinkCard title="Get started" description="Install the template, create a solution and call your first tool." href="getting-started/" />
+  <LinkCard title="Connect a client" description="Point Claude, VS Code, Cursor or your own code at the server." href="guides/connect-a-client/" />
+  <LinkCard title="Tool reference" description="Every tool, argument, result and error." href="reference/tools/" />
+  <LinkCard title="Why it's built this way" description="The opinions, so you can disagree with them on purpose." href="explanation/decisions/" />
 </CardGrid>
 
 ## One of five

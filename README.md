@@ -25,7 +25,7 @@ The home page is `src/pages/index.astro`, the templates it lists are in `src/dat
 
 The template docs are built with [Starlight](https://starlight.astro.build). Each template has a folder in `src/content/docs` named after its key, and its `index.mdx` is the template's home page, the one its repository links to. Each template also gets its own sidebar, set in `astro.config.mjs`, and its own colour, which `src/components/docs/Head.astro` picks from the first part of the page's path. Same site, five outfits.
 
-To add a page, drop a Markdown or MDX file in the template's folder and add it to that template's sidebar. Templates without full docs yet get an overview page and links to their README until somebody writes them.
+To add a page, drop a Markdown or MDX file in the template's folder and add it to that template's sidebar.
 
 ## Updating the brand files
 

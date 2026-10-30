@@ -12,8 +12,8 @@ hero:
     light: ../../../assets/logos/minimalapi-light.svg
     alt: The Clean Minimal API logo, emerald rings like the Clean Architecture diagram
   actions:
-    - text: Read the README
-      link: https://github.com/stphnwlsh/CleanMinimalApi#readme
+    - text: Get started
+      link: getting-started/
       icon: right-arrow
     - text: View on GitHub
       link: https://github.com/stphnwlsh/CleanMinimalApi
@@ -21,7 +21,7 @@ hero:
       variant: minimal
 ---
 
-import { Aside, Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import Family from '../../../components/docs/Family.astro';
 
 ## Two commands and you're in business
@@ -61,16 +61,11 @@ Then open the Scalar API reference at [http://localhost:8080/scalar](http://loca
 
 Want it locked down? Pass `--authority` and `--audience` when you create the solution and every movie, author and review endpoint needs a JWT bearer token. Leave them off and it runs wide open, which is lovely on a laptop and less lovely in production.
 
-<Aside title="The full guides are on their way">
-  Clean Lambda Function got its guides first, because it asked nicely. Until this one catches up, the README and the
-  running guide on GitHub cover everything.
-</Aside>
-
 <CardGrid>
-  <LinkCard title="README" description="Getting started, the architecture, every feature and the Docker build options." href="https://github.com/stphnwlsh/CleanMinimalApi#readme" />
-  <LinkCard title="Running guide" description="Every way to run, configure and test the solution." href="https://github.com/stphnwlsh/CleanMinimalApi/blob/main/docs/RUN.md" />
-  <LinkCard title="NuGet" description="The package, with its version history." href="https://www.nuget.org/packages/CleanMinimalApi.Template" />
-  <LinkCard title="Releases" description="What changed in each monthly release." href="https://github.com/stphnwlsh/CleanMinimalApi/releases" />
+  <LinkCard title="Get started" description="Install the template, create a solution and call your first endpoint." href="getting-started/" />
+  <LinkCard title="Add an endpoint" description="Turn an existing query into a new endpoint, with docs and a test." href="guides/add-an-endpoint/" />
+  <LinkCard title="Endpoint reference" description="Every route, parameter, response and error." href="reference/endpoints/" />
+  <LinkCard title="Why it's built this way" description="The opinions, so you can disagree with them on purpose." href="explanation/decisions/" />
 </CardGrid>
 
 ## One of five

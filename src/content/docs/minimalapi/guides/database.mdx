@@ -1,0 +1,55 @@
+---
+title: "Work with the database"
+description: "Where the SQLite database lives, how sample data works, and how to add a migration or swap the database out."
+sidebar:
+  order: 4
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+The API keeps its data in a SQLite file called `movie-reviews.db`. With `dotnet run` it sits next to the app. In the container it's at `/app/data/movie-reviews.db`, on the `movie-reviews-data` volume, so it survives a restart and a rebuild. Nothing to install, nothing to provision, nothing to forget the password for.
+
+## When the database is created
+
+Every time the API starts, it applies any pending Entity Framework Core migrations. If `Database:SeedSampleData` is `true` and the database is empty, it also seeds the sample movies, authors and reviews. It's on in `appsettings.local.json` and `appsettings.docker.json`, and off everywhere else, so a deployed copy never starts life full of fake reviews.
+
+The sample data uses a fixed seed, so every machine gets the same 15 authors, the same movies and the same ids. That's why the examples in these docs can name a movie id and expect it to exist on your laptop too.
+
+## Start again
+
+Delete `movie-reviews.db`, or drop the volume:
+
+```bash
+docker compose down -v
+```
+
+The next start builds a fresh database and seeds it again.
+
+## Use a different connection string
+
+Set `ConnectionStrings__MovieReviews`. To keep everything in memory, which is what the tests do:
+
+```bash
+docker run --rm -p 8080:8080 -e DOTNET_ENVIRONMENT=docker \
+  -e ConnectionStrings__MovieReviews="Data Source=MovieReviews;Mode=Memory;Cache=Shared" \
+  acme-movies:local
+```
+
+## Add a migration
+
+After you change the data model in `src/Infrastructure`:
+
+```bash
+dotnet tool install --global dotnet-ef
+dotnet ef migrations add AddDirectors --project ./src/Infrastructure --output-dir Databases/MovieReviews/Migrations
+```
+
+The next start applies it.
+
+<Aside type="note" title="The tests have their own copy">
+  Every test class builds its own in-memory SQLite database from the same migrations and the same seed, so `dotnet test` never touches `movie-reviews.db`. You can run the tests while the API is running and neither will notice.
+</Aside>
+
+## Swap SQLite for something real
+
+Everything database-shaped lives in Infrastructure, and every class there is `internal`. To move to PostgreSQL, SQL Server or anything else, implement the repository interfaces from Application (`IMoviesRepository`, `IAuthorsRepository` and `IReviewsRepository`) against the new store and register them in `Infrastructure/DependencyInjection.cs`. Application and Presentation don't need to know it happened. That's the whole sales pitch of Clean Architecture in one paragraph.

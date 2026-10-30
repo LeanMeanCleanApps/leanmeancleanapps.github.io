@@ -12,8 +12,8 @@ hero:
     light: ../../../assets/logos/graphql-light.svg
     alt: The Clean GraphQL API logo, pink rings like the Clean Architecture diagram
   actions:
-    - text: Read the README
-      link: https://github.com/stphnwlsh/CleanGraphQLApi#readme
+    - text: Get started
+      link: getting-started/
       icon: right-arrow
     - text: View on GitHub
       link: https://github.com/stphnwlsh/CleanGraphQLApi
@@ -21,7 +21,7 @@ hero:
       variant: minimal
 ---
 
-import { Aside, Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import Family from '../../../components/docs/Family.astro';
 
 ## Two commands and you're in business
@@ -61,16 +61,11 @@ Then open Nitro, the GraphQL IDE, at [http://localhost:8080/graphql](http://loca
 
 Want it locked down? Pass `--authority` and `--audience` when you create the solution and the movie, author and review queries and the review mutations need a JWT bearer token. Leave them off and it runs wide open, which is lovely on a laptop and less lovely in production.
 
-<Aside title="The full guides are on their way">
-  Clean Lambda Function got its guides first, because it asked nicely. Until this one catches up, the README and the
-  running guide on GitHub cover everything.
-</Aside>
-
 <CardGrid>
-  <LinkCard title="README" description="Getting started, the architecture, every feature and the Docker build options." href="https://github.com/stphnwlsh/CleanGraphQLApi#readme" />
-  <LinkCard title="Running guide" description="Every way to run, configure and test the solution." href="https://github.com/stphnwlsh/CleanGraphQLApi/blob/main/docs/RUN.md" />
-  <LinkCard title="NuGet" description="The package, with its version history." href="https://www.nuget.org/packages/CleanGraphQLApi.Template" />
-  <LinkCard title="Releases" description="What changed in each monthly release." href="https://github.com/stphnwlsh/CleanGraphQLApi/releases" />
+  <LinkCard title="Get started" description="Install the template, create a solution and run your first query in Nitro." href="getting-started/" />
+  <LinkCard title="Add a field" description="Put a new resolver on a type, update the schema snapshot and test it." href="guides/add-a-field/" />
+  <LinkCard title="Schema reference" description="Every query, mutation, type and error, and how paging works." href="reference/schema/" />
+  <LinkCard title="Why it's built this way" description="The opinions, so you can disagree with them on purpose." href="explanation/decisions/" />
 </CardGrid>
 
 ## One of five

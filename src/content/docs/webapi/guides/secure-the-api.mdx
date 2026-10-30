@@ -1,0 +1,56 @@
+---
+title: "Secure the API"
+description: "Turn on JWT bearer authentication with two settings, and what changes when you do."
+sidebar:
+  order: 5
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+Out of the box the API runs wide open. Every movie, author and review endpoint asks for authorization, but with no authority configured the default policy says yes to everyone. That's lovely on a laptop and less lovely in production, so here's how to close the door.
+
+## Turn it on
+
+<Steps>
+
+1. Tell the API who issues tokens and who they're for. Either bake it in when you create the solution:
+
+   ```bash
+   dotnet new cleanwebapi --name Acme.Movies \
+     --authority https://login.example.com --audience https://movies.example.com
+   ```
+
+   Or set it on a solution you already have, in `appsettings.json` or as environment variables:
+
+   ```bash
+   Authentication__Authority=https://login.example.com
+   Authentication__Audience=https://movies.example.com
+   ```
+
+2. Get a token from the authority for that audience, and send it.
+
+   ```bash
+   curl "http://localhost:8080/api/movies" -H "Authorization: Bearer eyJhbGciOi..."
+   ```
+
+   Without a token, or with one from the wrong issuer or for the wrong audience, the API answers `401 Unauthorized`.
+
+</Steps>
+
+## What changes
+
+- The movie, author and review endpoints need a valid token. `GET /api/version`, `/health/live` and `/health/ready` stay open, so load balancers and curious humans can still check the lights are on.
+- The OpenAPI document gains a `Bearer` security scheme, and Scalar shows an **Auth** box where you can paste a token and keep clicking **Send**.
+- Tokens are validated against the authority's published keys, so there's no secret to store and nothing to rotate on your side.
+
+## How it works
+
+`AuthenticationSettings` reads the `Authentication` section. When the authority is set, the API registers the JWT bearer handler and the normal authorization services. When it isn't, it registers a default policy that passes every request. `ApiControllerBase` carries `[Authorize]`, so every controller that inherits it is protected, and the version controller opts out with `[AllowAnonymous]`. The same attributes work either way, which is why turning authentication on doesn't touch a single endpoint.
+
+<Aside type="note" title="Authorization is always on">
+  Authentication is optional. Authorization isn't. Every endpoint declares what it needs, even in the open configuration, so there's never a moment where an endpoint was forgotten. It was only ever the gate that was open.
+</Aside>
+
+## Beyond a bearer token
+
+Scopes, roles and per-endpoint policies are a short step from here: add policies to `AddAuthorization` and ask for them with `[Authorize(Policy = "policy")]`. Which claims to check depends entirely on your identity provider, so the template stops at the door and lets you decide who gets past it.

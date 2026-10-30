@@ -1,0 +1,79 @@
+---
+title: "Secure the server"
+description: "Turn on JWT bearer authentication with two settings, and how MCP clients find your sign-in."
+sidebar:
+  order: 6
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+Out of the box the server runs wide open. Anyone who can reach `/mcp` can call every tool, including the one that deletes reviews. That's lovely on a laptop and less lovely in production, so here's how to close the door.
+
+## Turn it on
+
+<Steps>
+
+1. Tell the server who issues tokens and who they're for. Either bake it in when you create the solution:
+
+   ```bash
+   dotnet new cleanmodelcontextprotocol --name Acme.Movies \
+     --authority https://login.example.com --audience https://movies.example.com/mcp
+   ```
+
+   Or set it on a solution you already have, in `appsettings.json` or as environment variables:
+
+   ```bash
+   Authentication__Authority=https://login.example.com
+   Authentication__Audience=https://movies.example.com/mcp
+   ```
+
+2. List the scopes a client should ask for, if your authorization server uses them.
+
+   ```json
+   {
+     "Authentication": {
+       "Authority": "https://login.example.com",
+       "Audience": "https://movies.example.com/mcp",
+       "Scopes": ["movies.read", "movies.write"]
+     }
+   }
+   ```
+
+3. Get a token from the authority for that audience, and send it.
+
+   ```bash
+   curl -X POST "http://localhost:5032/mcp" -H "Authorization: Bearer eyJhbGciOi..." \
+     -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
+     -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+   ```
+
+   Without a token, or with one from the wrong issuer or for the wrong audience, the server answers `401 Unauthorized` with a `WWW-Authenticate` header that points at the metadata below.
+
+</Steps>
+
+## How clients find your sign-in
+
+With authentication on, the server publishes [protected resource metadata](https://modelcontextprotocol.io/specification/latest/basic/authorization) at `/.well-known/oauth-protected-resource/mcp`:
+
+```json
+{
+  "resource": "https://movies.example.com/mcp",
+  "authorization_servers": ["https://login.example.com"],
+  "scopes_supported": ["movies.read", "movies.write"],
+  "resource_name": "Clean Model Context Protocol"
+}
+```
+
+A client that gets a `401` reads it, discovers the authorization server, and runs the OAuth flow itself. Claude, VS Code and the Inspector all do this, so for the user it's a sign-in screen and then everything works. Your server never sees a password and never stores a secret. Tokens are validated against the authority's published keys.
+
+## What stays open
+
+`/health/live` and `/health/ready` answer without a token, so load balancers and curious humans can still check the lights are on. Everything under `/mcp` needs one: tools, resources, prompts and completions alike.
+
+## How it works
+
+`AuthenticationSettings` reads the `Authentication` section. When the authority is set, the server registers the JWT bearer handler for authentication, the MCP handler for the challenge and the metadata, and puts `RequireAuthorization()` on the `/mcp` endpoint. When it isn't, none of that is registered and `/mcp` is mapped as it is. The tools don't know either way, which is why turning authentication on doesn't touch a single one.
+
+<Aside type="note" title="Tools can still check">
+  Need a tool that only some users may call? Tools can take an `HttpContext` or `ClaimsPrincipal` parameter and look at the claims, or you can split the server into groups with different policies. Which claims to check depends entirely on your identity provider, so the template stops at the door and lets you decide who gets past it.
+</Aside>

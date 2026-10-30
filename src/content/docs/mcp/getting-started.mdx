@@ -1,0 +1,101 @@
+---
+title: "Get started"
+description: "Install the template, create a solution and call your first tool."
+sidebar:
+  order: 1
+---
+
+import { Steps, FileTree, LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+By the end of this page you'll have your own solution, an MCP server running on your machine, and a tool answering back. It takes about five minutes, or ten if NuGet decides to download the internet first.
+
+## Before you start
+
+You need the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0). [Docker](https://www.docker.com/products/docker-desktop) is optional, but it gets you the MCP Inspector and Seq without installing anything else, so it's worth having around.
+
+## Make it yours
+
+<Steps>
+
+1. Install the template from NuGet.
+
+   ```bash
+   dotnet new install CleanModelContextProtocol.Template
+   ```
+
+2. Create a solution. The name becomes your namespace, project names and folder, so pick something you're happy to see a lot of.
+
+   ```bash
+   dotnet new cleanmodelcontextprotocol --name Acme.Movies --authorName "Your Name"
+   cd Acme.Movies
+   ```
+
+3. Have a look around. Everything you need is already here.
+
+   <FileTree>
+   - Acme.Movies.sln
+   - Dockerfile
+   - docker-compose.yml
+   - src/
+     - Application/ the rules, queries and validation
+     - Infrastructure/ the database and repositories
+     - Presentation/ the tools, resources and prompts
+   - tests/
+     - Application.Tests.Unit/
+     - Infrastructure.Tests.Integration/
+     - Presentation.Tests.Integration/
+     - Presentation.Tests.Unit/
+   </FileTree>
+
+4. Run it. The `local` environment seeds sample data and logs to the console, so there's nothing to set up.
+
+   ```bash
+   dotnet run --project ./src/Presentation
+   ```
+
+5. Call a tool. The server speaks Streamable HTTP at `/mcp`, and because it's stateless you can send a single JSON-RPC request with nothing before it.
+
+   ```bash
+   curl -X POST "http://localhost:5032/mcp" \
+     -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
+     -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"movies_search","arguments":{"query":"global","limit":2}}}'
+   ```
+
+   The answer arrives as a server-sent event. Inside it, the tool's result is there twice: once as text for models that read, once as `structuredContent` for clients that parse.
+
+   ```json
+   {
+     "items": [
+       { "id": "30fca414-247a-779e-105a-d81aa2506f58", "title": "Assimilated global infrastructure", "reviewCount": 1, "averageStars": 1 },
+       { "id": "c27d6600-79a6-9346-2595-a52b7f07dc3e", "title": "Automated global alliance", "reviewCount": 3, "averageStars": 3.3 }
+     ],
+     "totalCount": 2
+   }
+   ```
+
+   Yes, the movies are named by a corporate buzzword generator. *Assimilated global infrastructure* only got one star. Critics can be harsh.
+
+6. Or skip curl and use the Inspector. Docker Compose starts it already pointed at the server.
+
+   ```bash
+   docker compose up -d --build
+   ```
+
+   Open [http://localhost:6274](http://localhost:6274), connect, and the **Tools**, **Resources** and **Prompts** tabs show everything the server offers, with a form for each.
+
+7. Run the tests while you're here.
+
+   ```bash
+   dotnet test
+   ```
+
+</Steps>
+
+## Where to next
+
+<CardGrid>
+  <LinkCard title="Connect a client" description="Point Claude, VS Code, Cursor or your own agent at the server." href="../guides/connect-a-client/" />
+  <LinkCard title="Add a tool" description="Turn an existing query into a new tool, with hints, a description and a test." href="../guides/add-a-tool/" />
+  <LinkCard title="Tool reference" description="Every tool, argument, result and error." href="../reference/tools/" />
+  <LinkCard title="How the layers fit" description="Why there are three rings and who's allowed to talk to whom." href="../explanation/architecture/" />
+</CardGrid>

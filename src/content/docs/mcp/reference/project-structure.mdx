@@ -1,0 +1,54 @@
+---
+title: "Project structure"
+description: "What every folder in a new solution is for."
+sidebar:
+  order: 5
+---
+
+import { FileTree } from '@astrojs/starlight/components';
+
+<FileTree>
+- src/
+  - Application/ the domain and the rules
+    - Authors/ queries and entities for authors
+    - Movies/ queries and entities for movies
+    - Reviews/ queries, commands and entities for reviews
+    - Versions/ the version query
+    - Common/
+      - Behaviours/ the validation pipeline behaviour
+      - Exceptions/ NotFoundException
+      - Paging/ shared paging rules
+    - DependencyInjection.cs
+  - Infrastructure/ the data
+    - Databases/MovieReviews/ the EF Core context, models, mapping, migrations and repositories
+    - DependencyInjection.cs
+    - Presentation/ the MCP server
+      - Tools/ one static class of tools per feature
+      - Resources/ movies, authors, reviews and the version as resources
+      - Prompts/ the movie prompts
+      - Completions/ argument completion for the prompts
+      - Models/ the results the tools return, and the mapper that builds them
+      - Errors/ Application exceptions to tool errors and protocol errors
+      - Serialization/ the source-generated JSON context
+      - Authentication/ the JWT bearer and resource metadata settings
+      - Extensions/ builder and app configuration
+      - Program.cs
+      - appsettings.json, appsettings.local.json, appsettings.docker.json
+- tests/
+  - Application.Tests.Unit/
+  - Infrastructure.Tests.Integration/
+  - Presentation.Tests.Integration/
+  - Presentation.Tests.Unit/
+- docs/RUN.md
+- Directory.Build.props build rules and analyzers for every project
+- Directory.Packages.props every package version, in one place
+- Dockerfile
+- docker-compose.yml
+- global.json
+</FileTree>
+
+| Project | References | Notes |
+| --- | --- | --- |
+| Presentation | Application, Infrastructure | References Infrastructure only to wire up dependency injection |
+| Application | none | Owns the entities, the repository interfaces and the rules |
+| Infrastructure | Application | Every class is `internal` |

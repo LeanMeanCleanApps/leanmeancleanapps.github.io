@@ -1,0 +1,122 @@
+---
+title: "Add a tool"
+description: "Expose a query from the Application layer as a new tool, with annotations, a description and a test."
+sidebar:
+  order: 4
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+This guide adds `authors_get`, which returns one author with every review they've written, the mirror of the existing `movies_get`. The Application layer already has a `GetAuthorByIdQuery`, so all the work happens in Presentation. That's the point of the layers: new ways in, same rules underneath.
+
+<Aside type="note">
+  If the query you want doesn't exist yet, add it to `src/Application` first: a query class, a handler and a FluentValidation validator, next to the others. Mediator and the validation behaviour pick them up automatically.
+</Aside>
+
+<Steps>
+
+1. Add the tool to `src/Presentation/Tools/AuthorTools.cs`, after `authors_search`. The class already has `[McpServerToolType]` and aliases the author queries as `Queries`. The `[Description]` attributes aren't decoration: they're the tool description and the argument descriptions the model reads to decide when and how to call it, and `UseStructuredContent` gives the result an output schema too.
+
+   ```csharp
+   [McpServerTool(Name = "authors_get", Title = "Get author", ReadOnly = true, Idempotent = true, OpenWorld = false, UseStructuredContent = true)]
+   [Description("Get one author with their review count, average stars and every review they have written, including each movie's title.")]
+   public static async Task<AuthorResult> GetAuthor(
+       ISender sender,
+       [Description("The author's id (a GUID). Use authors_search to find it.")] Guid authorId,
+       CancellationToken cancellationToken)
+   {
+       var author = await sender.Send(new Queries.GetAuthorById.GetAuthorByIdQuery
+       {
+           Id = authorId
+       }, cancellationToken);
+
+       return author.ToResult(includeReviews: true);
+   }
+   ```
+
+   `ResultMapper.ToResult` already knows how to turn an `Author` into an `AuthorResult`, so there's no new model. `WithToolsFromAssembly()` in `WebApplicationBuilderExtensions.cs` finds the tool at startup, so there's nothing to register.
+
+2. Tell the model it exists. Add a line to the `ServerInstructions` in `src/Presentation/Extensions/WebApplicationBuilderExtensions.cs`, next to the one about `movies_search` and `authors_search`.
+
+   ```text
+   authors_get returns one author with every review they have written.
+   ```
+
+3. Add it to the tool list test in `tests/Presentation.Tests.Integration/Tools/ToolListTests.cs`. The test checks the server lists exactly these tools, with these titles and annotations, and that every argument has a description. The columns are the name, the title, then read-only, destructive and idempotent.
+
+   ```csharp ins={4}
+   { "movies_search", "Search movies", true, false, true },
+   { "movies_get", "Get movie", true, false, true },
+   { "authors_search", "Search authors", true, false, true },
+   { "authors_get", "Get author", true, false, true },
+   { "reviews_list", "List reviews", true, false, true },
+   ```
+
+4. Test it in `tests/Presentation.Tests.Integration/Tools/AuthorToolTests.cs`. The base class gives you a real `McpClient` connected to a server with its own seeded database, `CallAsync` for calls that should work and `CallForErrorAsync` for ones that shouldn't.
+
+   ```csharp
+   [Fact]
+   public async Task GetAuthor_ShouldReturn_AuthorWithReviews()
+   {
+       // Arrange
+       var first = (await this.CallAsync<ResultPage<AuthorResult>>("authors_search")).Items[0];
+
+       // Act
+       var author = await this.CallAsync<AuthorResult>("authors_get", new Dictionary<string, object?> { ["authorId"] = first.Id });
+
+       // Assert
+       author.Id.ShouldBe(first.Id);
+       author.Name.ShouldBe(first.Name);
+       author.Reviews.ShouldNotBeNull().Count.ShouldBe(first.ReviewCount);
+   }
+
+   [Fact]
+   public async Task GetAuthor_WithUnknownId_ShouldReturn_NotFoundError()
+   {
+       // Act
+       var text = await this.CallForErrorAsync("authors_get", new Dictionary<string, object?> { ["authorId"] = Guid.NewGuid() });
+
+       // Assert
+       text.ShouldBe("Not Found: The Author with the supplied id was not found. Check the ids: movies_search, authors_search and reviews_list return valid ones.");
+   }
+   ```
+
+5. Run it.
+
+   ```bash
+   dotnet test
+   dotnet run --project ./src/Presentation
+   ```
+
+   ```bash
+   curl -X POST "http://localhost:5032/mcp" \
+     -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
+     -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"authors_get","arguments":{"authorId":"01fa8b58-05d2-abd4-e55c-2633222dd0a5"}}}'
+   ```
+
+   ```json
+   {
+     "id": "01fa8b58-05d2-abd4-e55c-2633222dd0a5",
+     "name": "Jana Auer",
+     "reviewCount": 10,
+     "averageStars": 2.6,
+     "reviews": [
+       { "id": "0c13d0af-31ab-1705-228a-619b147ed110", "stars": 2, "movieId": "aea49d3b-0e68-0098-d9c3-70c93ea9e900", "movieTitle": "Persevering non-volatile middleware", "authorId": "01fa8b58-05d2-abd4-e55c-2633222dd0a5", "authorName": "Jana Auer" },
+       { "id": "19bbc1d8-960a-df45-df54-46ad502c3013", "stars": 2, "movieId": "ecff0774-e2f7-f169-49c9-a6820ae88b30", "movieTitle": "Customizable needs-based open architecture", "authorId": "01fa8b58-05d2-abd4-e55c-2633222dd0a5", "authorName": "Jana Auer" }
+     ]
+   }
+   ```
+
+   Jana averages 2.6 stars across ten reviews. Jana is not easily impressed.
+
+</Steps>
+
+An unknown id comes back as a tool error that tells the model what to do next, and an empty one fails validation, both before your code has to worry about it. The `ToolErrorFilter` does that for every tool.
+
+<Aside type="caution" title="Don't forget the coverage gate">
+  The pipeline fails under 95% line coverage overall, and under 90% on the lines your pull request changes. Step 4 is not optional, sorry.
+</Aside>
+
+## Resources and prompts work the same way
+
+A resource is a static method with `[McpServerResource]` in a `[McpServerResourceType]` class, and a prompt is one with `[McpServerPrompt]` in a `[McpServerPromptType]` class. Copy `MovieResources.cs` or `MoviePrompts.cs`, change the query, and `WithResourcesFromAssembly()` or `WithPromptsFromAssembly()` picks it up. If a prompt argument should autocomplete, add a case for its name in `Completions/CompletionHandler.cs`.

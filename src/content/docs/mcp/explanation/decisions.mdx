@@ -1,0 +1,67 @@
+---
+title: "Why it's built this way"
+description: "The choices behind the template, and what we'd tell you if you asked over a coffee."
+sidebar:
+  order: 2
+---
+
+Every template is a pile of opinions. Here are ours, so you can disagree with them on purpose rather than by accident.
+
+## Streamable HTTP, stateless
+
+The server uses the [Streamable HTTP](https://modelcontextprotocol.io/specification/latest/basic/transports) transport in stateless mode. Every request carries everything it needs, nothing is remembered between calls, and there's no session to lose when a container restarts or a load balancer picks a different one. It also means `curl` works with a single request, which makes the docs shorter and the debugging kinder. Stdio would tie the server to one machine, and this is a template for a server you deploy.
+
+## Six tools, named for the job
+
+Tools are named `noun_verb` in snake_case, because that's what reads well in a model's tool list, and there are six of them rather than one per endpoint. `reviews_write` creates or updates, because a model shouldn't have to pick between two tools that do nearly the same thing. `reviews_list` takes a `reviewId` for the same reason. Every search comes before every get, and the descriptions say so, because a model that knows the order makes fewer wrong calls.
+
+## Honest annotations
+
+Every tool declares whether it's read-only, destructive, idempotent and open-world, and the tool list test checks the declarations. Clients use them to decide what to run without asking. Lie on one and a model will cheerfully delete something because you said it was safe.
+
+## Errors are results, not exceptions
+
+A tool that fails returns a result with `isError` true and a sentence a model can act on: which argument was wrong and what the rule is, or which thing wasn't found and which tools return valid ids. Protocol errors are for broken requests, not broken arguments. One filter does the mapping, so no tool has a try-catch.
+
+## Text and structured content, both
+
+Every tool returns its result as text and as `structuredContent`, with an output schema. Older clients read the text. Newer ones parse the structure and validate it. The server doesn't have to guess which it's talking to.
+
+## Resources, prompts and completions too
+
+Tools are what most servers stop at. This one also exposes every movie, author and review as a resource, ships three prompts that embed the data they need, and completes titles and names as the user types them. It's there to show the shape of each, so you don't have to work out where they go.
+
+## Instructions for the model
+
+The server sends a paragraph of instructions on `initialize`: what the data is, which tools to call first, how paging works, and that `reviews_delete` can't be undone. It's the cheapest, most effective piece of prompt engineering in the whole template, and it lives next to the server info where you'll remember to update it.
+
+## Source generators where it counts
+
+- **[Mediator](https://github.com/martinothamar/Mediator)** generates its dispatch code at build time, so sending a query is a method call, not a reflection hunt.
+- **[Mapperly](https://mapperly.riok.app)** generates the Infrastructure mapping at build time, and you can read exactly what it wrote.
+- **System.Text.Json** uses a source-generated serializer context for every result, so the tool output schemas are known at build time.
+As a bonus, MediatR and AutoMapper both moved to commercial licences in 2025, and this template didn't have to care.
+
+## FluentValidation in a pipeline behaviour
+
+Validation runs once, in one place, before any handler. Handlers only ever see valid requests, which keeps them short and keeps tests honest. Presentation just has to turn a `ValidationException` into a tool error the model can act on, and it does that in one class.
+
+## Optional authentication, mandatory authorization
+
+The `/mcp` endpoint requires authorization only when `Authentication:Authority` is set, and then the server also publishes protected resource metadata so clients can find the sign-in on their own. Turning security on is configuration, not a code change, and the tools never know the difference. See [Secure the server](../../guides/secure-the-server/).
+
+## SQLite next to the app
+
+The template needs a database that works in a container and on a laptop without any setup. SQLite does that, with [real caveats](../../guides/database/). It's there to show the shape of Infrastructure, not to be your production database.
+
+## Infrastructure is internal
+
+The one rule we bend is letting Presentation reference Infrastructure for dependency injection. Making every Infrastructure class `internal` means the compiler enforces the boundary instead of a code reviewer having a bad day.
+
+## Strict builds
+
+`Directory.Build.props` turns on code style and the recommended analyzers for every project, and warnings fail the build. `Directory.Packages.props` keeps every package version in one place. It's annoying for about a day and then you never want to go back.
+
+## Tests that don't share
+
+Every test class gets its own in-memory SQLite database, built from the real migrations and the same fixed seed. Tests can run in any order, in parallel, forever, and still agree with each other.

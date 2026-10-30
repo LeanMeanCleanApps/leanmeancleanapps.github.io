@@ -1,0 +1,95 @@
+---
+title: "Get started"
+description: "Install the template, create a solution and call your first endpoint."
+sidebar:
+  order: 1
+---
+
+import { Steps, FileTree, LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+By the end of this page you'll have your own solution, an API running on your machine, and a page of movies on your screen. It takes about five minutes, or ten if NuGet decides to download the internet first.
+
+## Before you start
+
+You need the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0). [Docker](https://www.docker.com/products/docker-desktop) is optional, but it gets you Seq for the logs and a container you can ship, so it's worth having around.
+
+## Make it yours
+
+<Steps>
+
+1. Install the template from NuGet.
+
+   ```bash
+   dotnet new install CleanMinimalApi.Template
+   ```
+
+2. Create a solution. The name becomes your namespace, project names and folder, so pick something you're happy to see a lot of.
+
+   ```bash
+   dotnet new cleanminimalapi --name Acme.Movies --authorName "Your Name"
+   cd Acme.Movies
+   ```
+
+3. Have a look around. Everything you need is already here.
+
+   <FileTree>
+   - Acme.Movies.sln
+   - Dockerfile
+   - docker-compose.yml
+   - src/
+     - Application/ the rules, queries and validation
+     - Infrastructure/ the database and repositories
+     - Presentation/ the Minimal API endpoints
+   - tests/
+     - Application.Tests.Unit/
+     - Infrastructure.Tests.Integration/
+     - Presentation.Tests.Integration/
+     - Presentation.Tests.Unit/
+   </FileTree>
+
+4. Run it. The `local` environment seeds sample data and logs to the console, so there's nothing to set up.
+
+   ```bash
+   dotnet run --project ./src/Presentation
+   ```
+
+5. Open the Scalar API reference at [http://localhost:5032/scalar](http://localhost:5032/scalar). Every endpoint is there with its parameters, responses and a **Send** button, so you never have to remember the shape of a request again.
+
+6. Or call it from the terminal.
+
+   ```bash
+   curl "http://localhost:5032/api/movies?query=global&limit=2"
+   ```
+
+   You get a page of movies back:
+
+   ```json
+   {
+     "items": [
+       { "id": "30fca414-247a-779e-105a-d81aa2506f58", "title": "Assimilated global infrastructure", "reviewCount": 1, "averageStars": 1 },
+       { "id": "c27d6600-79a6-9346-2595-a52b7f07dc3e", "title": "Automated global alliance", "reviewCount": 3, "averageStars": 3.3 }
+     ],
+     "offset": 0,
+     "limit": 2,
+     "totalCount": 2
+   }
+   ```
+
+   Yes, the movies are named by a corporate buzzword generator. *Assimilated global infrastructure* only got one star. Critics can be harsh.
+
+7. Run the tests while you're here.
+
+   ```bash
+   dotnet test
+   ```
+
+</Steps>
+
+## Where to next
+
+<CardGrid>
+  <LinkCard title="Run it locally" description="Docker Compose, Seq, the health checks and the Dockerfile stages." href="../guides/run-locally/" />
+  <LinkCard title="Add an endpoint" description="Turn an existing query into a brand new endpoint, with docs and a test." href="../guides/add-an-endpoint/" />
+  <LinkCard title="Secure the API" description="Turn on bearer tokens with two settings." href="../guides/secure-the-api/" />
+  <LinkCard title="How the layers fit" description="Why there are three rings and who's allowed to talk to whom." href="../explanation/architecture/" />
+</CardGrid>
