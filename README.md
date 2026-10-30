@@ -5,9 +5,9 @@ The website for [Lean Mean Clean Apps](https://github.com/LeanMeanCleanApps), pu
 | Template | Home page |
 | --- | --- |
 | Clean Minimal API | [/minimalapi/](https://leanmeancleanapps.github.io/minimalapi/) |
-| Clean Web API | [/webapi/](https://leanmeancleanapps.github.io/webapi/) |
-| Clean GraphQL API | [/graphql/](https://leanmeancleanapps.github.io/graphql/) |
 | Clean Model Context Protocol | [/mcp/](https://leanmeancleanapps.github.io/mcp/) |
+| Clean GraphQL API | [/graphql/](https://leanmeancleanapps.github.io/graphql/) |
+| Clean Web API | [/webapi/](https://leanmeancleanapps.github.io/webapi/) |
 | Clean Lambda Function | [/lambda/](https://leanmeancleanapps.github.io/lambda/) |
 
 ## Running it locally
@@ -45,7 +45,7 @@ Every push to `main` builds the site and publishes it to GitHub Pages. Pull requ
 
 Spotted a typo, a broken link or a template we forgot? Open an issue or a pull request. Branch from `main` as `feature/`, `fix/` or `chore/`, run `npm run build` before you push, and keep each change to one thing. The organisation's [contributing guide](https://github.com/LeanMeanCleanApps/.github/blob/main/CONTRIBUTING.md), [code of conduct](https://github.com/LeanMeanCleanApps/.github/blob/main/CODE_OF_CONDUCT.md) and [security policy](https://github.com/LeanMeanCleanApps/.github/blob/main/SECURITY.md) apply here too.
 
-The site, like everything behind it, is built and maintained by [Stephen Walsh](https://github.com/stphnwlsh) with strong coffee and a healthy disregard for pomp and ceremony. If the templates save you some time, you can [sponsor the work](https://github.com/sponsors/stphnwlsh).
+The site, like everything behind it, is built and maintained by the Lean Mean Clean Apps team, which is [Stephen Walsh](https://github.com/stphnwlsh) for now, with strong coffee and a healthy disregard for pomp and ceremony. If the templates save you some time, you can [sponsor the work](https://github.com/sponsors/stphnwlsh).
 
 ## Licence
 

@@ -120,7 +120,7 @@ export default defineConfig({
         starlightLlmsTxt({
           projectName: 'Lean Mean Clean Apps',
           description:
-            'Five dotnet new templates for .NET 10 (Minimal APIs, Web API controllers, GraphQL, Model Context Protocol and AWS Lambda) that share the same Clean Architecture Application and Infrastructure layers and differ only in Presentation.',
+            'Five dotnet new templates for .NET 10 (Minimal APIs, Model Context Protocol, GraphQL, Web API controllers and AWS Lambda) that share the same Clean Architecture Application and Infrastructure layers and differ only in Presentation.',
         }),
       ],
     }),
