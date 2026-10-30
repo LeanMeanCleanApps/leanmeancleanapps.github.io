@@ -8,9 +8,7 @@ const accents = import.meta.glob<string>('../../styles/docs/accents/*.css', { qu
 const key = Astro.locals.starlightRoute.id.split('/')[0];
 const template = templates.find((t) => t.key === key);
 const accent = template && accents[`../../styles/docs/accents/${template.key}.css`];
-const hue = template
-  ? `:root { --cl-hue: var(--lmca-${template.key}); } :root[data-theme='light'] { --cl-hue: var(--lmca-${template.hue}-600); }`
-  : '';
+const hue = template ? `:root { --cl-hue: var(--lmca-${template.key}); }` : '';
 const image = new URL(template ? `/social/${template.key}.png` : '/og-image.png', Astro.site);
 const [width, height] = template ? [1280, 640] : [1200, 630];
 ---
