@@ -31,7 +31,7 @@ Every push to `main` builds the site and publishes it to GitHub Pages. Pull requ
 
 Spotted a typo, a broken link or a template we forgot? Open an issue or a pull request. Branch from `main` as `feature/`, `fix/` or `chore/`, run `npm run build` before you push, and keep each change to one thing. The organisation's [contributing guide](https://github.com/LeanMeanCleanApps/.github/blob/main/CONTRIBUTING.md), [code of conduct](https://github.com/LeanMeanCleanApps/.github/blob/main/CODE_OF_CONDUCT.md) and [security policy](https://github.com/LeanMeanCleanApps/.github/blob/main/SECURITY.md) apply here too.
 
-The site, like everything behind it, is built and maintained by [Stephen Walsh](https://github.com/stphnwlsh) with strong coffee and a healthy disregard for ceremony. If the templates save you some time, you can [sponsor the work](https://github.com/sponsors/stphnwlsh).
+The site, like everything behind it, is built and maintained by [Stephen Walsh](https://github.com/stphnwlsh) with strong coffee and a healthy disregard for pomp and ceremony. If the templates save you some time, you can [sponsor the work](https://github.com/sponsors/stphnwlsh).
 
 ## Licence
 
