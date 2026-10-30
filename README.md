@@ -1,6 +1,6 @@
 # leanmeancleanapps.github.io
 
-The website for [Lean Mean Clean Apps](https://github.com/LeanMeanCleanApps), published at [leanmeancleanapps.github.io](https://leanmeancleanapps.github.io). It's one page that points people at the templates and the people behind them.
+The website for [Lean Mean Clean Apps](https://github.com/LeanMeanCleanApps), published at [leanmeancleanapps.github.io](https://leanmeancleanapps.github.io). It's one page that points people at the templates and the people behind them. One page, no framework drama, no cookie banner.
 
 ## Running it locally
 
@@ -21,11 +21,11 @@ The logos, icons, link preview and colour tokens come from the [brand](https://g
 npm run sync-brand -- ../brand
 ```
 
-Then commit what changes. To add a template, add it to `src/data/templates.ts` with the same key it has in the brand repository, and run the same command to copy its logo.
+Then commit what changes. Don't edit the copies by hand, because the next sync will undo your work without so much as an apology. To add a template, add it to `src/data/templates.ts` with the same key it has in the brand repository, and run the same command to copy its logo.
 
 ## Publishing
 
-Every push to `main` builds the site and publishes it to GitHub Pages. Pull requests build it without publishing.
+Every push to `main` builds the site and publishes it to GitHub Pages. Pull requests build it without publishing, so you can break things in private.
 
 ## Contributing and support
 
