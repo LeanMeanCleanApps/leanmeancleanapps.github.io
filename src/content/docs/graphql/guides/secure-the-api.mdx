@@ -1,0 +1,62 @@
+---
+title: "Secure the API"
+description: "Turn on JWT bearer authentication with two settings, and what changes when you do."
+sidebar:
+  order: 5
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+Out of the box the API runs wide open. Every movie, author and review query and every mutation carries `[Authorize]`, but with no authority configured the default policy says yes to everyone. That's lovely on a laptop and less lovely in production, so here's how to close the door.
+
+## Turn it on
+
+<Steps>
+
+1. Tell the API who issues tokens and who they're for. Either bake it in when you create the solution:
+
+   ```bash
+   dotnet new cleangraphqlapi --name Acme.Movies \
+     --authority https://login.example.com --audience https://movies.example.com
+   ```
+
+   Or set it on a solution you already have, in `appsettings.json` or as environment variables:
+
+   ```bash
+   Authentication__Authority=https://login.example.com
+   Authentication__Audience=https://movies.example.com
+   ```
+
+2. Get a token from the authority for that audience, and send it.
+
+   ```bash
+   curl -X POST "http://localhost:5032/graphql" -H "Authorization: Bearer eyJhbGciOi..." \
+     -H "Content-Type: application/json" -d '{"query":"{ movies { totalCount } }"}'
+   ```
+
+   In Nitro, open the connection settings and add the token under **Authentication**.
+
+</Steps>
+
+## What changes
+
+- The protected fields answer with an error instead of data when the token is missing, from the wrong issuer or for the wrong audience. The HTTP status stays `200`, because that's how GraphQL does it.
+
+  ```json
+  { "errors": [ { "message": "The current user is not authorized to access this resource.", "extensions": { "code": "AUTH_NOT_AUTHENTICATED" } } ] }
+  ```
+
+- The `version` query, the schema, Nitro, `/health/live` and `/health/ready` stay open, so load balancers and curious humans can still check the lights are on.
+- Tokens are validated against the authority's published keys, so there's no secret to store and nothing to rotate on your side.
+
+## How it works
+
+`AuthenticationSettings` reads the `Authentication` section. When the authority is set, the API registers the JWT bearer handler and the normal authorization services. When it isn't, it registers a default policy that passes every request. `[Authorize]` on the resolvers works either way, which is why turning authentication on doesn't touch a single field.
+
+<Aside type="note" title="Authorization is always on">
+  Authentication is optional. Authorization isn't. Every protected field declares it, even in the open configuration, so there's never a moment where a field was forgotten. It was only ever the gate that was open.
+</Aside>
+
+## Beyond a bearer token
+
+Scopes, roles and per-field policies are a short step from here: add policies to `AddAuthorization` and ask for them with `[Authorize(Policy = "policy")]`. Which claims to check depends entirely on your identity provider, so the template stops at the door and lets you decide who gets past it.

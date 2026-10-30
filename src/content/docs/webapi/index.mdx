@@ -1,0 +1,77 @@
+---
+title: Clean Web API
+description: A .NET 10 dotnet new template for an ASP.NET Core Web API with controllers, built with Clean Architecture minus the ceremony.
+template: splash
+prev: false
+next: false
+hero:
+  title: Clean Architecture for Web API controllers, minus the ceremony
+  tagline: A .NET 10 template that gives you a tested, layered HTTP API in two commands. For people who like their endpoints with classes and attributes.
+  image:
+    dark: ../../../assets/logos/webapi.svg
+    light: ../../../assets/logos/webapi-light.svg
+    alt: The Clean Web API logo, blue rings like the Clean Architecture diagram
+  actions:
+    - text: Get started
+      link: getting-started/
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/stphnwlsh/CleanWebApi
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import Family from '../../../components/docs/Family.astro';
+
+## Two commands and you're in business
+
+```bash
+dotnet new install CleanWebApi.Template
+dotnet new cleanwebapi --name Acme.Movies --authorName "Your Name"
+```
+
+That's a solution with three layers, three test projects, a Dockerfile and a CI pipeline. Now go and tell your team you've been working on it all week.
+
+## What's in the box
+
+<CardGrid>
+  <Card title="Controllers on a diet" icon="puzzle">
+    Controllers grouped by feature and kept thin by Mediator. The business rules live in Application, where they belong, not in an action method.
+  </Card>
+  <Card title="Docs that write themselves" icon="document">
+    OpenAPI comes from the XML comments you were going to write anyway, and Scalar turns it into an API reference you can actually click around in.
+  </Card>
+  <Card title="Errors with manners" icon="warning">
+    Validation lives in the Application layer with FluentValidation, and every failure comes back as Problem Details (RFC 9457). No mystery 500s.
+  </Card>
+  <Card title="Tested like it matters" icon="approve-check">
+    xUnit, Shouldly and a 95% coverage gate. Every test gets its own throwaway SQLite database, so nobody steps on anybody's toes.
+  </Card>
+</CardGrid>
+
+## Run it
+
+```bash
+cd Acme.Movies
+docker compose up -d
+```
+
+Then open the Scalar API reference at [http://localhost:8080/scalar](http://localhost:8080/scalar) and start poking. The logs go to Seq at [http://localhost:5341](http://localhost:5341), because `Console.WriteLine` is not an observability strategy.
+
+Want it locked down? Pass `--authority` and `--audience` when you create the solution and every movie, author and review endpoint needs a JWT bearer token. Leave them off and it runs wide open, which is lovely on a laptop and less lovely in production.
+
+<CardGrid>
+  <LinkCard title="Get started" description="Install the template, create a solution and call your first endpoint." href="getting-started/" />
+  <LinkCard title="Add an endpoint" description="Turn an existing query into a new endpoint, with docs and a test." href="guides/add-an-endpoint/" />
+  <LinkCard title="Endpoint reference" description="Every route, parameter, response and error." href="reference/endpoints/" />
+  <LinkCard title="Why it's built this way" description="The opinions, so you can disagree with them on purpose." href="explanation/decisions/" />
+</CardGrid>
+
+## One of five
+
+Clean Web API is one of five [Lean Mean Clean Apps](/) templates. They share the same Application and Infrastructure layers, the same tests and the same pipeline. Only Presentation changes. Like a family, really. Same genes, different haircuts.
+
+<Family />
+
+<p class="cl-aside-quip">Each template gets the same ring logo in its own colour. The rings follow the Clean Architecture diagram, from the entities in the core out to the frameworks and drivers on the edge. Web API drew blue, the colour of every enterprise dashboard it will one day feed. The logos, colours and everything else live in the <a href="/brand/">brand kit</a>.</p>

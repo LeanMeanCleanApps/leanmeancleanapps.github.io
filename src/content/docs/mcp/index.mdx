@@ -1,0 +1,77 @@
+---
+title: Clean Model Context Protocol
+description: A .NET 10 dotnet new template for a Model Context Protocol server, built with Clean Architecture minus the ceremony.
+template: splash
+prev: false
+next: false
+hero:
+  title: Clean Architecture for MCP servers, minus the ceremony
+  tagline: A .NET 10 template that gives you a tested, layered Model Context Protocol server in two commands. Your AI assistant gets tools. You get to keep your weekends.
+  image:
+    dark: ../../../assets/logos/mcp.svg
+    light: ../../../assets/logos/mcp-light.svg
+    alt: The Clean Model Context Protocol logo, violet rings like the Clean Architecture diagram
+  actions:
+    - text: Get started
+      link: getting-started/
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/stphnwlsh/CleanModelContextProtocol
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import Family from '../../../components/docs/Family.astro';
+
+## Two commands and you're in business
+
+```bash
+dotnet new install CleanModelContextProtocol.Template
+dotnet new cleanmodelcontextprotocol --name Acme.Movies --authorName "Your Name"
+```
+
+That's a solution with three layers, four test projects, a Dockerfile and a CI pipeline. Now go and tell your team you've been working on it all week.
+
+## What's in the box
+
+<CardGrid>
+  <Card title="Tools shaped like tasks" icon="puzzle">
+    Six tools named for the jobs an agent actually does, like `movies_search` and `reviews_write`, with read-only, destructive and idempotent hints.
+  </Card>
+  <Card title="More than tools" icon="comment">
+    Resources for every movie, author and review, plus prompts with completions that suggest titles and names as you type.
+  </Card>
+  <Card title="Errors an agent can use" icon="warning">
+    Validation lives in the Application layer with FluentValidation, and tool errors tell the agent how to recover instead of just giving up.
+  </Card>
+  <Card title="Tested like it matters" icon="approve-check">
+    xUnit, Shouldly and a 95% coverage gate. Every test gets its own throwaway SQLite database, so nobody steps on anybody's toes.
+  </Card>
+</CardGrid>
+
+## Run it
+
+```bash
+cd Acme.Movies
+docker compose up -d
+```
+
+Then open the MCP Inspector at [http://localhost:6274](http://localhost:6274). It's already pointed at the server on [http://localhost:8080/mcp](http://localhost:8080/mcp), so connect, open **Tools** and start clicking. The logs go to Seq at [http://localhost:5341](http://localhost:5341).
+
+Want it locked down? Pass `--authority` and `--audience` when you create the solution and `/mcp` needs a bearer token, with protected resource metadata so MCP clients can find your authorization server and sign in. Leave them off and it runs wide open, which is lovely on a laptop and less lovely in production.
+
+<CardGrid>
+  <LinkCard title="Get started" description="Install the template, create a solution and call your first tool." href="getting-started/" />
+  <LinkCard title="Connect a client" description="Point Claude, VS Code, Cursor or your own code at the server." href="guides/connect-a-client/" />
+  <LinkCard title="Tool reference" description="Every tool, argument, result and error." href="reference/tools/" />
+  <LinkCard title="Why it's built this way" description="The opinions, so you can disagree with them on purpose." href="explanation/decisions/" />
+</CardGrid>
+
+## One of five
+
+Clean Model Context Protocol is one of five [Lean Mean Clean Apps](/) templates. They share the same Application and Infrastructure layers, the same tests and the same pipeline. Only Presentation changes. Like a family, really. Same genes, different haircuts.
+
+<Family />
+
+<p class="cl-aside-quip">Each template gets the same ring logo in its own colour. The rings follow the Clean Architecture diagram, from the entities in the core out to the frameworks and drivers on the edge. MCP drew violet, which felt right for the one that spends all day talking to robots. The logos, colours and everything else live in the <a href="/brand/">brand kit</a>.</p>

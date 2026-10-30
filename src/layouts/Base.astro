@@ -83,7 +83,7 @@ const community = `${github}/.github/blob/main`;
         </div>
         <nav class="footer-links" aria-label="Templates">
           <h2>Templates</h2>
-          {templates.map((t) => <a href={`https://github.com/stphnwlsh/${t.repo}`}>{t.name}</a>)}
+          {templates.map((t) => <a href={`/${t.key}/`}>{t.name}</a>)}
         </nav>
         <nav class="footer-links" aria-label="Organisation">
           <h2>Organisation</h2>
@@ -94,7 +94,7 @@ const community = `${github}/.github/blob/main`;
           <a href="https://github.com/sponsors/stphnwlsh">Sponsor</a>
         </nav>
         <p class="footer-note">
-          Made by Stephen Walsh with strong coffee and a healthy disregard for ceremony. Not affiliated with Uncle Bob, a
+          Made by the Lean Mean Clean Apps team with strong coffee and a healthy disregard for pomp and ceremony. Not affiliated with Uncle Bob, a
           certain billionaire's chest piece, or anyone with a marketing budget. <a
             href="https://github.com/LeanMeanCleanApps/leanmeancleanapps.github.io">Source</a
           > under the MIT licence.

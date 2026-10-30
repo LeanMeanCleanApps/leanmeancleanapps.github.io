@@ -1,0 +1,212 @@
+---
+title: "Schema"
+description: "Every query, mutation and type, how paging works, and what the errors look like."
+sidebar:
+  order: 1
+---
+
+The schema lives in `src/Presentation/GraphQL`: queries in `Queries`, mutations in `Mutations`, object types in `Types` and inputs in `Inputs`. The endpoint is `/graphql`, which also serves Nitro to a browser, and `/graphql?sdl` returns the schema as SDL. Every query and mutation except `version` requires authorization, which only has an effect when [authentication is on](../../guides/secure-the-api/).
+
+Ids are the `UUID` scalar. Field and type descriptions come from the XML comments on the code, so Nitro shows the same text as this page.
+
+## Queries
+
+| Query | Arguments | Returns |
+| --- | --- | --- |
+| `movie` | `id: UUID!` | [`Movie`](#movie), or null when there's no movie with that id |
+| `movies` | `query: String`, `first: Int`, `after: String` | A [connection](#connections-and-paging) of [`MovieSummary`](#moviesummary), ordered by title |
+| `author` | `id: UUID!` | [`Author`](#author), or null when there's no author with that id |
+| `authors` | `query: String`, `first: Int`, `after: String` | A [connection](#connections-and-paging) of [`AuthorSummary`](#authorsummary), ordered by last name then first name |
+| `review` | `id: UUID!` | [`Review`](#review), or null when there's no review with that id |
+| `reviews` | `movieId: UUID`, `authorId: UUID`, `first: Int`, `after: String` | A [connection](#connections-and-paging) of [`Review`](#review), ordered by movie then author |
+| `version` | none | [`Version!`](#version) |
+
+`query` matches anywhere in the title or the full name, ignoring case, and can be up to 100 characters. `movieId` and `authorId` filter the reviews to one movie, one author, or both.
+
+```graphql
+{
+  movies(query: "global", first: 2) {
+    totalCount
+    pageInfo { hasNextPage endCursor }
+    nodes { id title reviewCount averageStars }
+  }
+}
+```
+
+```json
+{
+  "data": {
+    "movies": {
+      "totalCount": 2,
+      "pageInfo": { "hasNextPage": false, "endCursor": "b2Zmc2V0OjI=" },
+      "nodes": [
+        { "id": "30fca414-247a-779e-105a-d81aa2506f58", "title": "Assimilated global infrastructure", "reviewCount": 1, "averageStars": 1 },
+        { "id": "c27d6600-79a6-9346-2595-a52b7f07dc3e", "title": "Automated global alliance", "reviewCount": 3, "averageStars": 3.3 }
+      ]
+    }
+  }
+}
+```
+
+## Mutations
+
+| Mutation | Arguments | Returns |
+| --- | --- | --- |
+| `createReview` | `input:` [`CreateReviewInput!`](#createreviewinput) | The created [`Review`](#review) |
+| `updateReview` | `input:` [`UpdateReviewInput!`](#updatereviewinput) | `true` when the review was updated |
+| `deleteReview` | `id: UUID!` | `true` when the review was deleted |
+
+```graphql
+mutation {
+  createReview(input: { authorId: "01fa8b58-05d2-abd4-e55c-2633222dd0a5", movieId: "e159975e-4e6a-1ffd-713e-1eb9d8d4a593", stars: 5 }) {
+    id
+    stars
+    movie { title }
+    author { firstName lastName }
+  }
+}
+```
+
+## Connections and paging
+
+Every list query returns a Relay-style connection.
+
+| Field | Description |
+| --- | --- |
+| `nodes` | The items on this page |
+| `edges` | The items with their cursors |
+| `pageInfo.hasNextPage` | Whether there are more items after this page |
+| `pageInfo.endCursor` | Pass it as `after` to get the next page |
+| `totalCount` | The number of items across every page |
+
+| Argument | Default | Rules |
+| --- | --- | --- |
+| `first` | `10` | 1 to 50. Asking for more fails with the `HC0051` error |
+| `after` | none | A cursor from a previous page. Leave it out for the first page |
+
+Paging only goes forwards. There's no `last` or `before`, and `hasPreviousPage` and `startCursor` are there because the connection spec says so, not because they're useful. To read everything, start without `after` and keep sending `endCursor` back until `hasNextPage` is false.
+
+```graphql
+{
+  movies(first: 10, after: "b2Zmc2V0OjEw") {
+    pageInfo { hasNextPage endCursor }
+    nodes { title }
+  }
+}
+```
+
+## Types
+
+### Movie
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `UUID!` | The movie's id |
+| `title` | `String!` | The movie's title |
+| `reviews` | `[Review!]` | Every review of the movie |
+
+### MovieSummary
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `UUID!` | The movie's id |
+| `title` | `String!` | The movie's title |
+| `reviewCount` | `Int!` | How many reviews the movie has |
+| `averageStars` | `Float` | The average rating to one decimal place, or null when there are no reviews |
+| `reviews` | `[Review!]!` | Every review of the movie, loaded for the whole page in one query |
+
+### Author
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `UUID!` | The author's id |
+| `firstName` | `String!` | The author's first name |
+| `lastName` | `String!` | The author's last name |
+| `reviews` | `[Review!]` | Every review by the author |
+
+### AuthorSummary
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `UUID!` | The author's id |
+| `firstName` | `String!` | The author's first name |
+| `lastName` | `String!` | The author's last name |
+| `reviewCount` | `Int!` | How many reviews the author has written |
+| `averageStars` | `Float` | The average rating they give, or null when there are no reviews |
+| `reviews` | `[Review!]!` | Every review by the author, loaded for the whole page in one query |
+
+### Review
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `UUID!` | The review's id |
+| `stars` | `Int!` | The rating, from 1 to 5 |
+| `movie` | `ReviewedMovie` | The movie's `id` and `title` |
+| `author` | `ReviewAuthor` | The author's `id`, `firstName` and `lastName` |
+
+### Version
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `fileVersion` | `String!` | The assembly file version |
+| `informationalVersion` | `String!` | The informational version, with the prerelease label and commit hash when there are any |
+
+### CreateReviewInput
+
+| Field | Type | Rules |
+| --- | --- | --- |
+| `authorId` | `UUID!` | An existing author |
+| `movieId` | `UUID!` | An existing movie |
+| `stars` | `Int!` | 1 to 5 |
+
+### UpdateReviewInput
+
+| Field | Type | Rules |
+| --- | --- | --- |
+| `id` | `UUID!` | An existing review |
+| `stars` | `Int!` | 1 to 5 |
+
+The author and the movie of a review can't change. To review a different movie, create a new review.
+
+## Errors
+
+Errors come back in the `errors` array with a `code` in `extensions`. The HTTP status is `200` unless the request itself couldn't be read.
+
+| Code | When | Extra |
+| --- | --- | --- |
+| `VALIDATION` | An argument or input breaks one of the rules above, or `after` isn't a cursor from a previous page | `extensions.errors`, a property name to messages map |
+| `NOT_FOUND` | A mutation names a movie, author or review that doesn't exist | The message says which |
+| `HC0051` | `first` is over 50 | `requestedItems` and `maxAllowedItems` |
+| `AUTH_NOT_AUTHENTICATED` | Authentication is on and the token is missing or not valid | |
+
+```json
+{
+  "errors": [
+    {
+      "message": "One or more validation errors occurred.",
+      "path": ["createReview"],
+      "extensions": { "code": "VALIDATION", "errors": { "Stars": ["A star rating must be between 1 and 5."] } }
+    }
+  ],
+  "data": { "createReview": null }
+}
+```
+
+```json
+{
+  "errors": [
+    { "message": "The Movie with the supplied id was not found.", "path": ["createReview"], "extensions": { "code": "NOT_FOUND" } }
+  ],
+  "data": { "createReview": null }
+}
+```
+
+A query with no match doesn't error. `movie` and `author` return null, and the list queries return an empty connection with a `totalCount` of 0.
+
+## Limits
+
+| Limit | Value |
+| --- | --- |
+| Page size | 10 by default, 50 at most |
+| Query depth | 15 |
+| Search term | 100 characters |

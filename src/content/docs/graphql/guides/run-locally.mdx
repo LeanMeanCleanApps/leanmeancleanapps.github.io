@@ -1,0 +1,110 @@
+---
+title: "Run it locally"
+description: "Run the API with dotnet run or Docker Compose, find Nitro and the logs, run the tests and stamp a version."
+sidebar:
+  order: 2
+---
+
+import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
+
+There are two ready-made environments. `local` is for `dotnet run`: sample data on, logs to the console. `docker` is for Docker Compose: sample data on, logs to Seq, database on a volume. Both are for your machine. Neither is for production, which is why neither is the default.
+
+## Run it
+
+<Tabs syncKey="runner">
+  <TabItem label="dotnet run">
+    ```bash
+    dotnet run --project ./src/Presentation
+    ```
+
+    `launchSettings.json` sets the environment to `local` and listens on [http://localhost:5032](http://localhost:5032) and `https://localhost:7032`.
+  </TabItem>
+  <TabItem label="Docker Compose">
+    ```bash
+    docker compose up -d --build
+    ```
+
+    Compose builds the `run` stage, starts Seq next to it and publishes the API on [http://localhost:8080](http://localhost:8080). Shut it down with `docker compose down`, or `docker compose down -v` to drop the database too.
+  </TabItem>
+  <TabItem label="Docker">
+    ```bash
+    docker build . --target run --tag acme-movies:local
+    docker run --rm -p 8080:8080 -e DOTNET_ENVIRONMENT=docker acme-movies:local
+    ```
+
+    Without Compose there's no Seq, so the Serilog sink in `appsettings.docker.json` has nowhere to send the logs. Swap it for `Console` if you run the image on its own.
+  </TabItem>
+</Tabs>
+
+## Find your way around
+
+| Where | What |
+| --- | --- |
+| `/graphql` | The endpoint. `POST` a query, or open it in a browser for Nitro |
+| `/graphql?sdl` | The schema in SDL, the same text the snapshot test checks |
+| `/health/live` | Answers 200 while the process is up |
+| `/health/ready` | Answers 200 when the database can be reached |
+| [http://localhost:5341](http://localhost:5341) | Seq, when running with Docker Compose |
+
+The health endpoints answer without a token even when authentication is on, so a load balancer never needs to log in.
+
+## Try the schema
+
+Nitro is the easy way: it knows the schema, autocompletes, and keeps your query history. The sample data uses a fixed seed, so these ids are the same on every machine. See the [schema reference](../../reference/schema/) for every query, mutation and type.
+
+```graphql
+# One movie, its reviews and who wrote them
+{
+  movie(id: "e159975e-4e6a-1ffd-713e-1eb9d8d4a593") {
+    title
+    reviews { stars author { firstName lastName } }
+  }
+}
+```
+
+```graphql
+# Write a review
+mutation {
+  createReview(input: { authorId: "01fa8b58-05d2-abd4-e55c-2633222dd0a5", movieId: "e159975e-4e6a-1ffd-713e-1eb9d8d4a593", stars: 5 }) {
+    id
+    stars
+  }
+}
+```
+
+## Run the tests
+
+```bash
+dotnet test
+```
+
+Each test class builds its own in-memory SQLite database from the migrations and the same fixed seed. No test can change what another one sees, and nothing touches `movie-reviews.db`. One of the tests compares `/graphql?sdl` with `tests/Presentation.Tests.Integration/GraphQL/Schema/schema.graphql`, so a schema change you didn't mean to make fails the build before anyone's client notices.
+
+## Run just one part of the Dockerfile
+
+The `Dockerfile` has a stage for each job, so you can build only what you need.
+
+| Stage | What it does |
+| --- | --- |
+| `build` | Restores and builds the solution |
+| `test` | Runs every test with coverage |
+| `coverage` | Exports the coverage report to your machine |
+| `publish` | Publishes the Presentation project |
+| `run` | The image you deploy |
+
+```bash
+docker build . --target coverage --output type=local,dest=out
+```
+
+## Stamp a version
+
+```bash
+docker build . --target run --tag acme-movies:latest \
+  --build-arg VERSION_PREFIX=1.2.3 --build-arg VERSION_SUFFIX=beta
+```
+
+The `version` query then reports `1.2.3-beta` and the commit it was built from.
+
+<Aside type="tip" title="Stuck?">
+  If Nitro loads but can't reach the schema, you're probably on `https://` with a certificate your browser doesn't trust yet. Use the `http://` address, or run `dotnet dev-certs https --trust` once. If `curl` says connection refused, check that port 5032 isn't busy with something else you forgot about.
+</Aside>

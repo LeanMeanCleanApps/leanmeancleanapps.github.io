@@ -1,0 +1,31 @@
+---
+title: "Template options"
+description: "The options dotnet new accepts for this template, and what they change."
+sidebar:
+  order: 3
+---
+
+```bash
+dotnet new cleanmodelcontextprotocol --name <NAME> [--authorName <AUTHOR>] [--authority <URL>] [--audience <URL>] [--output <PATH>]
+```
+
+| Option | Default | What it changes |
+| --- | --- | --- |
+| `--name`, `-n` | The current folder's name | Replaces `CleanModelContextProtocol` in every namespace, project, file and folder name, and names the output folder |
+| `--authorName` | `Stephen Walsh` | Sets the `Authors` and `Copyright` of the Presentation project, so the assembly credits you instead of us |
+| `--authority` | empty | Sets `Authentication:Authority` in `appsettings.json`. When it's set, the server requires JWT bearer tokens issued by that server |
+| `--audience` | empty | Sets `Authentication:Audience` in `appsettings.json`, the audience those tokens must be issued for |
+| `--output`, `-o` | A folder named after `--name` | Where the solution is created |
+
+The usual `dotnet new` options such as `--dry-run` and `--force` work too. Run `dotnet new cleanmodelcontextprotocol --help` for the full list.
+
+## Install, update and remove
+
+| Task | Command |
+| --- | --- |
+| Install | `dotnet new install CleanModelContextProtocol.Template` |
+| Check for updates | `dotnet new update --check-only` |
+| Update | `dotnet new update` |
+| Remove | `dotnet new uninstall CleanModelContextProtocol.Template` |
+
+New versions are published on the 1st of each month when something has changed. See the [releases](https://github.com/stphnwlsh/CleanModelContextProtocol/releases) for what's new.

@@ -1,0 +1,164 @@
+---
+title: "Tools"
+description: "Every tool, with its arguments, annotations, result and errors."
+sidebar:
+  order: 1
+---
+
+Every tool lives in `src/Presentation/Tools`, one static class per feature. Arguments are JSON, named in camelCase. Every tool returns its result twice: as a text content block holding JSON, for models that read, and as `structuredContent`, for clients that parse, with an output schema in the tool's listing. When [authentication is on](../../guides/secure-the-server/), every tool needs a token.
+
+| Tool | Title | Read-only | Destructive | Idempotent |
+| --- | --- | --- | --- | --- |
+| [`movies_search`](#movies_search) | Search movies | yes | | yes |
+| [`movies_get`](#movies_get) | Get movie | yes | | yes |
+| [`authors_search`](#authors_search) | Search authors | yes | | yes |
+| [`reviews_list`](#reviews_list) | List reviews | yes | | yes |
+| [`reviews_write`](#reviews_write) | Write review | | yes | |
+| [`reviews_delete`](#reviews_delete) | Delete review | | yes | yes |
+
+Every tool has `openWorldHint` false: they only ever touch this server's own database.
+
+## movies_search
+
+Finds movies whose title contains a search term, ignoring case, in title order. Leave the query empty to browse every movie a page at a time.
+
+| Argument | Type | Default | Rules |
+| --- | --- | --- | --- |
+| `query` | string | none | Up to 100 characters |
+| `offset` | integer | `0` | 0 or more |
+| `limit` | integer | `10` | 1 to 50 |
+| `includeReviews` | boolean | `false` | Also return every review of each movie |
+
+Returns a [page](#pages) of [movies](#movie).
+
+```json
+{
+  "items": [
+    { "id": "30fca414-247a-779e-105a-d81aa2506f58", "title": "Assimilated global infrastructure", "reviewCount": 1, "averageStars": 1 },
+    { "id": "c27d6600-79a6-9346-2595-a52b7f07dc3e", "title": "Automated global alliance", "reviewCount": 3, "averageStars": 3.3 }
+  ],
+  "totalCount": 2
+}
+```
+
+## movies_get
+
+Gets one movie with its review count, average stars and every review, including each author's name.
+
+| Argument | Type | Rules |
+| --- | --- | --- |
+| `movieId` | guid | An existing movie |
+
+Returns a [movie](#movie) with `reviews` filled in.
+
+## authors_search
+
+Finds authors by first name, last name or full name, ignoring case, in last-name order. Leave the query empty to browse every author a page at a time.
+
+| Argument | Type | Default | Rules |
+| --- | --- | --- | --- |
+| `query` | string | none | Up to 100 characters |
+| `offset` | integer | `0` | 0 or more |
+| `limit` | integer | `10` | 1 to 50 |
+| `includeReviews` | boolean | `false` | Also return every review each author has written |
+
+Returns a [page](#pages) of [authors](#author).
+
+## reviews_list
+
+Lists reviews with their star rating and the title and author of each, in movie-title order. Filter by movie, by author, or both, or pass a `reviewId` to get one review.
+
+| Argument | Type | Default | Rules |
+| --- | --- | --- | --- |
+| `movieId` | guid | none | Only reviews of this movie |
+| `authorId` | guid | none | Only reviews by this author |
+| `reviewId` | guid | none | Get this one review instead. The other filters are ignored |
+| `offset` | integer | `0` | 0 or more |
+| `limit` | integer | `10` | 1 to 50 |
+
+Returns a [page](#pages) of [reviews](#review).
+
+## reviews_write
+
+Creates a review of a movie by an author, or changes the stars of an existing review when `reviewId` is passed. A review's movie and author can't change.
+
+| Argument | Type | Rules |
+| --- | --- | --- |
+| `stars` | integer | 1 to 5 |
+| `movieId` | guid | Needed to create a review. An existing movie |
+| `authorId` | guid | Needed to create a review. An existing author |
+| `reviewId` | guid | Leave empty to create. An existing review to change |
+
+Returns the saved [review](#review).
+
+## reviews_delete
+
+Permanently deletes a review. The description tells the model to confirm with the user first, and the `destructiveHint` tells the client the same.
+
+| Argument | Type | Rules |
+| --- | --- | --- |
+| `reviewId` | guid | An existing review |
+
+Returns `{ "reviewId": "...", "deleted": true }`.
+
+## Results
+
+### Pages
+
+Every search and list tool returns one page.
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `items` | array | The results on this page |
+| `totalCount` | integer | The number of results across every page |
+| `nextOffset` | integer | Pass it as `offset` to get the next page. Left out on the last page |
+
+### Movie
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `id` | guid | The movie's id |
+| `title` | string | The movie's title |
+| `reviewCount` | integer | How many reviews the movie has |
+| `averageStars` | number | The average rating to one decimal place. Left out when there are no reviews |
+| `reviews` | array of [review](#review) | Every review of the movie. Only when asked for |
+
+### Author
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `id` | guid | The author's id |
+| `name` | string | The author's full name |
+| `reviewCount` | integer | How many reviews the author has written |
+| `averageStars` | number | The average rating they give. Left out when there are no reviews |
+| `reviews` | array of [review](#review) | Every review by the author. Only when asked for |
+
+### Review
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `id` | guid | The review's id |
+| `stars` | integer | The rating, from 1 to 5 |
+| `movieId` | guid | The movie's id |
+| `movieTitle` | string | The movie's title |
+| `authorId` | guid | The author's id |
+| `authorName` | string | The author's full name |
+
+## Errors
+
+A failed tool call is a result with `isError` true and one text block, so the model can read what went wrong and try again. The protocol itself never errors for these.
+
+| Starts with | When |
+| --- | --- |
+| `Validation Failed:` | An argument breaks one of the rules above. Lists every rule it broke, then says to correct the arguments and call again |
+| `Not Found:` | The movie, author or review doesn't exist. Says which, then which tools return valid ids |
+| `Error:` | Something unexpected happened |
+
+```json
+{
+  "isError": true,
+  "content": [
+    { "type": "text", "text": "Validation Failed: Stars: A star rating must be between 1 and 5. Correct the arguments and call the tool again." }
+  ]
+}
+```

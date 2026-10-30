@@ -1,0 +1,141 @@
+---
+title: "Add a field"
+description: "Put a new resolver on a type, update the schema snapshot and test it."
+sidebar:
+  order: 3
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+This guide adds `bestReview` to the `Movie` type: the highest rated review of the movie, or null when it has none. `Movie` already carries its reviews, so this is pure Presentation work, a resolver on the type. For a field that needs new data, add a query to `src/Application` first and send it through Mediator the way the existing resolvers do.
+
+<Aside type="note" title="Types are source generated">
+  Every object type in `src/Presentation/GraphQL/Types` is a `static partial class` with `[ObjectType<T>]`. Hot Chocolate's source generator turns the `Configure` method and any public static methods into the schema at build time, and `AddPresentationTypes()` in `ProgramExtensions.cs` registers the lot. Nothing is discovered by reflection at startup.
+</Aside>
+
+<Steps>
+
+1. Add the resolver to `src/Presentation/GraphQL/Types/MovieType.cs`. The `[Parent]` attribute hands it the movie being resolved, and the XML summary becomes the field's description in the schema.
+
+   ```csharp ins={1,15-21}
+   using HotChocolate;
+   using HotChocolate.Types;
+
+   [ObjectType<Movie>]
+   public static partial class MovieType
+   {
+       static partial void Configure(IObjectTypeDescriptor<Movie> descriptor)
+       {
+           _ = descriptor.Field(m => m.Id);
+           _ = descriptor.Field(m => m.Title).Type<NonNullType<StringType>>();
+           _ = descriptor.Field(m => m.Reviews).Type<ListType<NonNullType<ObjectType<Review>>>>();
+       }
+
+       /// <summary>
+       /// The highest rated review of the movie, or null when it has no reviews.
+       /// </summary>
+       public static Review? GetBestReview([Parent] Movie movie)
+       {
+           return movie.Reviews.MaxBy(r => r.Stars);
+       }
+   }
+   ```
+
+   Hot Chocolate drops the `Get` prefix and camel-cases the rest, so the field is `bestReview`.
+
+2. Run the tests and watch one fail.
+
+   ```bash
+   dotnet test
+   ```
+
+   ```text
+   The schema has changed. If the change is intended, copy the output of /graphql?sdl into
+   tests/Presentation.Tests.Integration/GraphQL/Schema/schema.graphql.
+   ```
+
+   That's the schema snapshot test doing its job. It's the one thing standing between you and a client that breaks on Tuesday.
+
+3. The change is intended, so update the snapshot. Run the API and save the SDL over the file.
+
+   ```bash
+   dotnet run --project ./src/Presentation
+   curl "http://localhost:5032/graphql?sdl" > tests/Presentation.Tests.Integration/GraphQL/Schema/schema.graphql
+   ```
+
+   The diff is the one field, described:
+
+   ```graphql ins={3-4}
+   "A movie that can be reviewed."
+   type Movie {
+     "The highest rated review of the movie, or null when it has no reviews."
+     bestReview: Review
+     "The unique identifier of the movie."
+     id: UUID!
+     "The title of the movie."
+     title: String!
+     "The reviews written about the movie."
+     reviews: [Review!]
+   }
+   ```
+
+4. Teach the test models about it. Add the property to the `Movie` class in `tests/Presentation.Tests.Integration/GraphQL/Movies/MovieData.cs`.
+
+   ```csharp
+   [JsonPropertyName("bestReview")]
+   public Review? BestReview { get; set; }
+   ```
+
+5. Test it in `tests/Presentation.Tests.Integration/GraphQL/Movies/MovieTests.cs`. Pick a movie that has reviews and check the field agrees with the list.
+
+   ```csharp
+   [Fact]
+   public async Task Movie_ShouldReturn_BestReview()
+   {
+       // Arrange
+       using var client = Application.CreateClient();
+       using var setupResponse = await client.GetAsync("/graphql?query={movies(first:50){nodes{id,reviews{id}}}}");
+       var setupResult = (await setupResponse.Content.ReadAsStringAsync()).Deserialize<GraphData>();
+       var movieId = setupResult.Data.Movies.Nodes.First(m => m.Reviews.Length > 0).Id;
+
+       // Act
+       using var response = await client.GetAsync($"/graphql?query={{movie(id:\"{movieId}\"){{reviews{{stars}},bestReview{{stars}}}}}}");
+       var result = (await response.Content.ReadAsStringAsync()).Deserialize<GraphData>();
+
+       // Assert
+       response.StatusCode.ShouldBe(HttpStatusCode.OK);
+
+       result.Data.Movie.BestReview.ShouldNotBeNull().Stars.ShouldBe(result.Data.Movie.Reviews.Max(r => r.Stars));
+   }
+   ```
+
+6. Run it all again, then ask Nitro.
+
+   ```bash
+   dotnet test
+   ```
+
+   ```graphql
+   {
+     movie(id: "e159975e-4e6a-1ffd-713e-1eb9d8d4a593") {
+       title
+       bestReview { stars author { firstName lastName } }
+     }
+   }
+   ```
+
+   ```json
+   { "data": { "movie": { "title": "Assimilated disintermediate adapter", "bestReview": { "stars": 5, "author": { "firstName": "Jana", "lastName": "Auer" } } } } }
+   ```
+
+   Jana gave it five stars. Jana's average is 2.6, so this is high praise.
+
+</Steps>
+
+<Aside type="caution" title="Two gates, not one">
+  The pipeline fails under 95% line coverage overall, and under 90% on the lines your pull request changes. It also fails when the schema snapshot is stale. Step 5 covers the first and step 3 the second. Neither is optional, sorry.
+</Aside>
+
+## Fields that need their own data
+
+`MovieSummary.reviews` is the pattern to copy when a field has to fetch something. It's a resolver that takes an `IReviewsByMovieIdDataLoader`, and the DataLoader in `GraphQL/DataLoaders` collects every movie id in the response and sends one `GetReviewsForMoviesQuery` for the lot. A page of 50 movies with their reviews costs three queries, not 52. Write the batch query in Application, the DataLoader in Presentation, and let Hot Chocolate do the collecting.

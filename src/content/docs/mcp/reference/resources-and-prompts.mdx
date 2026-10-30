@@ -1,0 +1,43 @@
+---
+title: "Resources and prompts"
+description: "The resources, prompts and completions the server offers alongside its tools."
+sidebar:
+  order: 2
+---
+
+Resources live in `src/Presentation/Resources`, prompts in `src/Presentation/Prompts`, and the completion handler in `src/Presentation/Completions`. All of them need a token when [authentication is on](../../guides/secure-the-server/).
+
+## Resources
+
+Every resource returns `application/json`. The movie, author and review resources are templates, so they're listed under `resources/templates/list`; the version resource is a plain resource under `resources/list`.
+
+| URI | Name | Returns |
+| --- | --- | --- |
+| `movies://{movieId}` | `movie` | A [movie](../tools/#movie) with every review |
+| `authors://{authorId}` | `author` | An [author](../tools/#author) with every review |
+| `reviews://{reviewId}` | `review` | A [review](../tools/#review) |
+| `server://version` | `version` | The version stamped into the build |
+
+```json
+{ "fileVersion": "1.1.0.0", "informationalVersion": "1.1.0.0+c7e22dee4ffd508b82caca702ebb713d0a2ba8bc" }
+```
+
+An unknown id fails with the JSON-RPC `-32002` resource not found error, and an id that isn't a GUID fails with `-32602` invalid params.
+
+## Prompts
+
+| Prompt | Arguments | What it asks the model to do |
+| --- | --- | --- |
+| `summarise_movie_reception` | `movieTitle` | Summarise a movie's average stars, how its ratings spread, and who liked it most and least |
+| `compare_movies` | `firstMovieTitle`, `secondMovieTitle` | Compare how reviewers rated two movies and say which they preferred |
+| `review_movie` | `movieTitle`, `authorName` | Find the movie and the author, ask for a star rating, and save the review with `reviews_write` |
+
+The first two look the movie up by title. When they find exactly one match, the returned messages embed the movie as a `movies://` resource, reviews and all, so the model has the data without another call. When they don't, the messages tell the model which tools to use to find it.
+
+## Completions
+
+The `movieTitle`, `firstMovieTitle` and `secondMovieTitle` arguments complete from movie titles, and `authorName` completes from author names, up to 50 at a time with the total count. A value over 100 characters, or an argument the handler doesn't know, completes to nothing.
+
+```json
+{ "completion": { "values": ["Assimilated global infrastructure", "Automated global alliance"], "total": 2, "hasMore": false } }
+```

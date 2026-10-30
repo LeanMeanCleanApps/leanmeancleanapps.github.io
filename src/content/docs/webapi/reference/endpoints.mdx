@@ -1,0 +1,249 @@
+---
+title: "Endpoints"
+description: "Every endpoint, with its parameters, responses and errors."
+sidebar:
+  order: 1
+---
+
+Every endpoint lives in `src/Presentation/Controllers`, one controller per feature. Requests and responses are JSON with camelCase property names, read case-insensitively. Properties with no value are left out of responses. Every endpoint except `GET /api/version` requires authorization, which only has an effect when [authentication is on](../../guides/secure-the-api/).
+
+The OpenAPI document at `/openapi/v1.json` describes all of this too, and Scalar at `/scalar` lets you call it.
+
+| Method | Route | Returns |
+| --- | --- | --- |
+| `GET` | `/api/movies` | A page of [movie summaries](#moviesummary) |
+| `GET` | `/api/movies/{id}` | A [movie](#movie) with its reviews |
+| `GET` | `/api/authors` | A page of [author summaries](#authorsummary) |
+| `GET` | `/api/authors/{id}` | An [author](#author) with their reviews |
+| `GET` | `/api/reviews` | A page of [reviews](#review) |
+| `GET` | `/api/reviews/{id}` | A [review](#review) |
+| `POST` | `/api/reviews` | The created [review](#review), with a `Location` header |
+| `PUT` | `/api/reviews/{id}` | Nothing, `204 No Content` |
+| `DELETE` | `/api/reviews/{id}` | Nothing, `204 No Content` |
+| `GET` | `/api/version` | The [version](#version) |
+
+## Movies
+
+### GET /api/movies
+
+Lists movies ordered by title, one page at a time, optionally only those whose title contains a search term.
+
+| Query parameter | Type | Default | Rules |
+| --- | --- | --- | --- |
+| `query` | string | none | Up to 100 characters. Matches the title, ignoring case |
+| `offset` | integer | `0` | 0 or more |
+| `limit` | integer | `10` | 1 to 50 |
+
+```bash
+curl "http://localhost:8080/api/movies?query=global&limit=2"
+```
+
+```json
+{
+  "items": [
+    { "id": "30fca414-247a-779e-105a-d81aa2506f58", "title": "Assimilated global infrastructure", "reviewCount": 1, "averageStars": 1 },
+    { "id": "c27d6600-79a6-9346-2595-a52b7f07dc3e", "title": "Automated global alliance", "reviewCount": 3, "averageStars": 3.3 }
+  ],
+  "offset": 0,
+  "limit": 2,
+  "totalCount": 2
+}
+```
+
+### GET /api/movies/\{id\}
+
+Returns one [movie](#movie) with every review written about it, or `404` when there's no movie with that id.
+
+## Authors
+
+### GET /api/authors
+
+Lists authors ordered by last name then first name, one page at a time, optionally only those whose name contains a search term. Takes the same parameters as [GET /api/movies](#get-apimovies). `query` matches anywhere in the full name, written first name then last name.
+
+```json
+{
+  "items": [
+    { "id": "01fa8b58-05d2-abd4-e55c-2633222dd0a5", "firstName": "Jana", "lastName": "Auer", "reviewCount": 10, "averageStars": 2.6 },
+    { "id": "1cc2ad51-61c5-63ee-dd6e-15308cfe6e51", "firstName": "Caroline", "lastName": "Bins", "reviewCount": 12, "averageStars": 2.7 }
+  ],
+  "offset": 0,
+  "limit": 2,
+  "totalCount": 15
+}
+```
+
+### GET /api/authors/\{id\}
+
+Returns one [author](#author) with every review they have written, or `404` when there's no author with that id.
+
+## Reviews
+
+### GET /api/reviews
+
+Lists reviews ordered by movie then author, one page at a time, optionally only those of one movie, by one author, or both.
+
+| Query parameter | Type | Default | Rules |
+| --- | --- | --- | --- |
+| `movieId` | guid | none | Only reviews of this movie |
+| `authorId` | guid | none | Only reviews by this author |
+| `offset` | integer | `0` | 0 or more |
+| `limit` | integer | `10` | 1 to 50 |
+
+```bash
+curl "http://localhost:8080/api/reviews?movieId=e159975e-4e6a-1ffd-713e-1eb9d8d4a593&limit=2"
+```
+
+```json
+{
+  "items": [
+    { "id": "969cb90c-95ae-9189-1e52-0b38d34a911b", "stars": 4, "reviewedMovie": { "id": "e159975e-4e6a-1ffd-713e-1eb9d8d4a593", "title": "Assimilated disintermediate adapter" }, "reviewAuthor": { "id": "1cc2ad51-61c5-63ee-dd6e-15308cfe6e51", "firstName": "Caroline", "lastName": "Bins" } },
+    { "id": "a5ebd747-0408-0a96-1af1-eb5cb93bc814", "stars": 1, "reviewedMovie": { "id": "e159975e-4e6a-1ffd-713e-1eb9d8d4a593", "title": "Assimilated disintermediate adapter" }, "reviewAuthor": { "id": "1cc2ad51-61c5-63ee-dd6e-15308cfe6e51", "firstName": "Caroline", "lastName": "Bins" } }
+  ],
+  "offset": 0,
+  "limit": 2,
+  "totalCount": 6
+}
+```
+
+### GET /api/reviews/\{id\}
+
+Returns one [review](#review), or `404` when there's no review with that id.
+
+### POST /api/reviews
+
+Creates a review. The author and the movie must already exist.
+
+| Body property | Type | Rules |
+| --- | --- | --- |
+| `authorId` | guid | Required. An existing author |
+| `movieId` | guid | Required. An existing movie |
+| `stars` | integer | 1 to 5 |
+
+```bash
+curl -X POST "http://localhost:8080/api/reviews" -H "Content-Type: application/json" \
+  -d '{"authorId":"01fa8b58-05d2-abd4-e55c-2633222dd0a5","movieId":"e159975e-4e6a-1ffd-713e-1eb9d8d4a593","stars":5}'
+```
+
+Answers `201 Created` with the new [review](#review) in the body and its URL in the `Location` header. An unknown author or movie answers `404`.
+
+### PUT /api/reviews/\{id\}
+
+Changes the star rating of a review. The author and the movie of a review can't change.
+
+| Body property | Type | Rules |
+| --- | --- | --- |
+| `stars` | integer | 1 to 5 |
+
+Answers `204 No Content`, or `404` when there's no review with that id.
+
+### DELETE /api/reviews/\{id\}
+
+Permanently removes a review. Answers `204 No Content`, or `404` when there's no review with that id.
+
+## Version
+
+### GET /api/version
+
+Returns the [version](#version) stamped into the build. Never requires a token.
+
+```json
+{ "fileVersion": "1.1.0.0", "informationalVersion": "1.1.0.0+044d2922e197f24d9a3f311f87a7e323add1a530" }
+```
+
+## Types
+
+### Page
+
+Every list endpoint returns one page.
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `items` | array | The results on this page |
+| `offset` | integer | The offset that was asked for |
+| `limit` | integer | The limit that was asked for |
+| `totalCount` | integer | The number of results across every page |
+
+To read everything, start at `offset` 0 and add `limit` to it until `offset` reaches `totalCount`.
+
+### MovieSummary
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `id` | guid | The movie's id |
+| `title` | string | The movie's title |
+| `reviewCount` | integer | How many reviews the movie has |
+| `averageStars` | number | The average rating to one decimal place. Left out when there are no reviews |
+
+### Movie
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `id` | guid | The movie's id |
+| `title` | string | The movie's title |
+| `reviews` | array of [review](#review) | Every review of the movie |
+
+### AuthorSummary
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `id` | guid | The author's id |
+| `firstName` | string | The author's first name |
+| `lastName` | string | The author's last name |
+| `reviewCount` | integer | How many reviews the author has written |
+| `averageStars` | number | The average rating they give. Left out when there are no reviews |
+
+### Author
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `id` | guid | The author's id |
+| `firstName` | string | The author's first name |
+| `lastName` | string | The author's last name |
+| `reviews` | array of [review](#review) | Every review by the author |
+
+### Review
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `id` | guid | The review's id |
+| `stars` | integer | The rating, from 1 to 5 |
+| `reviewedMovie` | object | The movie's `id` and `title` |
+| `reviewAuthor` | object | The author's `id`, `firstName` and `lastName` |
+
+### Version
+
+| Property | Type | Description |
+| --- | --- | --- |
+| `fileVersion` | string | The assembly file version |
+| `informationalVersion` | string | The informational version, with the prerelease label and commit hash when there are any |
+
+## Errors
+
+Every error is a [Problem Details](https://www.rfc-editor.org/rfc/rfc9457) response with the `application/problem+json` content type.
+
+| Status | When | Extra properties |
+| --- | --- | --- |
+| `400 Bad Request` | A parameter or body property breaks one of the rules above, or the body isn't valid JSON | `errors`, a property name to messages map, for validation failures |
+| `401 Unauthorized` | Authentication is on and the token is missing or not valid | |
+| `404 Not Found` | The movie, author or review doesn't exist | `detail` says which |
+| `500 Internal Server Error` | Something unexpected happened | |
+
+```json
+{
+  "type": "https://tools.ietf.org/html/rfc9110#section-15.5.1",
+  "title": "One or more validation errors occurred.",
+  "status": 400,
+  "errors": { "Limit": ["A limit must be between 1 and 50."] },
+  "traceId": "00-4241b018629bd38a0a6d370c3a214e2f-cce80e4f478496c2-00"
+}
+```
+
+```json
+{
+  "type": "https://tools.ietf.org/html/rfc9110#section-15.5.5",
+  "title": "Not Found",
+  "status": 404,
+  "detail": "The Movie with the supplied id was not found.",
+  "traceId": "00-85575ee9ac241f705f634081d3bb7fba-93e062125f418354-00"
+}
+```

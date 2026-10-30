@@ -1,0 +1,73 @@
+---
+title: "Connect a client"
+description: "Point Claude, VS Code, Cursor or your own code at the server."
+sidebar:
+  order: 3
+---
+
+import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
+
+The server speaks [Streamable HTTP](https://modelcontextprotocol.io/specification/latest/basic/transports), the current remote transport in the MCP spec, so any client that supports remote servers can connect to it. Start the server with `dotnet run --project ./src/Presentation` and give the client `http://localhost:5032/mcp`. With Docker Compose the address is `http://localhost:8080/mcp`.
+
+<Tabs>
+  <TabItem label="Claude Code">
+    ```bash
+    claude mcp add --transport http acme-movies http://localhost:5032/mcp
+    ```
+
+    Then ask it something like "which movie has the best reviews?" and watch it call `movies_search` and `movies_get` on its own.
+  </TabItem>
+  <TabItem label="Claude Desktop">
+    Open **Settings**, then **Connectors**, then **Add custom connector**, and paste the URL. Claude Desktop needs a URL it can reach, so for a server on your own machine use the address above.
+  </TabItem>
+  <TabItem label="VS Code">
+    Add the server to `.vscode/mcp.json` in your workspace, or to your user settings with the **MCP: Add Server** command.
+
+    ```json
+    {
+      "servers": {
+        "acme-movies": { "type": "http", "url": "http://localhost:5032/mcp" }
+      }
+    }
+    ```
+  </TabItem>
+  <TabItem label="Cursor">
+    Add the server to `.cursor/mcp.json` in your project, or `~/.cursor/mcp.json` for every project.
+
+    ```json
+    {
+      "mcpServers": {
+        "acme-movies": { "url": "http://localhost:5032/mcp" }
+      }
+    }
+    ```
+  </TabItem>
+  <TabItem label="C#">
+    The [MCP C# SDK](https://github.com/modelcontextprotocol/csharp-sdk) is what the server is built on, and the same package has the client. This is also how the integration tests talk to it.
+
+    ```csharp
+    using ModelContextProtocol.Client;
+
+    await using var client = await McpClient.CreateAsync(
+        new HttpClientTransport(new HttpClientTransportOptions { Endpoint = new Uri("http://localhost:5032/mcp") }));
+
+    var result = await client.CallToolAsync("movies_search", new Dictionary<string, object?> { ["query"] = "global" });
+    ```
+  </TabItem>
+</Tabs>
+
+## What the client sees
+
+On `initialize` the server introduces itself with a name, title, version, description, icon and website, and a block of instructions for the model:
+
+> This server holds a catalogue of movies, the authors who review them, and their reviews. A review links one author to one movie with a star rating from 1 (worst) to 5 (best). Find things by name first: movies_search and authors_search return ids, review counts and average stars, and reviews_list filters reviews by movie or author. Every search returns one page at a time, so pass nextOffset back as the offset to continue rather than raising the limit. reviews_write creates a review, or changes the stars of one when you pass its reviewId. A review's movie and author can't change. reviews_delete can't be undone, so confirm with the user before calling it. Each movie, author and review can also be read as a resource at movies://\{id\}, authors://\{id\} or reviews://\{id\}, and server://version gives this server's version.
+
+Those instructions are in `WebApplicationBuilderExtensions.cs`, and they're worth keeping up to date when you add a tool. A model that knows the shape of the data makes fewer calls and better ones.
+
+## Every tool tells the model what it is
+
+Each tool carries annotations: `readOnlyHint`, `destructiveHint`, `idempotentHint` and `openWorldHint`. A good client uses them to decide what to run without asking, what to confirm, and what to retry. `reviews_delete` is destructive, so Claude asks first. `movies_search` is read-only and idempotent, so it just runs. Set them honestly on every tool you add, because a model will believe you.
+
+<Aside type="note" title="Behind a token">
+  When [authentication is on](../secure-the-server/), the server publishes protected resource metadata at `/.well-known/oauth-protected-resource/mcp`. Clients that support the MCP authorization flow, Claude and VS Code among them, read it, find your authorization server, and take the user through sign-in on their own.
+</Aside>
