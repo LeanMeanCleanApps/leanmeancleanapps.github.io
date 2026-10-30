@@ -139,7 +139,6 @@ li {
   top: 0;
   z-index: 5;
   background: color-mix(in srgb, var(--bg) 85%, transparent);
-  backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
 }
 
@@ -188,6 +187,15 @@ li {
 
 .icon-link {
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+}
+
+.site-header .icon-link:hover {
+  background: var(--bg-raised);
 }
 
 .icon-link .icon {

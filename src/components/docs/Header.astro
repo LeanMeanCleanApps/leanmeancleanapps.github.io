@@ -1,6 +1,7 @@
 ---
-// The same header on every page: the organisation on the left, then the template you're reading about.
-// Search is an icon that opens the popover, and the rest matches the home page.
+// The same header on every page, boxed to the front page's width. The page's template is the brand on
+// the left, and the organisation sits on the right with search and GitHub, so moving between the front
+// page and a template feels like the one site.
 import Search from 'virtual:starlight/components/Search';
 import { templates } from '../../data/templates';
 
@@ -9,22 +10,28 @@ const template = templates.find((t) => t.key === key);
 ---
 
 <div class="cl-header">
-  <a class="cl-brand" href="/">
-    <img src="/logos/org-spectrum-small-tile.svg" alt="" width="32" height="32" />
-    <span>Lean Mean Clean Apps</span>
-  </a>
   {
-    template && (
-      <>
-        <span class="cl-sep" aria-hidden="true">/</span>
-        <a class="cl-crumb" href={`/${template.key}/`} style={`--cl-crumb-hue: var(--lmca-${template.key})`}>
-          <img src={`/logos/${template.key}-small.svg`} alt="" width="24" height="24" />
-          <span>{template.name}</span>
-        </a>
-      </>
+    template ? (
+      <a class="cl-brand" href={`/${template.key}/`}>
+        <img src={`/logos/${template.key}-small.svg`} alt="" width="32" height="32" />
+        <span>{template.name}</span>
+      </a>
+    ) : (
+      <a class="cl-brand" href="/">
+        <img src="/logos/org-spectrum-small-tile.svg" alt="" width="32" height="32" />
+        <span>Lean Mean Clean Apps</span>
+      </a>
     )
   }
   <div class="cl-right print:hidden">
+    {
+      template && (
+        <a class="cl-org" href="/">
+          <img src="/logos/org-spectrum-small-tile.svg" alt="" width="20" height="20" />
+          <span>Lean Mean Clean Apps</span>
+        </a>
+      )
+    }
     <Search />
     <a class="cl-icon sl-hidden md:sl-flex" href="https://github.com/LeanMeanCleanApps" aria-label="Lean Mean Clean Apps on GitHub">
       <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" width="20" height="20">
@@ -43,8 +50,7 @@ const template = templates.find((t) => t.key === key);
     min-width: 0;
   }
 
-  .cl-brand,
-  .cl-crumb {
+  .cl-brand {
     display: inline-flex;
     align-items: center;
     gap: 0.65rem;
@@ -52,9 +58,6 @@ const template = templates.find((t) => t.key === key);
     text-decoration: none;
     white-space: nowrap;
     min-width: 0;
-  }
-
-  .cl-brand {
     font-family: var(--lmca-font-display);
     font-weight: 800;
     font-size: 1.1rem;
@@ -67,36 +70,6 @@ const template = templates.find((t) => t.key === key);
     flex: none;
   }
 
-  .cl-sep {
-    color: var(--sl-color-gray-4);
-    font-size: 1.25rem;
-    font-weight: 300;
-    user-select: none;
-  }
-
-  .cl-crumb {
-    gap: 0.5rem;
-    font-weight: 600;
-    font-size: var(--sl-text-base);
-    color: var(--sl-color-gray-1);
-    padding: 0.25rem 0.6rem 0.25rem 0.35rem;
-    margin-inline-start: -0.35rem;
-    border-radius: 999px;
-    border: 1px solid transparent;
-  }
-
-  .cl-crumb:hover {
-    color: var(--sl-color-white);
-    border-color: color-mix(in srgb, var(--cl-crumb-hue) 45%, transparent);
-  }
-
-  .cl-crumb img {
-    width: 1.5rem;
-    height: 1.5rem;
-    flex: none;
-  }
-
-  .cl-crumb span,
   .cl-brand span {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -107,6 +80,29 @@ const template = templates.find((t) => t.key === key);
     display: flex;
     align-items: center;
     gap: 0.25rem;
+  }
+
+  /* Matches the front page's nav links: quiet until you hover. */
+  .cl-org {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-inline-end: 0.75rem;
+    color: var(--sl-color-gray-2);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .cl-org:hover {
+    color: var(--sl-color-white);
+  }
+
+  .cl-org img {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex: none;
   }
 
   .cl-icon {
@@ -124,17 +120,15 @@ const template = templates.find((t) => t.key === key);
     background: var(--sl-color-gray-6);
   }
 
-  /* On a phone the template name is the useful bit, so the organisation keeps only its mark. */
+  /* On a phone the organisation keeps only its mark and GitHub waits in the menu. */
   @media (max-width: 50rem) {
-    .cl-brand span,
-    .cl-header:has(.cl-crumb) .cl-brand span {
+    .cl-org span,
+    .cl-icon {
       display: none;
     }
-  }
 
-  @media (max-width: 30rem) {
-    .cl-crumb span {
-      max-width: 9rem;
+    .cl-org {
+      margin-inline-end: 0.25rem;
     }
   }
 </style>

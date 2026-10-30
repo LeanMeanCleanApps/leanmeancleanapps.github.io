@@ -10,6 +10,52 @@
   --sl-text-h1: 2.5rem;
   /* The same height as the front page's header, so moving between the two doesn't jump. */
   --sl-nav-height: 4rem;
+  /* The same box as the front page, so the header, sidebar and content line up with it on wide screens. */
+  --cl-wrap: 72rem;
+  --cl-gutter: clamp(1rem, 4vw, 2rem);
+  --cl-box-x: max(0px, calc((100vw - var(--cl-wrap)) / 2));
+}
+
+/* The header bar runs edge to edge like the front page's, with its contents inside the box. */
+header.header {
+  background-color: color-mix(in srgb, var(--sl-color-black) 85%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--sl-color-white) 11%, transparent);
+}
+
+@media (min-width: 50rem) {
+  :root {
+    --sl-nav-pad-x: var(--cl-gutter);
+  }
+
+  header.header {
+    padding-inline: calc(var(--cl-box-x) + var(--cl-gutter));
+  }
+
+  .page {
+    width: min(100%, var(--cl-wrap));
+    margin-inline-start: var(--cl-box-x);
+  }
+
+  .sidebar-pane {
+    inset-inline-start: var(--cl-box-x);
+  }
+}
+
+/* Inside the box the two sidebars give up a little width so the writing keeps a readable measure. */
+@media (min-width: 72rem) {
+  :root {
+    --sl-sidebar-width: 16rem;
+    --cl-toc-width: 12rem;
+    --sl-content-width: 41rem;
+  }
+
+  [data-has-sidebar][data-has-toc] .right-sidebar-container {
+    width: var(--cl-toc-width);
+  }
+
+  [data-has-sidebar][data-has-toc] .main-pane {
+    width: calc(100% - var(--cl-toc-width));
+  }
 }
 
 ::selection {

@@ -5,14 +5,25 @@ import { Icon } from '@astrojs/starlight/components';
 import project from 'virtual:starlight/project-context';
 import { templates } from '../../data/templates';
 
+// Pagefind's stock wording, with ours over the top. [SEARCH_TERM] and [COUNT] are filled in by Pagefind.
 const pagefindTranslations = {
-	placeholder: Astro.locals.t('search.label'),
 	...Object.fromEntries(
 		Object.entries(Astro.locals.t.all())
 			.filter(([key]) => key.startsWith('pagefind.'))
 			.map(([key, value]) => [key.replace('pagefind.', ''), value])
 	),
+	placeholder: 'Search all five templates',
+	clear_search: 'Clear',
+	load_more: 'Keep digging',
+	searching: 'Rummaging through all five templates for “[SEARCH_TERM]”…',
+	one_result: 'One result for “[SEARCH_TERM]”. That narrows it down.',
+	many_results: '[COUNT] results for “[SEARCH_TERM]”. Pick a template, any template.',
+	zero_results:
+		'Nothing for “[SEARCH_TERM]”. Either it isn’t written yet or it’s hiding under a different name. Try fewer words, or different ones.',
 };
+
+// What the box offers before anyone types. Each one lands results in more than one template.
+const suggestions = ['pagination', 'SQLite', 'authentication', 'Mapperly', 'docker compose', 'template options'];
 
 const dataAttributes: DOMStringMap = {
 	'data-translations': JSON.stringify(pagefindTranslations),
@@ -51,6 +62,23 @@ if (project.trailingSlash === 'never') dataAttributes['data-strip-trailing-slash
 				) : (
 					<div class="search-container">
 						<div id="starlight__search" />
+						<div class="cl-empty" data-empty>
+							<p class="cl-empty-lead">
+								Five templates, one search box. Everything in the docs is in here, including the bits we hoped you'd skim.
+							</p>
+							<p class="cl-empty-label">Try one of these</p>
+							<div class="cl-chips">
+								{suggestions.map((term) => (
+									<button type="button" data-suggest={term}>
+										{term}
+									</button>
+								))}
+							</div>
+							<p class="cl-empty-hint">
+								Results say which template they came from, so you won't end up reading about Lambda when you wanted GraphQL.
+								Again.
+							</p>
+						</div>
 					</div>
 				)
 			}
@@ -143,6 +171,26 @@ if (project.trailingSlash === 'never') dataAttributes['data-strip-trailing-slash
 			const shouldStrip = this.dataset.stripTrailingSlash !== undefined;
 			const stripTrailingSlash = (path: string) => path.replace(/(.)\/(#.*)?$/, '$1$2');
 			const formatURL = shouldStrip ? stripTrailingSlash : (path: string) => path;
+
+			// The suggestions show while the box is empty and get out of the way once someone types.
+			const empty = this.querySelector<HTMLElement>('[data-empty]');
+			const container = this.querySelector<HTMLElement>('#starlight__search');
+			const inputOf = () => container?.querySelector<HTMLInputElement>('input');
+			const syncEmpty = () => {
+				if (empty) empty.hidden = Boolean(inputOf()?.value.trim());
+			};
+			container?.addEventListener('input', syncEmpty);
+			container?.addEventListener('click', () => setTimeout(syncEmpty, 0));
+			dialog.addEventListener('close', () => setTimeout(syncEmpty, 0));
+			for (const chip of this.querySelectorAll<HTMLButtonElement>('button[data-suggest]')) {
+				chip.addEventListener('click', () => {
+					const input = inputOf();
+					if (!input) return;
+					input.value = chip.dataset.suggest ?? '';
+					input.dispatchEvent(new Event('input', { bubbles: true }));
+					input.focus();
+				});
+			}
 
 			window.addEventListener('DOMContentLoaded', () => {
 				if (import.meta.env.DEV) return;
@@ -290,6 +338,54 @@ if (project.trailingSlash === 'never') dataAttributes['data-strip-trailing-slash
 				padding: 1.5rem;
 			}
 		}
+	}
+	.cl-empty {
+		display: grid;
+		gap: 0.9rem;
+		padding: 1.5rem 0.25rem 0.75rem;
+		color: var(--sl-color-gray-2);
+	}
+	.cl-empty[hidden] {
+		display: none;
+	}
+	.cl-empty p {
+		margin: 0;
+		line-height: 1.55;
+	}
+	.cl-empty-lead {
+		color: var(--sl-color-gray-1);
+	}
+	.cl-empty-label {
+		font-family: var(--sl-font-mono);
+		font-size: 0.72rem;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--cl-hue, var(--sl-color-accent));
+	}
+	.cl-chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+	.cl-chips button {
+		padding: 0.4rem 0.9rem;
+		border-radius: 999px;
+		border: 1px solid var(--sl-color-gray-5);
+		background: var(--sl-color-black);
+		color: var(--sl-color-white);
+		font: inherit;
+		font-size: var(--sl-text-sm);
+		cursor: pointer;
+		transition: border-color 0.15s ease;
+	}
+	.cl-chips button:hover,
+	.cl-chips button:focus-visible {
+		border-color: var(--cl-hue, var(--sl-color-white));
+	}
+	.cl-empty-hint {
+		font-size: var(--sl-text-sm);
+		color: var(--sl-color-gray-3);
 	}
 </style>
 

@@ -1,10 +1,14 @@
 ---
+import '../styles/layers.css';
 import '@fontsource-variable/bricolage-grotesque';
 import '@fontsource-variable/inter';
 import '@fontsource-variable/jetbrains-mono';
 import '../styles/tokens.css';
+import '../styles/docs/base.css';
 import '../styles/site.css';
+import '../styles/search.css';
 import Icon from '../components/Icon.astro';
+import Search from '../components/docs/Search.astro';
 import { templates } from '../data/templates';
 
 interface Props {
@@ -62,6 +66,7 @@ const community = `${github}/.github/blob/main`;
           <a href="/#templates">Templates</a>
           <a href="/#how">How they work</a>
           <a href="/#team">Team</a>
+          <Search />
           <a class="icon-link" href={github} aria-label="Lean Mean Clean Apps on GitHub"><Icon name="github" /></a>
         </nav>
       </div>
