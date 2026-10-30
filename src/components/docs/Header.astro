@@ -1,0 +1,140 @@
+---
+// The same header on every page: the organisation on the left, then the template you're reading about.
+// Search is an icon that opens the popover, and the rest matches the home page.
+import Search from 'virtual:starlight/components/Search';
+import { templates } from '../../data/templates';
+
+const key = Astro.locals.starlightRoute.id.split('/')[0];
+const template = templates.find((t) => t.key === key);
+---
+
+<div class="cl-header">
+  <a class="cl-brand" href="/">
+    <img src="/logos/org-spectrum-small-tile.svg" alt="" width="32" height="32" />
+    <span>Lean Mean Clean Apps</span>
+  </a>
+  {
+    template && (
+      <>
+        <span class="cl-sep" aria-hidden="true">/</span>
+        <a class="cl-crumb" href={`/${template.key}/`} style={`--cl-crumb-hue: var(--lmca-${template.key})`}>
+          <img src={`/logos/${template.key}-small.svg`} alt="" width="24" height="24" />
+          <span>{template.name}</span>
+        </a>
+      </>
+    )
+  }
+  <div class="cl-right print:hidden">
+    <Search />
+    <a class="cl-icon sl-hidden md:sl-flex" href="https://github.com/LeanMeanCleanApps" aria-label="Lean Mean Clean Apps on GitHub">
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" width="20" height="20">
+        <path d="M12 .3a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 0-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-5.9 0-1.3.5-2.4 1.2-3.2 0-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.7 18.3 5 18.3 5c.7 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.2 0 4.6-2.8 5.6-5.5 5.9.5.4.9 1 .9 2.2v3.3c0 .3.1.7.8.6A12 12 0 0 0 12 .3" />
+      </svg>
+    </a>
+  </div>
+</div>
+
+<style>
+  .cl-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    height: 100%;
+    min-width: 0;
+  }
+
+  .cl-brand,
+  .cl-crumb {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    color: var(--sl-color-white);
+    text-decoration: none;
+    white-space: nowrap;
+    min-width: 0;
+  }
+
+  .cl-brand {
+    font-family: var(--lmca-font-display);
+    font-weight: 800;
+    font-size: 1.1rem;
+    letter-spacing: -0.01em;
+  }
+
+  .cl-brand img {
+    width: 2rem;
+    height: 2rem;
+    flex: none;
+  }
+
+  .cl-sep {
+    color: var(--sl-color-gray-4);
+    font-size: 1.25rem;
+    font-weight: 300;
+    user-select: none;
+  }
+
+  .cl-crumb {
+    gap: 0.5rem;
+    font-weight: 600;
+    font-size: var(--sl-text-base);
+    color: var(--sl-color-gray-1);
+    padding: 0.25rem 0.6rem 0.25rem 0.35rem;
+    margin-inline-start: -0.35rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+  }
+
+  .cl-crumb:hover {
+    color: var(--sl-color-white);
+    border-color: color-mix(in srgb, var(--cl-crumb-hue) 45%, transparent);
+  }
+
+  .cl-crumb img {
+    width: 1.5rem;
+    height: 1.5rem;
+    flex: none;
+  }
+
+  .cl-crumb span,
+  .cl-brand span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .cl-right {
+    margin-inline-start: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .cl-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 999px;
+    color: var(--sl-color-gray-2);
+  }
+
+  .cl-icon:hover {
+    color: var(--sl-color-white);
+    background: var(--sl-color-gray-6);
+  }
+
+  /* On a phone the template name is the useful bit, so the organisation keeps only its mark. */
+  @media (max-width: 50rem) {
+    .cl-brand span,
+    .cl-header:has(.cl-crumb) .cl-brand span {
+      display: none;
+    }
+  }
+
+  @media (max-width: 30rem) {
+    .cl-crumb span {
+      max-width: 9rem;
+    }
+  }
+</style>

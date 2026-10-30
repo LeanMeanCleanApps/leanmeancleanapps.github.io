@@ -9,8 +9,7 @@ const current = Astro.url.pathname.split('/').filter(Boolean)[0];
   {
     templates.map((t) => (
       <a href={`/${t.key}/`} aria-current={t.key === current ? 'page' : undefined} style={`--cl-family-hue: var(--lmca-${t.key})`}>
-        <img src={`/logos/${t.key}.svg`} alt="" width="64" height="64" class="light:sl-hidden" />
-        <img src={`/logos/${t.key}-light.svg`} alt="" width="64" height="64" class="dark:sl-hidden" />
+        <img src={`/logos/${t.key}.svg`} alt="" width="64" height="64" />
         <span>
           {t.name}
           <small>{t.subject}</small>

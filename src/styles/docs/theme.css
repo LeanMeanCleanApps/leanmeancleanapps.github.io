@@ -8,6 +8,8 @@
   --cl-hue: var(--sl-color-accent);
   --sl-content-width: 46rem;
   --sl-text-h1: 2.5rem;
+  /* The same height as the front page's header, so moving between the two doesn't jump. */
+  --sl-nav-height: 4rem;
 }
 
 ::selection {

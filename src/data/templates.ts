@@ -3,6 +3,7 @@
 export interface Template {
   key: string;
   name: string;
+  owner: string;
   repo: string;
   package: string;
   shortName: string;
@@ -15,6 +16,7 @@ export const templates: Template[] = [
   {
     key: 'minimalapi',
     name: 'Clean Minimal API',
+    owner: 'stphnwlsh',
     repo: 'CleanMinimalApi',
     package: 'CleanMinimalApi.Template',
     shortName: 'cleanminimalapi',
@@ -29,6 +31,7 @@ export const templates: Template[] = [
   {
     key: 'mcp',
     name: 'Clean Model Context Protocol',
+    owner: 'stphnwlsh',
     repo: 'CleanModelContextProtocol',
     package: 'CleanModelContextProtocol.Template',
     shortName: 'cleanmodelcontextprotocol',
@@ -43,6 +46,7 @@ export const templates: Template[] = [
   {
     key: 'graphql',
     name: 'Clean GraphQL API',
+    owner: 'stphnwlsh',
     repo: 'CleanGraphQLApi',
     package: 'CleanGraphQLApi.Template',
     shortName: 'cleangraphqlapi',
@@ -57,6 +61,7 @@ export const templates: Template[] = [
   {
     key: 'webapi',
     name: 'Clean Web API',
+    owner: 'stphnwlsh',
     repo: 'CleanWebApi',
     package: 'CleanWebApi.Template',
     shortName: 'cleanwebapi',
@@ -71,7 +76,8 @@ export const templates: Template[] = [
   {
     key: 'lambda',
     name: 'Clean Lambda Function',
-    repo: 'CleanLamdaFunction',
+    owner: 'LeanMeanCleanApps',
+    repo: 'CleanLambdaFunction',
     package: 'CleanLambdaFunction.Template',
     shortName: 'cleanlambdafunction',
     hue: 'amber',

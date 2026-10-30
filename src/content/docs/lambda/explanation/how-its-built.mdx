@@ -15,9 +15,9 @@ These are templates we build for fun, but the pipeline doesn't know that. Every 
 
 <ReportCard
   checks={[
-    { name: 'Build and test', icon: 'approve-check', grade: 'Gatekeeper', href: 'https://github.com/stphnwlsh/CleanLamdaFunction/actions/workflows/build-pipeline.yml', what: 'Builds the solution and runs every test inside the Dockerfile, then checks formatting with dotnet format. Warnings fail the build.' },
-    { name: 'Template check', icon: 'puzzle', grade: 'Gatekeeper', href: 'https://github.com/stphnwlsh/CleanLamdaFunction/actions/workflows/build-pipeline.yml', what: 'Packs the template, fails if the package is over 1 MB, then installs it, creates a new solution and builds that too.' },
-    { name: 'Code coverage', icon: 'analytics', grade: 'Gatekeeper', href: 'https://codecov.io/gh/stphnwlsh/CleanLamdaFunction', what: '95% line coverage overall and 90% on the lines a pull request changes, measured by our own script. Codecov keeps the history and comments on the pull request.' },
+    { name: 'Build and test', icon: 'approve-check', grade: 'Gatekeeper', href: 'https://github.com/LeanMeanCleanApps/CleanLambdaFunction/actions/workflows/build-pipeline.yml', what: 'Builds the solution and runs every test inside the Dockerfile, then checks formatting with dotnet format. Warnings fail the build.' },
+    { name: 'Template check', icon: 'puzzle', grade: 'Gatekeeper', href: 'https://github.com/LeanMeanCleanApps/CleanLambdaFunction/actions/workflows/build-pipeline.yml', what: 'Packs the template, fails if the package is over 1 MB, then installs it, creates a new solution and builds that too.' },
+    { name: 'Code coverage', icon: 'analytics', grade: 'Gatekeeper', href: 'https://codecov.io/gh/LeanMeanCleanApps/CleanLambdaFunction', what: '95% line coverage overall and 90% on the lines a pull request changes, measured by our own script. Codecov keeps the history and comments on the pull request.' },
     { name: 'Trivy', icon: 'magnifier', grade: 'Gatekeeper', href: 'https://trivy.dev', what: 'Scans the Lambda image for high and critical vulnerabilities that have a fix available, and reports them to GitHub code scanning.' },
     { name: 'CodeQL', icon: 'seti:code-search', grade: 'Gatekeeper', href: 'https://codeql.github.com', what: 'Static analysis of the C# and of the GitHub Actions workflows themselves, with the security-and-quality queries.' },
     { name: 'Dependabot', icon: 'random', grade: 'Tattletale', href: 'https://docs.github.com/code-security/dependabot', what: 'One grouped pull request on the 15th of each month for NuGet packages, the Docker Compose images and GitHub Actions.' },
@@ -34,7 +34,7 @@ These are templates we build for fun, but the pipeline doesn't know that. Every 
 
 ## Releases
 
-New versions go to [NuGet](https://www.nuget.org/packages/CleanLambdaFunction.Template) on the 1st of each month, but only when something outside the `.github` folder has changed. Publishing uses NuGet [trusted publishing](https://learn.microsoft.com/nuget/nuget-org/trusted-publishing), so there's no long-lived API key sitting in the repository waiting to leak. Each release gets a [GitHub release](https://github.com/stphnwlsh/CleanLamdaFunction/releases) with generated notes.
+New versions go to [NuGet](https://www.nuget.org/packages/CleanLambdaFunction.Template) on the 1st of each month, but only when something outside the `.github` folder has changed. Publishing uses NuGet [trusted publishing](https://learn.microsoft.com/nuget/nuget-org/trusted-publishing), so there's no long-lived API key sitting in the repository waiting to leak. Each release gets a [GitHub release](https://github.com/LeanMeanCleanApps/CleanLambdaFunction/releases) with generated notes.
 
 ## The docs
 

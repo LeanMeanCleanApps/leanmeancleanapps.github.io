@@ -20,8 +20,7 @@ const keyOf = (link: string) => link.split('/').filter(Boolean)[0];
               aria-current={topic.isCurrent ? 'true' : undefined}
               style={`--cl-topic-hue: var(--lmca-${key})`}
             >
-              <img class="light:sl-hidden" src={`/logos/${key}-small.svg`} alt="" width="24" height="24" />
-              <img class="dark:sl-hidden" src={`/logos/${key}-small-light.svg`} alt="" width="24" height="24" />
+              <img src={`/logos/${key}-small.svg`} alt="" width="24" height="24" />
               <span>{topic.label}</span>
               {t && <small>{t.subject}</small>}
             </a>

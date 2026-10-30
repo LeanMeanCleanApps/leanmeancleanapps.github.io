@@ -1,0 +1,271 @@
+---
+// The template home pages use the same hero as the site's front page: a kicker, a headline with the
+// accent on the last line, the lede, the buttons, and the commands with copy buttons.
+import { LinkButton } from '@astrojs/starlight/components';
+const PAGE_TITLE_ID = '_top';
+import { templates } from '../../data/templates';
+
+const { data } = Astro.locals.starlightRoute.entry;
+const { title = data.title, tagline, actions = [] } = data.hero || {};
+const key = Astro.locals.starlightRoute.id.split('/')[0];
+const template = templates.find((t) => t.key === key);
+
+// "…, minus the ceremony" gets the template's colour, like the front page.
+const match = /^(.*?),?\s*(minus the ceremony\.?)$/i.exec(title);
+const [lead, accent] = match ? [match[1].trim() + ',', match[2].replace(/\.?$/, '.')] : [title, ''];
+
+const solution = template?.key === 'lambda' ? 'Acme.Reviews' : 'Acme.Movies';
+const commands = template
+  ? [
+      `dotnet new install ${template.package}`,
+      `dotnet new ${template.shortName} --name ${solution} --authorName "Your Name"`,
+      `cd ${solution} && docker compose up -d`,
+    ]
+  : [];
+---
+
+<div class="cl-hero not-content">
+  <div class="cl-text">
+    <p class="cl-eyebrow">A Lean Mean Clean Apps template for .NET 10</p>
+    <h1 id={PAGE_TITLE_ID} data-page-title>
+      {lead}{accent && ' '}{accent && <span>{accent}</span>}
+    </h1>
+    {tagline && <p class="cl-lede" set:html={tagline} />}
+    {
+      actions.length > 0 && (
+        <div class="cl-actions">
+          {actions.map(({ attrs: { class: className, ...attrs } = {}, icon, link: href, text, variant }) => (
+            <LinkButton {href} {variant} icon={icon?.name} class:list={[className]} {...attrs}>
+              {text}
+              {icon?.html && <Fragment set:html={icon.html} />}
+            </LinkButton>
+          ))}
+        </div>
+      )
+    }
+    {
+      commands.length > 0 && (
+        <div class="cl-terminal" aria-label="Getting started">
+          {commands.map((command) => (
+            <div class="cl-command">
+              <code>
+                <span class="cl-prompt" aria-hidden="true">
+                  $
+                </span>
+                {command.split(' ').map((w, i) => (
+                  <Fragment>
+                    {i > 0 && ' '}
+                    <span class="cl-word">{w}</span>
+                  </Fragment>
+                ))}
+              </code>
+              <button type="button" class="cl-copy" data-copy={command} aria-label={`Copy ${command}`} title="Copy">
+                <svg class="cl-idle" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="12" height="12" rx="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+                <svg class="cl-done" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5 12.5 10 17.5 19 7" />
+                </svg>
+              </button>
+            </div>
+          ))}
+        </div>
+      )
+    }
+    {template && <p class="cl-quip">Three layers, the tests, a Dockerfile and a CI pipeline. Go and tell your team you've been working on it all week.</p>}
+  </div>
+  {template && <img class="cl-mark" src={`/logos/${template.key}.svg`} alt="" width="480" height="480" loading="eager" decoding="async" />}
+</div>
+
+<script>
+  for (const button of document.querySelectorAll<HTMLButtonElement>('button[data-copy]')) {
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(button.dataset.copy ?? '');
+        button.classList.add('done');
+        setTimeout(() => button.classList.remove('done'), 1500);
+      } catch {
+        // Clipboard access can be blocked. The command is still there to select by hand.
+      }
+    });
+  }
+</script>
+
+<style>
+  .cl-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr);
+    align-items: center;
+    gap: clamp(2rem, 5vw, 4rem);
+    padding-block: clamp(2rem, 6vw, 4.5rem) clamp(2rem, 4vw, 3rem);
+  }
+
+  .cl-eyebrow {
+    font-family: var(--sl-font-mono);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--cl-hue);
+    margin: 0 0 0.9rem;
+  }
+
+  h1 {
+    font-family: var(--lmca-font-display);
+    font-size: clamp(2.5rem, 6vw, 4.25rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.035em;
+    color: var(--sl-color-white);
+    margin: 0 0 1.5rem;
+  }
+
+  h1 span {
+    color: var(--cl-hue);
+  }
+
+  .cl-lede {
+    color: var(--sl-color-gray-2);
+    font-size: clamp(1.08rem, 1.6vw, 1.25rem);
+    line-height: 1.6;
+    max-width: 38rem;
+    margin: 0 0 2rem;
+  }
+
+  .cl-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .cl-actions :global(.sl-link-button) {
+    padding: 0.7rem 1.25rem;
+    border-radius: 999px;
+    border: 1px solid var(--sl-color-gray-5);
+    color: var(--sl-color-white);
+    background: none;
+    font-weight: 600;
+    font-size: 0.98rem;
+    line-height: 1.2;
+    transition:
+      border-color 0.15s ease,
+      transform 0.15s ease;
+  }
+
+  .cl-actions :global(.sl-link-button:hover) {
+    border-color: var(--sl-color-white);
+    transform: translateY(-1px);
+  }
+
+  .cl-actions :global(.sl-link-button.primary) {
+    background: var(--cl-hue);
+    border-color: var(--cl-hue);
+    color: var(--sl-color-black);
+  }
+
+  .cl-actions :global(.sl-link-button.primary:hover) {
+    background: color-mix(in srgb, var(--cl-hue), white 15%);
+  }
+
+  .cl-terminal {
+    margin-top: 2.25rem;
+    padding: 0.75rem 0.6rem 0.75rem 1.1rem;
+    max-width: 38rem;
+    border-radius: 1rem;
+    background: color-mix(in srgb, var(--sl-color-black), black 25%);
+    border: 1px solid var(--sl-color-gray-5);
+    display: grid;
+    gap: 0.15rem;
+  }
+
+  .cl-command {
+    display: flex;
+    align-items: start;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .cl-command code {
+    flex: 1;
+    min-width: 0;
+    padding: 0.35rem 0 0.35rem 1.05em;
+    text-indent: -1.05em;
+    font-family: var(--sl-font-mono);
+    font-size: 0.86rem;
+    line-height: 1.5;
+    color: var(--sl-color-gray-1);
+    background: none;
+  }
+
+  .cl-prompt {
+    color: var(--cl-hue);
+    user-select: none;
+    margin-right: 0.45em;
+  }
+
+  .cl-word {
+    white-space: nowrap;
+  }
+
+  .cl-copy {
+    flex: none;
+    display: inline-grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin-top: 0.25rem;
+    border-radius: 0.5rem;
+    border: 1px solid transparent;
+    background: none;
+    color: var(--sl-color-gray-3);
+    cursor: pointer;
+  }
+
+  .cl-copy:hover {
+    color: var(--sl-color-white);
+    border-color: var(--sl-color-gray-5);
+  }
+
+  .cl-copy svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .cl-copy .cl-done,
+  .cl-copy.done .cl-idle {
+    display: none;
+  }
+
+  .cl-copy.done .cl-done {
+    display: block;
+    color: var(--cl-hue);
+  }
+
+  .cl-quip {
+    margin: 1rem 0 0;
+    max-width: 38rem;
+    color: var(--sl-color-gray-3);
+    font-size: var(--sl-text-sm);
+  }
+
+  .cl-mark {
+    justify-self: center;
+    width: 100%;
+    max-width: 24rem;
+    height: auto;
+  }
+
+  @media (max-width: 56rem) {
+    .cl-hero {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .cl-mark {
+      grid-row: 1;
+      max-width: 11rem;
+      justify-self: start;
+    }
+  }
+</style>

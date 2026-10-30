@@ -5,31 +5,18 @@ template: splash
 hero:
   title: Clean Architecture for AWS Lambda, minus the ceremony
   tagline: A .NET 10 template that gives you a tested, layered Lambda function in two commands. Fewer layers than an onion, more than a sandwich.
-  image:
-    dark: ../../../assets/logos/lambda.svg
-    light: ../../../assets/logos/lambda-light.svg
-    alt: The Clean Lambda Function logo, amber rings like the Clean Architecture diagram
   actions:
     - text: Get started
       link: getting-started/
       icon: right-arrow
     - text: View on GitHub
-      link: https://github.com/stphnwlsh/CleanLamdaFunction
+      link: https://github.com/LeanMeanCleanApps/CleanLambdaFunction
       icon: external
       variant: minimal
 ---
 
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import Family from '../../../components/docs/Family.astro';
-
-## Two commands and you're in business
-
-```bash
-dotnet new install CleanLambdaFunction.Template
-dotnet new cleanlambdafunction --name Acme.Reviews --authorName "Your Name"
-```
-
-That's a solution with three layers, three test projects, a Dockerfile and a CI pipeline. Now go and tell your team you've been working on it all week.
 
 ## What's in the box
 

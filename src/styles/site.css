@@ -1,4 +1,4 @@
-/* Colours come from tokens.css, which is copied from the brand repository. Dark by default, light when the reader asks. */
+/* Colours come from tokens.css, which is copied from the brand repository. The site is dark, always. */
 
 :root {
   --bg: var(--lmca-ink);
@@ -17,21 +17,6 @@
   color-scheme: dark;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    --bg: var(--lmca-paper);
-    --bg-raised: #ffffff;
-    --bg-sunken: color-mix(in srgb, var(--lmca-paper), var(--lmca-ink) 4%);
-    --text: var(--lmca-ink);
-    --muted: var(--lmca-slate-600);
-    --border: color-mix(in srgb, var(--lmca-ink) 11%, transparent);
-    --border-strong: color-mix(in srgb, var(--lmca-ink) 24%, transparent);
-    --accent: var(--lmca-leaf-700);
-    --on-accent: var(--lmca-paper);
-
-    color-scheme: light;
-  }
-}
 
 *,
 *::before,
@@ -506,11 +491,6 @@ li {
     transform 150ms ease;
 }
 
-@media (prefers-color-scheme: light) {
-  .template {
-    --hue: var(--hue-light);
-  }
-}
 
 .template:hover {
   border-color: var(--hue);

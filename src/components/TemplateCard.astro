@@ -10,7 +10,7 @@ interface Props {
 
 const { template: t } = Astro.props;
 const home = `/${t.key}/`;
-const repo = `https://github.com/stphnwlsh/${t.repo}`;
+const repo = `https://github.com/${t.owner}/${t.repo}`;
 const nuget = `https://www.nuget.org/packages/${t.package}`;
 ---
 
