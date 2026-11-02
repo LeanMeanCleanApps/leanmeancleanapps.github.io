@@ -16,7 +16,7 @@ export const templates: Template[] = [
   {
     key: 'minimalapi',
     name: 'Clean Minimal API',
-    owner: 'stphnwlsh',
+    owner: 'LeanMeanCleanApps',
     repo: 'CleanMinimalApi',
     package: 'CleanMinimalApi.Template',
     shortName: 'cleanminimalapi',
@@ -31,7 +31,7 @@ export const templates: Template[] = [
   {
     key: 'mcp',
     name: 'Clean Model Context Protocol',
-    owner: 'stphnwlsh',
+    owner: 'LeanMeanCleanApps',
     repo: 'CleanModelContextProtocol',
     package: 'CleanModelContextProtocol.Template',
     shortName: 'cleanmodelcontextprotocol',
@@ -46,7 +46,7 @@ export const templates: Template[] = [
   {
     key: 'graphql',
     name: 'Clean GraphQL API',
-    owner: 'stphnwlsh',
+    owner: 'LeanMeanCleanApps',
     repo: 'CleanGraphQLApi',
     package: 'CleanGraphQLApi.Template',
     shortName: 'cleangraphqlapi',
@@ -61,7 +61,7 @@ export const templates: Template[] = [
   {
     key: 'webapi',
     name: 'Clean Web API',
-    owner: 'stphnwlsh',
+    owner: 'LeanMeanCleanApps',
     repo: 'CleanWebApi',
     package: 'CleanWebApi.Template',
     shortName: 'cleanwebapi',

@@ -117,5 +117,5 @@ This guide adds `GET /api/movies/{id}/reviews`, one page of the reviews written 
 Open Scalar and the new endpoint is there under **Movies**, documented, with a working **Send** button. A `limit` of 99 comes back as a 400 Problem Details response and an unknown movie id comes back as an empty page, both before your code has to worry about it.
 
 <Aside type="caution" title="Don't forget the coverage gate">
-  The pipeline fails under 95% line coverage overall, and under 90% on the lines your pull request changes. The test is not optional, sorry.
+  The pipeline fails under 95% line coverage. The test is not optional, sorry.
 </Aside>

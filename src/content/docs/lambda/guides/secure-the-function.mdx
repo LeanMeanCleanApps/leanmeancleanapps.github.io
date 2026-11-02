@@ -15,4 +15,4 @@ Only principals allowed `lambda:InvokeFunction` on the function can invoke it. G
 
 Put the function behind an [API Gateway HTTP API with a JWT authorizer](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-jwt-authorizer.html). API Gateway validates the token before the function runs, so bad requests never cost you an invocation, and the function itself stays the same.
 
-The sibling templates for HTTP, [Clean Minimal API](https://github.com/stphnwlsh/CleanMinimalApi) and [Clean Web API](https://github.com/stphnwlsh/CleanWebApi), have optional bearer token checking built in if you'd rather run a web API than a function.
+The sibling templates for HTTP, [Clean Minimal API](https://github.com/LeanMeanCleanApps/CleanMinimalApi) and [Clean Web API](https://github.com/LeanMeanCleanApps/CleanWebApi), have optional bearer token checking built in if you'd rather run a web API than a function.
