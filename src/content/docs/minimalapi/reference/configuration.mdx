@@ -18,7 +18,7 @@ Every setting in `appsettings.json` can be overridden with an environment variab
 | `Database__SeedSampleData` | `false` | When `true`, seeds sample data into an empty database. On in `local` and `docker` |
 | `Authentication__Authority` | empty | The OAuth authorization server that issues access tokens. Setting it turns authentication on |
 | `Authentication__Audience` | empty | The audience access tokens must be issued for, usually the API's own URL |
-| `Serilog__MinimumLevel__Default` | `Debug` | The minimum log level. `appsettings.json` also overrides `Microsoft`, `Microsoft.AspNetCore` and `System` |
+| `Serilog__MinimumLevel__Default` | `Information` | The minimum log level. `appsettings.local.json` lowers it to `Debug`, and `appsettings.json` also overrides `Microsoft`, `Microsoft.AspNetCore` and `System` |
 
 ## Docker build arguments
 

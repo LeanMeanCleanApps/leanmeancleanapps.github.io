@@ -11,6 +11,7 @@ sidebar:
 | --- | --- | --- |
 | `ConnectionStrings__MovieReviews` | `Data Source=/tmp/movie-reviews.db` | The SQLite connection string |
 | `Database__SeedSampleData` | `false` | When `true`, seeds sample data into an empty database. Anything else, including no value, means no |
+| `Serilog__MinimumLevel__Default` | `Information` | The minimum log level. Logs go to the console as compact JSON, which CloudWatch Logs keeps. `docker-compose.yml` sets it to `Debug` |
 
 ## Docker build arguments
 
