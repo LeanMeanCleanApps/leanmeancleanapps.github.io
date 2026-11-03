@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-All three functions live on `Handler` in `src/Presentation/LambdaFunction/LambdaFunction.cs`, each marked `[LambdaFunction]`. Requests are read case-insensitively. Responses use the camelCase property names shown here, and properties with no value are left out.
+The functions live on `Handler` in `src/Presentation/LambdaFunction/LambdaFunction.cs`, each marked `[LambdaFunction]`. Requests are read case-insensitively. Responses use the camelCase property names shown here, and properties with no value are left out.
 
 The image runs `GetMovies` unless you pass a different handler name. [Lambda Annotations](https://github.com/aws/aws-lambda-dotnet/tree/master/Libraries/src/Amazon.Lambda.Annotations) generates the class each one names, and `src/Presentation/serverless.template` lists them all:
 
@@ -13,6 +13,9 @@ The image runs `GetMovies` unless you pass a different handler name. [Lambda Ann
 Presentation::CleanLambdaFunction.Presentation.LambdaFunction.Handler_GetMovies_Generated::GetMovies
 Presentation::CleanLambdaFunction.Presentation.LambdaFunction.Handler_GetAuthors_Generated::GetAuthors
 Presentation::CleanLambdaFunction.Presentation.LambdaFunction.Handler_GetReviews_Generated::GetReviews
+Presentation::CleanLambdaFunction.Presentation.LambdaFunction.Handler_HttpGetMovies_Generated::HttpGetMovies
+Presentation::CleanLambdaFunction.Presentation.LambdaFunction.Handler_HttpGetAuthors_Generated::HttpGetAuthors
+Presentation::CleanLambdaFunction.Presentation.LambdaFunction.Handler_HttpGetReviews_Generated::HttpGetReviews
 ```
 
 In your own solution, `CleanLambdaFunction` is replaced by the name you chose.
@@ -159,4 +162,32 @@ Errors come back in Lambda's standard error format, with the exception type in `
 ```text
 Validation failed:
  -- Limit: A limit must be between 1 and 50. Severity: Error
+```
+
+## Over HTTP
+
+The three lists are also on an [API Gateway HTTP API](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api.html), each as its own function with an `Http` prefix. They take the same inputs from the query string and return the same [page](#pages) as the body. The stack's `ApiUrl` output is the address.
+
+| Route | Function | Query string |
+| --- | --- | --- |
+| `GET /movies` | `HttpGetMovies` | `query`, `offset`, `limit` |
+| `GET /authors` | `HttpGetAuthors` | `query`, `offset`, `limit` |
+| `GET /reviews` | `HttpGetReviews` | `movieId`, `authorId`, `offset`, `limit` |
+
+```bash
+curl "${API_URL}movies?query=global&limit=2"
+```
+
+| Status | When |
+| --- | --- |
+| `200` | It worked. The body is the page |
+| `400` | The query string breaks a rule above, or an id isn't a GUID. The body is `application/problem+json` |
+| `500` | Anything else, such as running out of time. Lambda logs the error |
+
+```json
+{
+  "title": "One or more validation errors occurred.",
+  "status": 400,
+  "errors": { "Limit": ["A limit must be between 1 and 50."] }
+}
 ```

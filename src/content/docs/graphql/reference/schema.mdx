@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-The schema lives in `src/Presentation/GraphQL`: queries in `Queries`, mutations in `Mutations`, object types in `Types` and inputs in `Inputs`. The endpoint is `/graphql`, which also serves Nitro to a browser, and `/graphql?sdl` returns the schema as SDL. Every query and mutation except `version` requires authorization, which only has an effect when [authentication is on](../../guides/secure-the-api/).
+The schema lives in `src/Presentation/GraphQL`: queries in `Queries`, mutations in `Mutations`, object types in `Types` and the errors mutations return in `Errors`. The endpoint is `/graphql`, which also serves Nitro to a browser, and `/graphql?sdl` returns the schema as SDL. Every query and mutation except `version` requires authorization, which only has an effect when [authentication is on](../../guides/secure-the-api/).
 
 Ids are the `UUID` scalar. Field and type descriptions come from the XML comments on the code, so Nitro shows the same text as this page.
 
@@ -19,7 +19,7 @@ Ids are the `UUID` scalar. Field and type descriptions come from the XML comment
 | `authors` | `query: String`, `first: Int`, `after: String` | A [connection](#connections-and-paging) of [`AuthorSummary`](#authorsummary), ordered by last name then first name |
 | `review` | `id: UUID!` | [`Review`](#review), or null when there's no review with that id |
 | `reviews` | `movieId: UUID`, `authorId: UUID`, `first: Int`, `after: String` | A [connection](#connections-and-paging) of [`Review`](#review), ordered by movie then author |
-| `version` | none | [`Version!`](#version) |
+| `version` | none | [`VersionInfo!`](#versioninfo) |
 
 `query` matches anywhere in the title or the full name, ignoring case, and can be up to 100 characters. `movieId` and `authorId` filter the reviews to one movie, one author, or both.
 
@@ -52,17 +52,26 @@ Ids are the `UUID` scalar. Field and type descriptions come from the XML comment
 
 | Mutation | Arguments | Returns |
 | --- | --- | --- |
-| `createReview` | `input:` [`CreateReviewInput!`](#createreviewinput) | The created [`Review`](#review) |
-| `updateReview` | `input:` [`UpdateReviewInput!`](#updatereviewinput) | `true` when the review was updated |
-| `deleteReview` | `id: UUID!` | `true` when the review was deleted |
+| `createReview` | `input:` [`CreateReviewInput!`](#createreviewinput) | `CreateReviewPayload!` with the created `review` |
+| `updateReview` | `input:` [`UpdateReviewInput!`](#updatereviewinput) | `UpdateReviewPayload!` with the updated `review` |
+| `deleteReview` | `input:` [`DeleteReviewInput!`](#deletereviewinput) | `DeleteReviewPayload!` with the `reviewId` it deleted |
+
+The mutations follow Hot Chocolate's [mutation conventions](https://chillicream.com/docs/hotchocolate): one `input` in, one payload out. Each payload has the result and an `errors` list, which is null when it worked and holds a [`ValidationError` or `NotFoundError`](#errors) when it didn't. Ask for `__typename` and the fields you need on each.
 
 ```graphql
 mutation {
   createReview(input: { authorId: "01fa8b58-05d2-abd4-e55c-2633222dd0a5", movieId: "e159975e-4e6a-1ffd-713e-1eb9d8d4a593", stars: 5 }) {
-    id
-    stars
-    movie { title }
-    author { firstName lastName }
+    review {
+      id
+      stars
+      movie { title }
+      author { firstName lastName }
+    }
+    errors {
+      __typename
+      ... on Error { message }
+      ... on ValidationError { fields { field messages } }
+    }
   }
 }
 ```
@@ -144,7 +153,7 @@ Paging only goes forwards. There's no `last` or `before`, and `hasPreviousPage` 
 | `movie` | `ReviewedMovie` | The movie's `id` and `title` |
 | `author` | `ReviewAuthor` | The author's `id`, `firstName` and `lastName` |
 
-### Version
+### VersionInfo
 
 | Field | Type | Description |
 | --- | --- | --- |
@@ -166,16 +175,62 @@ Paging only goes forwards. There's no `last` or `before`, and `hasPreviousPage` 
 | `id` | `UUID!` | An existing review |
 | `stars` | `Int!` | 1 to 5 |
 
+### DeleteReviewInput
+
+| Field | Type | Rules |
+| --- | --- | --- |
+| `id` | `UUID!` | An existing review |
+
 The author and the movie of a review can't change. To review a different movie, create a new review.
 
 ## Errors
 
-Errors come back in the `errors` array with a `code` in `extensions`. The HTTP status is `200` unless the request itself couldn't be read.
+The HTTP status is `200` unless the request itself couldn't be read.
+
+### Mutation errors
+
+A mutation that can't do its job says why in its payload's `errors`, and the result field is null. Both error types implement the `Error` interface, so `message` is always there.
+
+| Type | When | Fields |
+| --- | --- | --- |
+| `ValidationError` | The input breaks one of the rules above | `message`, and `fields`: each field that broke a rule, with its `messages` |
+| `NotFoundError` | The input names a movie, author or review that doesn't exist | `message`, which says which |
+
+```json
+{
+  "data": {
+    "createReview": {
+      "review": null,
+      "errors": [
+        {
+          "__typename": "ValidationError",
+          "message": "One or more validation errors occurred.",
+          "fields": [{ "field": "Stars", "messages": ["A star rating must be between 1 and 5."] }]
+        }
+      ]
+    }
+  }
+}
+```
+
+```json
+{
+  "data": {
+    "createReview": {
+      "review": null,
+      "errors": [{ "__typename": "NotFoundError", "message": "The Movie with the supplied id was not found." }]
+    }
+  }
+}
+```
+
+### Query and request errors
+
+Everything else comes back in the top-level `errors` array with a `code` in `extensions`.
 
 | Code | When | Extra |
 | --- | --- | --- |
-| `VALIDATION` | An argument or input breaks one of the rules above, or `after` isn't a cursor from a previous page | `extensions.errors`, a property name to messages map |
-| `NOT_FOUND` | A mutation names a movie, author or review that doesn't exist | The message says which |
+| `VALIDATION` | A query argument breaks one of the rules above, or `after` isn't a cursor from a previous page | `extensions.errors`, a property name to messages map |
 | `HC0051` | `first` is over 50 | `requestedItems` and `maxAllowedItems` |
 | `AUTH_NOT_AUTHENTICATED` | Authentication is on and the token is missing or not valid | |
 
@@ -184,20 +239,11 @@ Errors come back in the `errors` array with a `code` in `extensions`. The HTTP s
   "errors": [
     {
       "message": "One or more validation errors occurred.",
-      "path": ["createReview"],
-      "extensions": { "code": "VALIDATION", "errors": { "Stars": ["A star rating must be between 1 and 5."] } }
+      "path": ["movies"],
+      "extensions": { "code": "VALIDATION", "errors": { "Query": ["A search term can't be longer than 100 characters."] } }
     }
   ],
-  "data": { "createReview": null }
-}
-```
-
-```json
-{
-  "errors": [
-    { "message": "The Movie with the supplied id was not found.", "path": ["createReview"], "extensions": { "code": "NOT_FOUND" } }
-  ],
-  "data": { "createReview": null }
+  "data": { "movies": null }
 }
 ```
 
