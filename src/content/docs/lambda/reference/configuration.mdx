@@ -24,14 +24,20 @@ sidebar:
 
 ## Lambda deployment defaults
 
-`src/Presentation/aws-lambda-tools-defaults.json` holds the defaults for `dotnet lambda deploy-function`.
+`src/Presentation/aws-lambda-tools-defaults.json` holds the defaults for `dotnet lambda deploy-serverless`.
 
 | Setting | Default | Description |
 | --- | --- | --- |
 | `profile` | empty | Your AWS CLI profile |
 | `region` | empty | The AWS region to deploy to |
 | `configuration` | `Release` | The build configuration |
-| `package-type` | `image` | Deploy as a container image |
-| `function-memory-size` | `256` | Memory in MB |
-| `function-timeout` | `30` | Timeout in seconds |
-| `image-command` | `...Handler::GetMovies` | The handler method the function runs |
+| `template` | `serverless.template` | The CloudFormation template to deploy |
+| `stack-name` | empty | The CloudFormation stack the functions live in |
+
+Each function's memory, timeout and package type are set on its `[LambdaFunction]` attribute, and the build copies them into `serverless.template`.
+
+| Attribute property | Default | Description |
+| --- | --- | --- |
+| `MemorySize` | `256` | Memory in MB |
+| `Timeout` | `30` | Timeout in seconds |
+| `PackageType` | `Image` | Deploy as a container image |
