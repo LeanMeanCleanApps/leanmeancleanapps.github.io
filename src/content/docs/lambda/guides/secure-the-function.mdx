@@ -1,11 +1,11 @@
 ---
 title: Secure the function
-description: Who can invoke the function, and how to put it behind an API with bearer tokens.
+description: Who can invoke the function, and how to put bearer tokens on its HTTP routes.
 sidebar:
   order: 6
 ---
 
-The function is invoked directly, so there's no bearer token for it to check. AWS IAM decides who can call it. Think of IAM as the bouncer and your function as the band. The band doesn't check tickets.
+Invoked directly, the function has no bearer token to check, so AWS IAM decides who can call it. Its HTTP routes are open until you add an authorizer. Think of IAM as the bouncer and your function as the band. The band doesn't check tickets.
 
 ## Invoked by other AWS services
 
@@ -13,6 +13,6 @@ Only principals allowed `lambda:InvokeFunction` on the function can invoke it. G
 
 ## Called over HTTP with tokens
 
-Put the function behind an [API Gateway HTTP API with a JWT authorizer](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-jwt-authorizer.html). API Gateway validates the token before the function runs, so bad requests never cost you an invocation, and the function itself stays the same.
+The `Http*` functions already sit behind an API Gateway HTTP API. Add a [JWT authorizer](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-jwt-authorizer.html) to it in `serverless.template` and API Gateway validates the token before the function runs, so bad requests never cost you an invocation, and the function itself stays the same. The routes only read, but a list of everyone's reviews is still worth a lock if it isn't meant to be public.
 
 The sibling templates for HTTP, [Clean Minimal API](https://github.com/LeanMeanCleanApps/CleanMinimalApi) and [Clean Web API](https://github.com/LeanMeanCleanApps/CleanWebApi), have optional bearer token checking built in if you'd rather run a web API than a function.

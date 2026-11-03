@@ -47,11 +47,20 @@ The functions deploy as one container image and one CloudFormation stack. `src/P
      --cli-binary-format raw-in-base64-out --payload '{"limit":5}' response.json
    ```
 
+   Or call it over HTTP. The stack's `ApiUrl` output is the API Gateway address.
+
+   ```bash
+   API_URL=$(aws cloudformation describe-stacks --stack-name acme-reviews \
+     --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" --output text)
+
+   curl "${API_URL}movies?limit=5"
+   ```
+
 </Steps>
 
 ## One image, many functions
 
-Each Lambda function runs one handler method. The stack already has `GetMovies`, `GetAuthors` and `GetReviews`, all running the same image with a different command. They share the code but scale and bill separately. Add a method with `[LambdaFunction]`, build, and the next deploy adds its function too.
+Each Lambda function runs one handler method. The stack already has `GetMovies`, `GetAuthors` and `GetReviews`, plus their HTTP twins `HttpGetMovies`, `HttpGetAuthors` and `HttpGetReviews`, all running the same image with a different command. They share the code but scale and bill separately. Add a method with `[LambdaFunction]`, build, and the next deploy adds its function too.
 
 <Aside type="tip">
   Remember the [goldfish](../database/): each deployed function has its own `/tmp` database. Seed it, or better, point it at a real database before anyone relies on the data.

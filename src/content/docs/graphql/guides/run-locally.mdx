@@ -66,8 +66,8 @@ Nitro is the easy way: it knows the schema, autocompletes, and keeps your query 
 # Write a review
 mutation {
   createReview(input: { authorId: "01fa8b58-05d2-abd4-e55c-2633222dd0a5", movieId: "e159975e-4e6a-1ffd-713e-1eb9d8d4a593", stars: 5 }) {
-    id
-    stars
+    review { id stars }
+    errors { __typename ... on Error { message } }
   }
 }
 ```
