@@ -1,13 +1,13 @@
 ---
 title: Deploy to AWS
-description: Deploy the container image to AWS Lambda with the Amazon.Lambda.Tools CLI.
+description: Deploy every function to AWS Lambda as one CloudFormation stack with the Amazon.Lambda.Tools CLI.
 sidebar:
   order: 5
 ---
 
 import { Steps, Aside } from '@astrojs/starlight/components';
 
-The function deploys as a container image. The [Amazon.Lambda.Tools](https://github.com/aws/aws-extensions-for-dotnet-cli) CLI builds the image, pushes it to Amazon ECR and creates or updates the function in one go.
+The functions deploy as one container image and one CloudFormation stack. `src/Presentation/serverless.template` has a Lambda function for each handler method, and [Lambda Annotations](https://github.com/aws/aws-lambda-dotnet/tree/master/Libraries/src/Amazon.Lambda.Annotations) keeps it in step every time you build. The [Amazon.Lambda.Tools](https://github.com/aws/aws-extensions-for-dotnet-cli) CLI builds the image, pushes it to Amazon ECR and creates or updates the stack in one go.
 
 <Steps>
 
@@ -17,32 +17,33 @@ The function deploys as a container image. The [Amazon.Lambda.Tools](https://git
    dotnet tool install -g Amazon.Lambda.Tools
    ```
 
-2. Fill in `src/Presentation/aws-lambda-tools-defaults.json`. The template leaves `profile` and `region` empty on purpose. We don't know where you live.
+2. Fill in `src/Presentation/aws-lambda-tools-defaults.json`. The template leaves `profile`, `region` and `stack-name` empty on purpose. We don't know where you live.
 
    ```json
    {
      "profile": "default",
      "region": "ap-southeast-2",
      "configuration": "Release",
-     "package-type": "image",
-     "function-memory-size": 256,
-     "function-timeout": 30,
-     "image-command": "Presentation::Acme.Reviews.Presentation.LambdaFunction.Handler::GetMovies"
+     "template": "serverless.template",
+     "stack-name": "acme-reviews"
    }
    ```
 
 3. Deploy.
 
    ```bash
-   dotnet lambda deploy-function --project-location ./src/Presentation
+   dotnet lambda deploy-serverless --project-location ./src/Presentation
    ```
 
-   The CLI asks for a function name and an IAM role the first time.
+   Each function gets the basic execution role, so it can write to CloudWatch Logs and nothing else.
 
-4. Invoke it for real.
+4. Invoke it for real. CloudFormation names each function after the stack and the resource, so look the name up first.
 
    ```bash
-   aws lambda invoke --function-name acme-reviews-get-movies \
+   FUNCTION=$(aws cloudformation describe-stack-resource --stack-name acme-reviews \
+     --logical-resource-id GetMovies --query StackResourceDetail.PhysicalResourceId --output text)
+
+   aws lambda invoke --function-name "$FUNCTION" \
      --cli-binary-format raw-in-base64-out --payload '{"limit":5}' response.json
    ```
 
@@ -50,7 +51,7 @@ The function deploys as a container image. The [Amazon.Lambda.Tools](https://git
 
 ## One image, many functions
 
-Each Lambda function runs one handler method. To deploy `GetAuthors` and `GetReviews` as well, deploy the same image again with a different `image-command` and function name. They share the code but scale and bill separately.
+Each Lambda function runs one handler method. The stack already has `GetMovies`, `GetAuthors` and `GetReviews`, all running the same image with a different command. They share the code but scale and bill separately. Add a method with `[LambdaFunction]`, build, and the next deploy adds its function too.
 
 <Aside type="tip">
   Remember the [goldfish](../database/): each deployed function has its own `/tmp` database. Seed it, or better, point it at a real database before anyone relies on the data.
@@ -60,5 +61,5 @@ Each Lambda function runs one handler method. To deploy `GetAuthors` and `GetRev
 
 | Setting | Template default | Why you might change it |
 | --- | --- | --- |
-| `function-memory-size` | 256 MB | Lambda gives you CPU in proportion to memory, so more memory often means a faster cold start |
-| `function-timeout` | 30 seconds | The handler stops its work when the invocation is about to run out of time, so set this to what your callers will wait for |
+| `MemorySize` on `[LambdaFunction]` | 256 MB | Lambda gives you CPU in proportion to memory, so more memory often means a faster cold start |
+| `Timeout` on `[LambdaFunction]` | 30 seconds | The handler stops its work when the invocation is about to run out of time, so set this to what your callers will wait for |

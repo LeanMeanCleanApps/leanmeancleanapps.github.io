@@ -25,14 +25,17 @@ import { FileTree } from '@astrojs/starlight/components';
   - Presentation/ the Lambda function
     - LambdaFunction/
       - LambdaFunction.cs the handler and its functions
+      - Startup.cs the services every function uses
       - Models/ requests and responses
       - Mapping/ Mapperly mapper from Application to Presentation
-      - Serialization/ the source-generated JSON context
+      - Serialization/ the camelCase serializer and its source-generated JSON context
     - aws-lambda-tools-defaults.json
+    - serverless.template the CloudFormation template, one function per handler method
 - tests/
   - Application.Tests.Unit/
   - Infrastructure.Tests.Integration/
   - Presentation.Tests.Integration/
+  - Presentation.Tests.Unit/
 - docs/RUN.md
 - Directory.Build.props build rules and analyzers for every project
 - Directory.Packages.props every package version, in one place

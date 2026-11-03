@@ -61,7 +61,7 @@ This guide adds a `GetMovie` function that returns one movie with all of its rev
    public partial class LambdaFunctionJsonSerializerContext : JsonSerializerContext
    ```
 
-5. Add the function to `LambdaFunction.cs`. `Send` opens a scope, runs the query through validation and stops it if the invocation runs out of time.
+5. Add the function to `LambdaFunction.cs`. `[LambdaFunction]` tells Lambda Annotations to generate the class Lambda calls and to add the function to `serverless.template`. `Send` opens a scope, runs the query through validation and stops it if the invocation runs out of time.
 
    ```csharp
    /// <summary>
@@ -70,6 +70,7 @@ This guide adds a `GetMovie` function that returns one movie with all of its rev
    /// <param name="request">The id of the movie.</param>
    /// <param name="context">The Lambda invocation context.</param>
    /// <returns>The movie and its reviews.</returns>
+   [LambdaFunction(ResourceName = "GetMovie", PackageType = LambdaPackageType.Image, MemorySize = 256, Timeout = 30)]
    public async Task<MovieDetail> GetMovie(GetMovieRequest request, ILambdaContext context)
    {
        var movie = await this.Send(new GetMovieByIdQuery { Id = request.Id }, context);
@@ -103,13 +104,15 @@ This guide adds a `GetMovie` function that returns one movie with all of its rev
    ```bash
    docker build . --target run --tag acme-reviews:local
    docker run --rm -p 9000:8080 -e Database__SeedSampleData=true acme-reviews:local \
-     "Presentation::Acme.Reviews.Presentation.LambdaFunction.Handler::GetMovie"
+     "Presentation::Acme.Reviews.Presentation.LambdaFunction.Handler_GetMovie_Generated::GetMovie"
 
    curl -X POST "http://localhost:9000/2015-03-31/functions/function/invocations" \
      -d '{"id":"e159975e-4e6a-1ffd-713e-1eb9d8d4a593"}'
    ```
 
 </Steps>
+
+Commit the new `GetMovie` entry the build added to `src/Presentation/serverless.template`, and the next deploy creates the function.
 
 An unknown id fails with a `NotFoundException`, and an empty one fails validation, both before your code has to worry about it.
 
