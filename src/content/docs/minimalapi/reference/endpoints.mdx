@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-Every endpoint lives in `src/Presentation/Endpoints`, one static class per feature. Requests and responses are JSON with camelCase property names, read case-insensitively. Properties with no value are left out of responses. Every endpoint except `GET /api/version` requires authorization, which only has an effect when [authentication is on](../../guides/secure-the-api/).
+Every endpoint lives in `src/Presentation/Endpoints`, one static class per feature. Requests and responses are JSON with camelCase property names, read case-insensitively. Properties with no value are left out of responses. Every endpoint requires authorization, which only has an effect when [authentication is on](../../guides/secure-the-api/).
 
 The OpenAPI document at `/openapi/v1.json` describes all of this too, and Scalar at `/scalar` lets you call it.
 
@@ -144,7 +144,7 @@ Permanently removes a review. Answers `204 No Content`, or `404` when there's no
 
 ### GET /api/version
 
-Returns the [version](#version) stamped into the build. Never requires a token.
+Returns the [version](#version) stamped into the build. It needs a token when authentication is on, like everything else; the version is also on every span, metric and log as `service.version`.
 
 ```json
 { "fileVersion": "1.1.0.0", "informationalVersion": "1.1.0.0+044d2922e197f24d9a3f311f87a7e323add1a530" }

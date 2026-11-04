@@ -66,6 +66,10 @@ Each Lambda function runs one handler method. The stack already has `GetMovies`,
   Remember the [goldfish](../database/): each deployed function has its own `/tmp` database. Seed it, or better, point it at a real database before anyone relies on the data.
 </Aside>
 
+## Send the telemetry somewhere
+
+Logs land in CloudWatch Logs whatever you do. For traces and metrics too, give the function a collector and set `OTEL_EXPORTER_OTLP_ENDPOINT` to it. Container images can't use Lambda layers, so either build the [AWS Distro for OpenTelemetry](https://aws-otel.github.io/docs/getting-started/lambda) collector extension into the image, or run a collector as a gateway the function can reach. The collector then decides where everything goes, X-Ray included, and changing your mind never means touching the function. `otel-collector.yaml` is a good starting point for its configuration.
+
 ## Settings worth a look
 
 | Setting | Template default | Why you might change it |

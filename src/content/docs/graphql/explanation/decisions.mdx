@@ -44,7 +44,7 @@ Validation runs once, in one place, before any handler. Handlers only ever see v
 
 ## Optional authentication, mandatory authorization
 
-Every query and mutation except `version` carries `[Authorize]`. Whether that means a valid JWT bearer token or a polite wave through depends on one setting, `Authentication:Authority`. Turning security on is configuration, not a code change, and turning it off for a demo doesn't leave a field behind. See [Secure the API](../../guides/secure-the-api/).
+Every query and mutation, `version` included, carries `[Authorize]`. Whether that means a valid JWT bearer token or a polite wave through depends on one setting, `Authentication:Authority`. Turning security on is configuration, not a code change, and turning it off for a demo doesn't leave a field behind. See [Secure the API](../../guides/secure-the-api/).
 
 ## SQLite next to the app
 

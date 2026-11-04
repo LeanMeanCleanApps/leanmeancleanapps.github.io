@@ -44,7 +44,7 @@ cd Acme.Movies
 docker compose up -d
 ```
 
-Then open the Scalar API reference at [http://localhost:8080/scalar](http://localhost:8080/scalar) and start poking. The logs go to Seq at [http://localhost:5341](http://localhost:5341), because `Console.WriteLine` is not an observability strategy.
+Then open the Scalar API reference at [http://localhost:8080/scalar](http://localhost:8080/scalar) and start poking. The logs, traces and metrics go to the [Aspire dashboard](https://learn.microsoft.com/dotnet/aspire/fundamentals/dashboard/standalone) at [http://localhost:18888](http://localhost:18888), because `Console.WriteLine` is not an observability strategy.
 
 Want it locked down? Pass `--authority` and `--audience` when you create the solution and every movie, author and review endpoint needs a JWT bearer token. Leave them off and it runs wide open, which is lovely on a laptop and less lovely in production.
 

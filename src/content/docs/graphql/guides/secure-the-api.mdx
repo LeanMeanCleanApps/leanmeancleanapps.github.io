@@ -46,7 +46,7 @@ Out of the box the API runs wide open. Every movie, author and review query and 
   { "errors": [ { "message": "The current user is not authorized to access this resource.", "extensions": { "code": "AUTH_NOT_AUTHENTICATED" } } ] }
   ```
 
-- The `version` query, the schema, Nitro, `/health/live` and `/health/ready` stay open, so load balancers and curious humans can still check the lights are on.
+- The `version` query needs one too. The schema, Nitro, `/health/live` and `/health/ready` stay open, so load balancers and curious humans can still check the lights are on.
 - Tokens are validated against the authority's published keys, so there's no secret to store and nothing to rotate on your side.
 
 ## How it works
