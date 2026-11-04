@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/LeanMeanCleanApps/brand/main/assets/banners/png/site.png" alt="Lean Mean Clean Apps – Website. The home page, the docs for every template and the brand, minus the ceremony." width="100%">
+  <img src="https://raw.githubusercontent.com/LeanMeanCleanApps/brand/main/assets/banners/png/site.png" alt="Lean Mean Clean Apps: The Website. The home page, the docs for every template and the brand, minus the ceremony." width="100%">
 </p>
 
 # Lean Mean Clean Apps – Website
