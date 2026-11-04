@@ -35,9 +35,23 @@ Every setting in `appsettings.json` can be overridden with an environment variab
 | Service | What it is | Port |
 | --- | --- | --- |
 | `api` | The image, built from the `run` stage | 8080 |
-| `seq` | Seq, for the logs | 5341 |
+| `otel-collector` | The [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/), configured by `otel-collector.yaml` | 4317 (gRPC), 4318 (HTTP) |
+| `aspire-dashboard` | The [Aspire dashboard](https://learn.microsoft.com/dotnet/aspire/fundamentals/dashboard/standalone), where the collector sends everything | 18888 |
 
-The `api` service runs with `DOTNET_ENVIRONMENT=docker`, mounts the `movie-reviews-data` volume at `/app/data`, and sends its logs to the `seq` service.
+The `api` service runs with `DOTNET_ENVIRONMENT=docker`, mounts the `movie-reviews-data` volume at `/app/data`, and sends its logs, traces and metrics over OTLP to `otel-collector`, which forwards them to `aspire-dashboard`.
+
+## Telemetry
+
+The app always collects [OpenTelemetry](https://opentelemetry.io) traces and metrics, and exports them, along with its logs, only when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. These are the standard OpenTelemetry settings, read as environment variables or from any other configuration source.
+
+| Setting | Default | Description |
+| --- | --- | --- |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | none | Where to send traces, metrics and logs. Nothing is exported until it's set. Docker Compose sets it to the `otel-collector` service |
+| `OTEL_EXPORTER_OTLP_PROTOCOL` | `grpc` | `grpc` or `http/protobuf` |
+| `OTEL_EXPORTER_OTLP_HEADERS` | none | Headers for every export, such as an API key for a hosted backend |
+| `OTEL_SERVICE_NAME` | `CleanMinimalApi` | The `service.name` on everything sent |
+
+Every span, metric and log also carries `service.version`, the version stamped into the build, and `deployment.environment.name`.
 
 ## Ports when running with dotnet run
 

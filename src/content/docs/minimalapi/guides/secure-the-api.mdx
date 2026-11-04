@@ -39,13 +39,13 @@ Out of the box the API runs wide open. Every movie, author and review endpoint a
 
 ## What changes
 
-- The movie, author and review endpoints need a valid token. `GET /api/version`, `/health/live` and `/health/ready` stay open, so load balancers and curious humans can still check the lights are on.
+- The movie, author and review endpoints need a valid token. `GET /api/version` needs one too. `/health/live` and `/health/ready` stay open, so load balancers and curious humans can still check the lights are on.
 - The OpenAPI document gains a `Bearer` security scheme, and Scalar shows an **Auth** box where you can paste a token and keep clicking **Send**.
 - Tokens are validated against the authority's published keys, so there's no secret to store and nothing to rotate on your side.
 
 ## How it works
 
-`AuthenticationSettings` reads the `Authentication` section. When the authority is set, the API registers the JWT bearer handler and the normal authorization services. When it isn't, it registers a default policy that passes every request. Every endpoint group calls `RequireAuthorization()`, and the version endpoint opts out with `AllowAnonymous()`. The same attributes work either way, which is why turning authentication on doesn't touch a single endpoint.
+`AuthenticationSettings` reads the `Authentication` section. When the authority is set, the API registers the JWT bearer handler and the normal authorization services. When it isn't, it registers a default policy that passes every request. Every endpoint group calls `RequireAuthorization()`, the version endpoint included; only the health checks, the OpenAPI document and Scalar opt out. The same attributes work either way, which is why turning authentication on doesn't touch a single endpoint.
 
 <Aside type="note" title="Authorization is always on">
   Authentication is optional. Authorization isn't. Every endpoint declares what it needs, even in the open configuration, so there's never a moment where an endpoint was forgotten. It was only ever the gate that was open.

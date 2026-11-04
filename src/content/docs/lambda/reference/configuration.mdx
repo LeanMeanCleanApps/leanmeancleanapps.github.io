@@ -12,6 +12,18 @@ sidebar:
 | `ConnectionStrings__MovieReviews` | `Data Source=/tmp/movie-reviews.db` | The SQLite connection string |
 | `Database__SeedSampleData` | `false` | When `true`, seeds sample data into an empty database. Anything else, including no value, means no |
 | `Serilog__MinimumLevel__Default` | `Information` | The minimum log level. Logs go to the console as compact JSON, which CloudWatch Logs keeps. `docker-compose.yml` sets it to `Debug` |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | none | Where to send [OpenTelemetry](https://opentelemetry.io) traces, metrics and logs. Nothing is exported until it's set. Docker Compose sets it to the `otel-collector` service |
+| `OTEL_EXPORTER_OTLP_PROTOCOL` | `grpc` | `grpc` or `http/protobuf` |
+| `OTEL_EXPORTER_OTLP_HEADERS` | none | Headers for every export, such as an API key for a hosted backend |
+| `OTEL_SERVICE_NAME` | `CleanLambdaFunction` | The `service.name` on everything sent. Every span, metric and log also carries `service.version`, the version stamped into the build |
+
+## Docker Compose services
+
+| Service | What it is | Port |
+| --- | --- | --- |
+| `function` | The image, built from the `run` stage, behind the runtime interface emulator | 9000 |
+| `otel-collector` | The [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/), configured by `otel-collector.yaml` | 4317 (gRPC), 4318 (HTTP) |
+| `aspire-dashboard` | The [Aspire dashboard](https://learn.microsoft.com/dotnet/aspire/fundamentals/dashboard/standalone), where the collector sends everything | 18888 |
 
 ## Docker build arguments
 

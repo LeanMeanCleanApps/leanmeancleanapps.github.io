@@ -25,7 +25,7 @@ The version is stamped into the assemblies, so `the version tool` tells you exac
 | Environment | Logs | Sample data | Meant for |
 | --- | --- | --- | --- |
 | `local` | Console | On | `dotnet run` on your machine |
-| `docker` | Seq | On | `docker compose up` on your machine |
+| `docker` | Console, and OTLP through the collector | On | `docker compose up` on your machine |
 | Anything else | Whatever you configure | Off | Production, staging, and anywhere data matters |
 
 For production, pick a name like `production`, add an `appsettings.production.json` with a Serilog sink you can read, and leave `Database:SeedSampleData` alone. The default is off, so a fresh database stays empty until something real writes to it.

@@ -17,7 +17,7 @@ The image is built on the [AWS Lambda .NET base image](https://gallery.ecr.aws/l
     docker compose up -d --build
     ```
 
-    Compose builds the `run` stage, publishes port 9000 and turns on sample data. Shut it down with `docker compose down`.
+    Compose builds the `run` stage, publishes port 9000, turns on sample data, and starts an OpenTelemetry Collector and the Aspire dashboard next to it. Shut it down with `docker compose down`.
   </TabItem>
   <TabItem label="Docker">
     ```bash
@@ -32,6 +32,12 @@ Then invoke it from another terminal:
 ```bash
 curl -X POST "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{"limit":5}'
 ```
+
+## See the telemetry
+
+With Docker Compose, the function sends its traces, metrics and logs over OTLP to an [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/), which forwards them to the [Aspire dashboard](https://learn.microsoft.com/dotnet/aspire/fundamentals/dashboard/standalone) at [http://localhost:18888](http://localhost:18888). Each invocation is one trace: the function's span from the OpenTelemetry Lambda wrapper, with the use case under it. Traces and metrics are flushed before the function returns, so they're there by the time `curl` is. The logs still go to the console too, so `docker compose logs function` works as it always did.
+
+Run the image on its own and nothing is exported, because `OTEL_EXPORTER_OTLP_ENDPOINT` isn't set. Set it to send the telemetry to a collector of your own.
 
 ## Try the other functions
 
