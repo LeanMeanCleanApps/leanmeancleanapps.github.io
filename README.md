@@ -44,7 +44,7 @@ The logos, icons, link previews, colour tokens and every file on the brand pages
 git clone --depth 1 https://github.com/LeanMeanCleanApps/brand .brand
 ```
 
-CI checks brand out into `.brand` on every build, and builds the site every morning, so a change merged into brand shows up here by the next day. Can't wait that long? Run the Site workflow by hand. To add a template, add it to `src/data/templates.ts` with the same key it has in the brand repository.
+CI checks out the newest brand release into `.brand` on every build, and builds the site every morning, so a brand release shows up here by the next day. Can't wait that long? Run the Site workflow by hand. Changes merged into brand but not released yet stay on the cutting-room floor until they are. To add a template, add it to `src/data/templates.ts` with the same key it has in the brand repository.
 
 ## Publishing
 

@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [main]
   schedule:
-    # Every morning, so changes merged into the brand repository reach the site within a day.
+    # Every morning, so a new brand release reaches the site within a day.
     - cron: "17 9 * * *"
       timezone: "America/Chicago"
   workflow_dispatch:
@@ -30,11 +30,22 @@ jobs:
         id: checkout
         uses: actions/checkout@v7
 
+      - name: Find Brand Release
+        id: brand-release
+        # The site uses the newest brand release, so brand changes only go live when they're released.
+        run: |
+          TAG=$(gh release view --repo LeanMeanCleanApps/brand --json tagName --jq .tagName)
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Brand release: \`$TAG\`" >> "$GITHUB_STEP_SUMMARY"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
       - name: Checkout Brand
         id: brand
         uses: actions/checkout@v7
         with:
           repository: LeanMeanCleanApps/brand
+          ref: ${{ steps.brand-release.outputs.tag }}
           path: .brand
           persist-credentials: false
 

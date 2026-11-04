@@ -40,6 +40,8 @@ A brand new hue needs a full 50 to 900 scale in `scales`. Check it against the o
 
 ## These pages
 
-The pages you're reading live with the rest of the docs in the [website](https://github.com/LeanMeanCleanApps/leanmeancleanapps.github.io) repository, so the brand gets the same header, footer and search as the templates. The website checks out the brand repository every time it builds and copies in what it needs, so nothing here is a hand-made copy.
+The pages you're reading live with the rest of the docs in the [website](https://github.com/LeanMeanCleanApps/leanmeancleanapps.github.io) repository, so the brand gets the same header, footer and search as the templates. The website checks out the newest release of the brand repository every time it builds and copies in what it needs, so nothing here is a hand-made copy.
 
-The website builds every day, so a change merged into the brand repository shows up here by the next morning. In a hurry? Run the website's Site workflow by hand.
+## Releasing
+
+Merging into the brand repository's `main` updates the files READMEs and NuGet pages link to straight away. These pages only move when there's a release. Run the brand repository's **Release** workflow and it tags `main` with the date and attaches the whole kit as a zip. The website builds every morning, so the release shows up here by the next day. In a hurry? Run the website's Site workflow by hand.
