@@ -93,7 +93,7 @@ export const templates: Template[] = [
 // The brand pages share the docs with the templates: their own sidebar topic at /brand/, in the organisation's colours.
 export const brand = {
   key: 'brand',
-  name: 'Lean Mean Clean Apps brand',
+  name: 'Lean Mean Clean Apps – Brand',
   label: 'Brand',
   subject: 'Logos, colours and type',
 };
