@@ -11,7 +11,7 @@
   --accent: var(--lmca-leaf-400);
   --on-accent: var(--lmca-ink);
   --radius: 1.25rem;
-  --wrap: 72rem;
+  --wrap: 84rem;
   --gutter: clamp(1rem, 4vw, 2rem);
 
   color-scheme: dark;
