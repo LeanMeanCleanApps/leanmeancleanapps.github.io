@@ -1,3 +1,21 @@
 node_modules/
 dist/
 .astro/
+
+# The brand repository, checked out by CI or by you, and everything scripts/sync-brand.mjs copies from it.
+.brand/
+public/brand/
+public/favicon.svg
+public/favicon.ico
+public/apple-touch-icon.png
+public/icon-192.png
+public/icon-512.png
+public/icon-maskable-512.png
+public/og-image.png
+public/logos/
+public/social/
+src/assets/logos/
+src/data/brand.json
+src/styles/tokens.css
+src/styles/docs/base.css
+src/styles/docs/accents/

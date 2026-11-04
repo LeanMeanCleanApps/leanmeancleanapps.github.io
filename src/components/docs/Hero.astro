@@ -1,14 +1,16 @@
 ---
 // The template home pages use the same hero as the site's front page: a kicker, a headline with the
-// accent on the last line, the lede, the buttons, and the commands with copy buttons.
+// accent on the last line, the lede, the buttons, and the commands with copy buttons. The brand home page
+// gets the same hero with the organisation mark and no commands.
 import { LinkButton } from '@astrojs/starlight/components';
 const PAGE_TITLE_ID = '_top';
-import { templates } from '../../data/templates';
+import { brand, templates } from '../../data/templates';
 
 const { data } = Astro.locals.starlightRoute.entry;
 const { title = data.title, tagline, actions = [] } = data.hero || {};
 const key = Astro.locals.starlightRoute.id.split('/')[0];
 const template = templates.find((t) => t.key === key);
+const isBrand = key === brand.key;
 
 // "…, minus the ceremony" gets the template's colour, like the front page.
 const match = /^(.*?),?\s*(minus the ceremony\.?)$/i.exec(title);
@@ -26,7 +28,7 @@ const commands = template
 
 <div class="cl-hero not-content">
   <div class="cl-text">
-    <p class="cl-eyebrow">A Lean Mean Clean Apps template for .NET 10</p>
+    <p class="cl-eyebrow">{isBrand ? 'The Lean Mean Clean Apps brand' : 'A Lean Mean Clean Apps template for .NET 10'}</p>
     <h1 id={PAGE_TITLE_ID} data-page-title>
       {lead}{accent && ' '}{accent && <span>{accent}</span>}
     </h1>
@@ -76,6 +78,7 @@ const commands = template
     {template && <p class="cl-quip">Three layers, the tests, a Dockerfile and a CI pipeline. Go and tell your team you've been working on it all week.</p>}
   </div>
   {template && <img class="cl-mark" src={`/logos/${template.key}.svg`} alt="" width="480" height="480" loading="eager" decoding="async" />}
+  {isBrand && <img class="cl-mark" src="/logos/org-spectrum.svg" alt="" width="480" height="480" loading="eager" decoding="async" />}
 </div>
 
 <script>

@@ -3,7 +3,7 @@ import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import starlightLlmsTxt from 'starlight-llms-txt';
 import starlightSidebarTopics from 'starlight-sidebar-topics';
-import { templates } from './src/data/templates.ts';
+import { brand, templates } from './src/data/templates.ts';
 
 // Each template gets a home page at /<key>/ and its own sidebar.
 /** @type {Record<string, any[]>} */
@@ -68,6 +68,12 @@ const sidebars = {
       items: ['lambda/explanation/architecture', 'lambda/explanation/decisions', 'lambda/explanation/how-its-built'],
     },
   ],
+  brand: [
+    { label: 'Start here', items: ['brand/downloads'] },
+    { label: 'The rules', items: ['brand/logo', 'brand/organisation', 'brand/templates', 'brand/colour', 'brand/typography', 'brand/voice'] },
+    { label: 'The kit', items: ['brand/kit/logos', 'brand/kit/social', 'brand/kit/platforms', 'brand/kit/tokens'] },
+    'brand/contributing',
+  ],
 };
 
 export default defineConfig({
@@ -91,6 +97,7 @@ export default defineConfig({
         './src/styles/tokens.css',
         './src/styles/docs/base.css',
         './src/styles/docs/theme.css',
+        './src/styles/docs/brand.css',
       ],
       expressiveCode: {
         themes: ['github-dark-default', 'github-light-default'],
@@ -112,17 +119,16 @@ export default defineConfig({
       },
       plugins: [
         starlightSidebarTopics(
-          templates.map((t) => ({
-            id: t.key,
-            label: t.name,
-            link: `/${t.key}/`,
-            items: sidebars[t.key],
+          [...templates.map((t) => ({ id: t.key, label: t.name })), { id: brand.key, label: brand.label }].map((t) => ({
+            ...t,
+            link: `/${t.id}/`,
+            items: sidebars[t.id],
           })),
         ),
         starlightLlmsTxt({
           projectName: 'Lean Mean Clean Apps',
           description:
-            'Five dotnet new templates for .NET 10 (Minimal APIs, Model Context Protocol, GraphQL, Web API controllers and AWS Lambda) that share the same Clean Architecture Application and Infrastructure layers and differ only in Presentation.',
+            'Five dotnet new templates for .NET 10 (Minimal APIs, Model Context Protocol, GraphQL, Web API controllers and AWS Lambda) that share the same Clean Architecture Application and Infrastructure layers and differ only in Presentation, plus the Lean Mean Clean Apps brand: logos, colours, type, tokens and social templates.',
         }),
       ],
     }),

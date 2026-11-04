@@ -1,16 +1,18 @@
 ---
-// Gives each template's pages its own accent colour and link preview, picked from the first part of the page's path.
+// Gives each template's pages, and the brand pages, their own accent colour and link preview, picked from the first
+// part of the page's path.
 import Default from '@astrojs/starlight/components/Head.astro';
-import { templates } from '../../data/templates';
+import { brand, templates } from '../../data/templates';
 
 const accents = import.meta.glob<string>('../../styles/docs/accents/*.css', { query: '?raw', import: 'default', eager: true });
 
 const key = Astro.locals.starlightRoute.id.split('/')[0];
 const template = templates.find((t) => t.key === key);
-const accent = template && accents[`../../styles/docs/accents/${template.key}.css`];
-const hue = template ? `:root { --cl-hue: var(--lmca-${template.key}); }` : '';
-const image = new URL(template ? `/social/${template.key}.png` : '/og-image.png', Astro.site);
-const [width, height] = template ? [1280, 640] : [1200, 630];
+const isBrand = key === brand.key;
+const accent = (template || isBrand) && accents[`../../styles/docs/accents/${key}.css`];
+const hue = template ? `:root { --cl-hue: var(--lmca-${template.key}); }` : isBrand ? ':root { --cl-hue: var(--lmca-org); }' : '';
+const image = new URL(template ? `/social/${template.key}.png` : isBrand ? '/brand/assets/social/png/brand.png' : '/og-image.png', Astro.site);
+const [width, height] = template || isBrand ? [1280, 640] : [1200, 630];
 ---
 
 <Default />
