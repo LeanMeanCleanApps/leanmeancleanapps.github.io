@@ -4,7 +4,7 @@
 
 # leanmeancleanapps.github.io
 
-The website for [Lean Mean Clean Apps](https://github.com/LeanMeanCleanApps), published at [leanmeancleanapps.github.io](https://leanmeancleanapps.github.io). It's a home page that points people at the templates and the people behind them, plus the docs for every template. One site, no framework drama, no cookie banner.
+The website for [Lean Mean Clean Apps](https://github.com/LeanMeanCleanApps), published at [leanmeancleanapps.github.io](https://leanmeancleanapps.github.io). It's a home page that points people at the templates and the people behind them, plus the docs for every template and the brand. One site, no framework drama, no cookie banner.
 
 | Template | Home page |
 | --- | --- |
@@ -13,10 +13,11 @@ The website for [Lean Mean Clean Apps](https://github.com/LeanMeanCleanApps), pu
 | Clean GraphQL API | [/graphql/](https://leanmeancleanapps.github.io/graphql/) |
 | Clean Web API | [/webapi/](https://leanmeancleanapps.github.io/webapi/) |
 | Clean Lambda Function | [/lambda/](https://leanmeancleanapps.github.io/lambda/) |
+| The brand | [/brand/](https://leanmeancleanapps.github.io/brand/) |
 
 ## Running it locally
 
-You need Node 24.
+You need Node 24 and a checkout of the [brand](https://github.com/LeanMeanCleanApps/brand) repository in `.brand` or next to this one (see [The brand files](#the-brand-files)).
 
 ```sh
 npm ci
@@ -31,19 +32,23 @@ The template docs are built with [Starlight](https://starlight.astro.build). Eac
 
 To add a page, drop a Markdown or MDX file in the template's folder and add it to that template's sidebar.
 
-## Updating the brand files
+## The brand pages
 
-The logos, icons, link preview and colour tokens come from the [brand](https://github.com/LeanMeanCleanApps/brand) repository. When the brand changes, check it out next to this one and copy them across:
+The brand pages at [/brand/](https://leanmeancleanapps.github.io/brand/) live in `src/content/docs/brand`, with their components in `src/components/brand` and their styles in `src/styles/docs/brand.css`. They're a sidebar topic like the templates, dressed in the organisation's colours.
+
+## The brand files
+
+The logos, icons, link previews, colour tokens and every file on the brand pages come from the [brand](https://github.com/LeanMeanCleanApps/brand) repository, and none of them are committed here. `npm run dev` and `npm run build` copy them in first with `scripts/sync-brand.mjs`, which looks for a checkout of brand in `.brand` and then `../brand`. If you haven't got one yet:
 
 ```sh
-npm run sync-brand -- ../brand
+git clone --depth 1 https://github.com/LeanMeanCleanApps/brand .brand
 ```
 
-Then commit what changes. Don't edit the copies by hand, because the next sync will undo your work without so much as an apology. To add a template, add it to `src/data/templates.ts` with the same key it has in the brand repository, and run the same command to copy its logo.
+CI checks brand out into `.brand` on every build, and builds the site every morning, so a change merged into brand shows up here by the next day. Can't wait that long? Run the Site workflow by hand. To add a template, add it to `src/data/templates.ts` with the same key it has in the brand repository.
 
 ## Publishing
 
-Every push to `main` builds the site and publishes it to GitHub Pages. Pull requests build it without publishing, so you can break things in private.
+Every push to `main`, and every morning, builds the site and publishes it to GitHub Pages. Pull requests build it without publishing, so you can break things in private.
 
 ## Contributing and support
 

@@ -3,10 +3,11 @@
 // the left, and the organisation sits on the right with search and GitHub, so moving between the front
 // page and a template feels like the one site.
 import Search from 'virtual:starlight/components/Search';
-import { templates } from '../../data/templates';
+import { brand, templates } from '../../data/templates';
 
 const key = Astro.locals.starlightRoute.id.split('/')[0];
 const template = templates.find((t) => t.key === key);
+const isBrand = key === brand.key;
 ---
 
 <div class="cl-header">
@@ -15,6 +16,11 @@ const template = templates.find((t) => t.key === key);
       <a class="cl-brand" href={`/${template.key}/`}>
         <img src={`/logos/${template.key}-small.svg`} alt="" width="32" height="32" />
         <span>{template.name}</span>
+      </a>
+    ) : isBrand ? (
+      <a class="cl-brand" href="/brand/">
+        <img src="/logos/org-spectrum-small-tile.svg" alt="" width="32" height="32" />
+        <span>{brand.name}</span>
       </a>
     ) : (
       <a class="cl-brand" href="/">
@@ -25,7 +31,7 @@ const template = templates.find((t) => t.key === key);
   }
   <div class="cl-right print:hidden">
     {
-      template && (
+      (template || isBrand) && (
         <a class="cl-org" href="/">
           <img src="/logos/org-spectrum-small-tile.svg" alt="" width="20" height="20" />
           <span>Lean Mean Clean Apps</span>

@@ -90,6 +90,14 @@ export const templates: Template[] = [
   },
 ];
 
+// The brand pages share the docs with the templates: their own sidebar topic at /brand/, in the organisation's colours.
+export const brand = {
+  key: 'brand',
+  name: 'Lean Mean Clean Apps brand',
+  label: 'Brand',
+  subject: 'Logos, colours and type',
+};
+
 // What every template has, because the Application and Infrastructure layers are the same in all of them.
 export const shared = [
   '.NET 10',

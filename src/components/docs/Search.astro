@@ -1,9 +1,9 @@
 ---
 // Starlight's search, as an icon that opens the popover. Results say which template they belong to, because
-// one index covers all five.
+// one index covers all five, and the brand.
 import { Icon } from '@astrojs/starlight/components';
 import project from 'virtual:starlight/project-context';
-import { templates } from '../../data/templates';
+import { brand, templates } from '../../data/templates';
 
 // Pagefind's stock wording, with ours over the top. [SEARCH_TERM] and [COUNT] are filled in by Pagefind.
 const pagefindTranslations = {
@@ -12,10 +12,10 @@ const pagefindTranslations = {
 			.filter(([key]) => key.startsWith('pagefind.'))
 			.map(([key, value]) => [key.replace('pagefind.', ''), value])
 	),
-	placeholder: 'Search all five templates',
+	placeholder: 'Search the templates and the brand',
 	clear_search: 'Clear',
 	load_more: 'Keep digging',
-	searching: 'Rummaging through all five templates for “[SEARCH_TERM]”…',
+	searching: 'Rummaging through the templates and the brand for “[SEARCH_TERM]”…',
 	one_result: 'One result for “[SEARCH_TERM]”. That narrows it down.',
 	many_results: '[COUNT] results for “[SEARCH_TERM]”. Pick a template, any template.',
 	zero_results:
@@ -27,7 +27,7 @@ const suggestions = ['pagination', 'SQLite', 'authentication', 'Mapperly', 'dock
 
 const dataAttributes: DOMStringMap = {
 	'data-translations': JSON.stringify(pagefindTranslations),
-	'data-templates': JSON.stringify(Object.fromEntries(templates.map((t) => [t.key, t.name]))),
+	'data-templates': JSON.stringify(Object.fromEntries([...templates.map((t) => [t.key, t.name]), [brand.key, brand.label]])),
 };
 if (project.trailingSlash === 'never') dataAttributes['data-strip-trailing-slash'] = '';
 ---
@@ -64,7 +64,7 @@ if (project.trailingSlash === 'never') dataAttributes['data-strip-trailing-slash
 						<div id="starlight__search" />
 						<div class="cl-empty" data-empty>
 							<p class="cl-empty-lead">
-								Five templates, one search box. Everything in the docs is in here, including the bits we hoped you'd skim.
+								Five templates, one brand, one search box. Everything in the docs is in here, including the bits we hoped you'd skim.
 							</p>
 							<p class="cl-empty-label">Try one of these</p>
 							<div class="cl-chips">
