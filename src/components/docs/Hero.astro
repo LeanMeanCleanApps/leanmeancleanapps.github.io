@@ -16,7 +16,7 @@ const isBrand = key === brand.key;
 const match = /^(.*?),?\s*(minus the ceremony\.?)$/i.exec(title);
 const [lead, accent] = match ? [match[1].trim() + ',', match[2].replace(/\.?$/, '.')] : [title, ''];
 
-const solution = template?.key === 'lambda' ? 'Acme.Reviews' : 'Acme.Movies';
+const solution = template?.key === 'lambda' ? 'WorksOnMyMachine.Reviews' : 'WorksOnMyMachine.Movies';
 const commands = template
   ? [
       `dotnet new install ${template.package}`,

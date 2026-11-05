@@ -34,9 +34,9 @@ As a bonus, MediatR and AutoMapper both moved to commercial licences in 2025, an
 
 Validation runs once, in one place, before any handler. Handlers only ever see valid requests, which keeps them short and keeps tests honest. Presentation just has to turn a `ValidationException` into a 400 Problem Details response, and it does that in one class.
 
-## Optional authentication, mandatory authorization
+## Authentication is in or out
 
-Every endpoint asks for authorization. Whether that means a valid JWT bearer token or a polite wave through depends on one setting, `Authentication:Authority`. Turning security on is configuration, not a code change, and turning it off for a demo doesn't leave an endpoint behind. See [Secure the API](../../guides/secure-the-api/).
+Authentication is a choice you make when you create the solution. With `--include-auth`, every endpoint asks for authorization and a valid JWT bearer token. Without it, there's no authentication code at all, rather than code that sits there switched off. There's nothing to leave half configured, and nothing to read past when you don't need it. See [Secure the API](../../guides/secure-the-api/).
 
 ## SQLite next to the app
 

@@ -18,7 +18,7 @@ This guide adds a `GetMovie` function that returns one movie with all of its rev
 1. Add a request model in `src/Presentation/LambdaFunction/Models/GetMovieRequest.cs`. This is the JSON your callers send.
 
    ```csharp
-   namespace Acme.Reviews.Presentation.LambdaFunction.Models;
+   namespace WorksOnMyMachine.Reviews.Presentation.LambdaFunction.Models;
 
    /// <summary>
    /// Gets one movie and its reviews.
@@ -33,7 +33,7 @@ This guide adds a `GetMovie` function that returns one movie with all of its rev
 2. Add a response model in `src/Presentation/LambdaFunction/Models/MovieDetail.cs`. It reuses the existing `Review` model.
 
    ```csharp
-   namespace Acme.Reviews.Presentation.LambdaFunction.Models;
+   namespace WorksOnMyMachine.Reviews.Presentation.LambdaFunction.Models;
 
    public record MovieDetail(Guid Id, string Title, List<Review> Reviews);
    ```
@@ -104,7 +104,7 @@ This guide adds a `GetMovie` function that returns one movie with all of its rev
    ```bash
    docker build . --target run --tag acme-reviews:local
    docker run --rm -p 9000:8080 -e Database__SeedSampleData=true acme-reviews:local \
-     "Presentation::Acme.Reviews.Presentation.LambdaFunction.Handler_GetMovie_Generated::GetMovie"
+     "Presentation::WorksOnMyMachine.Reviews.Presentation.LambdaFunction.Handler_GetMovie_Generated::GetMovie"
 
    curl -X POST "http://localhost:9000/2015-03-31/functions/function/invocations" \
      -d '{"id":"e159975e-4e6a-1ffd-713e-1eb9d8d4a593"}'

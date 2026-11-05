@@ -1,26 +1,26 @@
 ---
 title: "Secure the API"
-description: "Turn on JWT bearer authentication with two settings, and what changes when you do."
+description: "Create the API with JWT bearer authentication, add it to one you already have, and what changes when you do."
 sidebar:
   order: 5
 ---
 
 import { Steps, Aside } from '@astrojs/starlight/components';
 
-Out of the box the API runs wide open. Every movie, author and review endpoint asks for authorization, but with no authority configured the default policy says yes to everyone. That's lovely on a laptop and less lovely in production, so here's how to close the door.
+Out of the box the API runs wide open, and there's no authentication code in it at all. That's lovely on a laptop and less lovely in production, so here's how to close the door.
 
 ## Turn it on
 
 <Steps>
 
-1. Tell the API who issues tokens and who they're for. Either bake it in when you create the solution:
+1. Create the solution with `--include-auth`, and tell it who issues tokens and who they're for:
 
    ```bash
-   dotnet new cleanwebapi --name Acme.Movies \
-     --authority https://login.example.com --audience https://movies.example.com
+   dotnet new cleanwebapi --name WorksOnMyMachine.Movies \
+     --include-auth --authority https://login.example.com --audience https://movies.example.com
    ```
 
-   Or set it on a solution you already have, in `appsettings.json` or as environment variables:
+   `--authority` is required with `--include-auth`, so `dotnet new` stops and says so if it's missing. To point each environment at its own server, override the settings in `appsettings.json` or with environment variables:
 
    ```bash
    Authentication__Authority=https://login.example.com
@@ -37,6 +37,19 @@ Out of the box the API runs wide open. Every movie, author and review endpoint a
 
 </Steps>
 
+## Add it to a solution you already have
+
+Created the solution without `--include-auth`? The code isn't hiding behind a setting, it isn't there at all, so it goes in by hand. The quickest way to see every line is to let the template show you. Create a second solution with the same name and `--include-auth` next to yours, then compare the two:
+
+```bash
+dotnet new cleanwebapi --name WorksOnMyMachine.Movies --output ../with-auth \
+  --include-auth --authority https://login.example.com --audience https://movies.example.com
+git diff --no-index src ../with-auth/src
+git diff --no-index tests ../with-auth/tests
+```
+
+Copy across what's new: the `Microsoft.AspNetCore.Authentication.JwtBearer` package reference, the `Authentication` folder and its section in `appsettings.json`, the authentication regions in startup, `[Authorize]` on `ApiControllerBase`, the bearer scheme for the OpenAPI document, and the authentication tests, so coverage stays where it was. The `optional-token-auth` skill in `.agents/skills` walks your coding agent through the same steps.
+
 ## What changes
 
 - The movie, author and review endpoints need a valid token. `GET /api/version` needs one too. `/health/live` and `/health/ready` stay open, so load balancers and curious humans can still check the lights are on.
@@ -45,10 +58,10 @@ Out of the box the API runs wide open. Every movie, author and review endpoint a
 
 ## How it works
 
-`AuthenticationSettings` reads the `Authentication` section. When the authority is set, the API registers the JWT bearer handler and the normal authorization services. When it isn't, it registers a default policy that passes every request. `ApiControllerBase` carries `[Authorize]`, so every controller that inherits it is protected, the version controller included. The same attributes work either way, which is why turning authentication on doesn't touch a single endpoint.
+`AuthenticationSettings` reads the `Authentication` section, and the API registers the JWT bearer handler and the normal authorization services. `ApiControllerBase` carries `[Authorize]`, so every controller that inherits it is protected, the version controller included; only the health checks, the OpenAPI document and Scalar stay open. An empty authority still lets every request through, which is how the tests run, so make sure every environment you deploy to sets one.
 
-<Aside type="note" title="Authorization is always on">
-  Authentication is optional. Authorization isn't. Every endpoint declares what it needs, even in the open configuration, so there's never a moment where an endpoint was forgotten. It was only ever the gate that was open.
+<Aside type="note" title="All or nothing">
+  With `--include-auth`, every controller inherits `[Authorize]`, so there's never a moment where an endpoint was forgotten. Without it, there's no half-built gate left open by mistake. There's just no gate.
 </Aside>
 
 ## Beyond a bearer token

@@ -16,8 +16,8 @@ Every setting in `appsettings.json` can be overridden with an environment variab
 | `ASPNETCORE_FORWARDEDHEADERS_ENABLED` | none | Set to `true` behind a proxy that ends TLS, so HTTPS redirection sees the original scheme |
 | `ConnectionStrings__MovieReviews` | `Data Source=movie-reviews.db` | The SQLite connection string. `appsettings.docker.json` points it at `/app/data/movie-reviews.db` |
 | `Database__SeedSampleData` | `false` | When `true`, seeds sample data into an empty database. On in `local` and `docker` |
-| `Authentication__Authority` | empty | The OAuth authorization server that issues access tokens. Setting it turns authentication on |
-| `Authentication__Audience` | empty | The audience access tokens must be issued for, usually the server's own URL |
+| `Authentication__Authority` | empty | The OAuth authorization server that issues access tokens. Only in solutions created with `--include-auth`, where an empty value lets every request through |
+| `Authentication__Audience` | empty | The audience access tokens must be issued for, usually the server's own URL. Only with `--include-auth` |
 | `Authentication__Scopes__0`, `__1`, ... | none | The scopes clients should ask for, published in the protected resource metadata |
 | `Serilog__MinimumLevel__Default` | `Information` | The minimum log level. `appsettings.local.json` lowers it to `Debug`, and `appsettings.json` also overrides `Microsoft`, `Microsoft.AspNetCore` and `System` |
 
