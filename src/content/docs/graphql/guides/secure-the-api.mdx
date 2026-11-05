@@ -13,14 +13,14 @@ Out of the box the API runs wide open, and there's no authentication code in it 
 
 <Steps>
 
-1. Create the solution with `--auth`, and tell it who issues tokens and who they're for:
+1. Create the solution with `--include-auth`, and tell it who issues tokens and who they're for:
 
    ```bash
    dotnet new cleangraphqlapi --name WorksOnMyMachine.Movies \
-     --auth --authority https://login.example.com --audience https://movies.example.com
+     --include-auth --authority https://login.example.com --audience https://movies.example.com
    ```
 
-   `--authority` is required with `--auth`, so `dotnet new` stops and says so if it's missing. To point each environment at its own server, override the settings in `appsettings.json` or with environment variables:
+   `--authority` is required with `--include-auth`, so `dotnet new` stops and says so if it's missing. To point each environment at its own server, override the settings in `appsettings.json` or with environment variables:
 
    ```bash
    Authentication__Authority=https://login.example.com
@@ -40,11 +40,11 @@ Out of the box the API runs wide open, and there's no authentication code in it 
 
 ## Add it to a solution you already have
 
-Created the solution without `--auth`? The code isn't hiding behind a setting, it isn't there at all, so it goes in by hand. The quickest way to see every line is to let the template show you. Create a second solution with the same name and `--auth` next to yours, then compare the two:
+Created the solution without `--include-auth`? The code isn't hiding behind a setting, it isn't there at all, so it goes in by hand. The quickest way to see every line is to let the template show you. Create a second solution with the same name and `--include-auth` next to yours, then compare the two:
 
 ```bash
 dotnet new cleangraphqlapi --name WorksOnMyMachine.Movies --output ../with-auth \
-  --auth --authority https://login.example.com --audience https://movies.example.com
+  --include-auth --authority https://login.example.com --audience https://movies.example.com
 git diff --no-index src ../with-auth/src
 git diff --no-index tests ../with-auth/tests
 ```
@@ -67,7 +67,7 @@ Copy across what's new: the `Microsoft.AspNetCore.Authentication.JwtBearer` pack
 `AuthenticationSettings` reads the `Authentication` section, and the API registers the JWT bearer handler, the normal authorization services and Hot Chocolate's authorization. Every movie, author and review query, every mutation and the `version` query carry `[Authorize]`. An empty authority still lets every request through, which is how the tests run, so make sure every environment you deploy to sets one.
 
 <Aside type="note" title="All or nothing">
-  With `--auth`, every protected field declares it, so there's never a moment where a field was forgotten. Without it, there's no half-built gate left open by mistake. There's just no gate.
+  With `--include-auth`, every protected field declares it, so there's never a moment where a field was forgotten. Without it, there's no half-built gate left open by mistake. There's just no gate.
 </Aside>
 
 ## Beyond a bearer token

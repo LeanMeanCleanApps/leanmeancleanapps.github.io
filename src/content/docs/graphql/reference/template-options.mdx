@@ -6,16 +6,16 @@ sidebar:
 ---
 
 ```bash
-dotnet new cleangraphqlapi --name <NAME> [--authorName|-an <AUTHOR>] [--auth --authority|-iss <URL> [--audience|-aud <URL>]] [--output|-o <PATH>] [--no-restore]
+dotnet new cleangraphqlapi --name <NAME> [--authorName|-an <AUTHOR>] [--include-auth --authority|-iss <URL> [--audience|-aud <URL>]] [--output|-o <PATH>] [--no-restore]
 ```
 
 | Option | Default | What it changes |
 | --- | --- | --- |
 | `--name`, `-n` | The current folder's name | Replaces `CleanGraphQLApi` in every namespace, project, file and folder name, and names the output folder |
 | `--authorName`, `-an` | `Stephen Walsh` | Sets the `Authors` and `Copyright` of the Presentation project, so the assembly credits you instead of us |
-| `--auth` | off | Adds JWT bearer authentication. Off, the solution has no authentication code, settings or package at all |
-| `--authority`, `-iss` | empty | Required with `--auth`. Sets `Authentication:Authority` in `appsettings.json`, the server that issues the tokens the API accepts |
-| `--audience`, `-aud` | empty | Only used with `--auth`. Sets `Authentication:Audience` in `appsettings.json`, the audience those tokens must be issued for |
+| `--include-auth` | off | Adds JWT bearer authentication. Off, the solution has no authentication code, settings or package at all |
+| `--authority`, `-iss` | empty | Required with `--include-auth`. Sets `Authentication:Authority` in `appsettings.json`, the server that issues the tokens the API accepts |
+| `--audience`, `-aud` | empty | Only used with `--include-auth`. Sets `Authentication:Audience` in `appsettings.json`, the audience those tokens must be issued for |
 | `--output`, `-o` | A folder named after `--name` | Where the solution is created |
 | `--no-restore` | off | Skips the package restore that otherwise runs as soon as the solution is created |
 
