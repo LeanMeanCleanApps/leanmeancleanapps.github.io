@@ -45,7 +45,7 @@ The image runs `GetMovies` by default. The same image also has `GetAuthors` and 
 
 ```bash
 docker run --rm -p 9000:8080 -e Database__SeedSampleData=true acme-reviews:local \
-  "Presentation::Acme.Reviews.Presentation.LambdaFunction.Handler_GetReviews_Generated::GetReviews"
+  "Presentation::WorksOnMyMachine.Reviews.Presentation.LambdaFunction.Handler_GetReviews_Generated::GetReviews"
 
 curl -X POST "http://localhost:9000/2015-03-31/functions/function/invocations" \
   -d '{"movieId":"e159975e-4e6a-1ffd-713e-1eb9d8d4a593","limit":2}'
