@@ -46,7 +46,7 @@ docker compose up -d
 
 Then open Nitro, the GraphQL IDE, at [http://localhost:8080/graphql](http://localhost:8080/graphql) and start querying. The logs, traces and metrics go to the [Aspire dashboard](https://learn.microsoft.com/dotnet/aspire/fundamentals/dashboard/standalone) at [http://localhost:18888](http://localhost:18888), because `Console.WriteLine` is not an observability strategy.
 
-Want it locked down? Pass `--auth bearer` with `--authority` and `--audience` when you create the solution and the movie, author and review queries and the review mutations need a JWT bearer token. Leave them off and it runs wide open, which is lovely on a laptop and less lovely in production.
+Want it locked down? Pass `--authority` and `--audience` when you create the solution and the movie, author and review queries and the review mutations need a JWT bearer token. Leave them off and it runs wide open, which is lovely on a laptop and less lovely in production.
 
 <CardGrid>
   <LinkCard title="Get started" description="Install the template, create a solution and run your first query in Nitro." href="getting-started/" />
