@@ -1,0 +1,51 @@
+---
+title: "Set up CI"
+description: "Get a pipeline running on your solution, whichever way you made it."
+sidebar:
+  order: 7
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+How you get CI depends on how you made your solution. `dotnet new` gives you the code and no pipeline. "Use this template" on GitHub gives you our whole pipeline as well. Either way, it ends with a pipeline that agrees with your laptop about what "green" means.
+
+## Made with `dotnet new`
+
+No pipeline ships, because we can't know whether you live in GitHub Actions, Azure Pipelines, GitLab or a Jenkins box under someone's desk. What ships instead is the recipe: the `ci-for-your-solution` skill in `.agents/skills`.
+
+The quickest route is to ask your coding agent to set up CI. It works as Jacques, so it will ask which CI system you use, agree the checks with you, write the pipeline, and then break something on purpose to prove the pipeline notices.
+
+Prefer to do it by hand? These are the checks, and the commands that run them locally:
+
+| Check | Command |
+| --- | --- |
+| Format | `dotnet format --verify-no-changes` |
+| Build | `dotnet build`. Warnings are already errors |
+| Test and coverage | `dotnet test` with Coverlet, then a 95% gate on the merged total |
+| Vulnerable packages | `dotnet list package --vulnerable --include-transitive` |
+| Container | `docker build . --target run`, plus an image scanner if you ship it |
+| Static analysis | Your platform's scanner, such as CodeQL on GitHub |
+
+The skill has a GitHub Actions example with the exact coverage settings. For the full version, read our [Build Pipeline](https://github.com/LeanMeanCleanApps/CleanMinimalApi/blob/main/.github/workflows/build-pipeline.yml), which runs all of these on every pull request. Borrow freely, but leave out the jobs that pack and publish the template. You're shipping an app, not a template.
+
+## Made with "Use this template"
+
+Your copy has our Build Pipeline, and it's green on the first push with no secrets, accounts or setup. Release Check and Publish only run in the LeanMeanCleanApps organisation, so your copy builds, tests and scans, but never tries to publish to NuGet on your behalf.
+
+### After you copy
+
+<Steps>
+
+1. Change `.github/CODEOWNERS` from `@stphnwlsh` to your own team. Otherwise GitHub has nobody to ask for reviews.
+
+2. Make the checks required on `main` with a branch ruleset: Build, Test, Static Analysis, Dependency Review, Container Scan and Summary.
+
+3. Fill in **Where we track work** in `AGENTS.md`, so agents put their plans and handoffs where your team will see them.
+
+4. Leave `template/` and `.template.config/` alone unless you take out the pipeline's Pack and Verify Template steps at the same time. The pipeline packs the template and tests a generated solution as one of its checks.
+
+</Steps>
+
+<Aside>
+Code scanning results need GitHub Advanced Security on a private repository. On a public one, everything works as it does for us.
+</Aside>
