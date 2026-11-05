@@ -6,14 +6,15 @@ sidebar:
 ---
 
 ```bash
-dotnet new cleanmodelcontextprotocol --name <NAME> [--authorName|-an <AUTHOR>] [--authority|-iss <URL>] [--audience|-aud <URL>] [--output|-o <PATH>] [--no-restore]
+dotnet new cleanmodelcontextprotocol --name <NAME> [--authorName|-an <AUTHOR>] [--auth none|oauth] [--authority|-iss <URL>] [--audience|-aud <URL>] [--output|-o <PATH>] [--no-restore]
 ```
 
 | Option | Default | What it changes |
 | --- | --- | --- |
 | `--name`, `-n` | The current folder's name | Replaces `CleanModelContextProtocol` in every namespace, project, file and folder name, and names the output folder |
 | `--authorName`, `-an` | `Stephen Walsh` | Sets the `Authors` and `Copyright` of the Presentation project, so the assembly credits you instead of us |
-| `--authority`, `-iss` | empty | Sets `Authentication:Authority` in `appsettings.json`. When it's set, the server requires JWT bearer tokens issued by that server |
+| `--auth` | `none` | `oauth` switches on OAuth and asks for `--authority`. `none` leaves the server open, and you can still switch it on later in `appsettings.json` |
+| `--authority`, `-iss` | empty | Required with `--auth oauth`. Sets `Authentication:Authority` in `appsettings.json`. When it's set, the server requires JWT bearer tokens issued by that server |
 | `--audience`, `-aud` | empty | Sets `Authentication:Audience` in `appsettings.json`, the audience those tokens must be issued for |
 | `--output`, `-o` | A folder named after `--name` | Where the solution is created |
 | `--no-restore` | off | Skips the package restore that otherwise runs as soon as the solution is created |
@@ -22,7 +23,7 @@ The usual `dotnet new` options such as `--dry-run` and `--force` work too. Run `
 
 ## In Visual Studio or Rider
 
-Once the template is installed, it shows up in the new project dialog under its name, with the same options as labelled fields. Visual Studio restores the packages for you.
+Once the template is installed, it shows up in the new project dialog under its name, with the same options as labelled fields. The token fields only switch on when you pick OAuth for Authentication. Visual Studio restores the packages for you.
 
 You'll need the .NET 10 SDK or later. Older SDKs get a polite note saying so instead of a half-made solution.
 
