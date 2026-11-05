@@ -15,9 +15,11 @@ import { FileTree } from '@astrojs/starlight/components';
     - Reviews/ queries, commands and entities for reviews
     - Versions/ the version query
     - Common/
-      - Behaviours/ the validation pipeline behaviour
+      - Behaviours/ the logging and validation pipeline behaviours
+      - Enums/ the entity types NotFoundException names
       - Exceptions/ NotFoundException
       - Paging/ shared paging rules
+      - Telemetry/ the activity source for the use case spans
     - DependencyInjection.cs
   - Infrastructure/ the data
     - Databases/MovieReviews/ the EF Core context, models, mapping, migrations and repository
@@ -29,6 +31,7 @@ import { FileTree } from '@astrojs/starlight/components';
       - Models/ requests and responses
       - Mapping/ Mapperly mapper from Application to Presentation
       - Serialization/ the camelCase serializer and its source-generated JSON context
+      - Telemetry/ the OpenTelemetry settings
     - aws-lambda-tools-defaults.json
     - serverless.template the CloudFormation template, one function per handler method
 - tests/
@@ -36,12 +39,19 @@ import { FileTree } from '@astrojs/starlight/components';
   - Infrastructure.Tests.Integration/
   - Presentation.Tests.Integration/
   - Presentation.Tests.Unit/
+- .agents/ Jacques and the skills your coding agent reads
+- .github/workflows/ci.yml formats, builds and tests with the 95% coverage bar
 - docs/RUN.md
+- AGENTS.md the map for coding agents
+- CLAUDE.md points Claude Code at AGENTS.md
+- WorksOnMyMachine.Reviews.slnx
 - Directory.Build.props build rules and analyzers for every project
 - Directory.Packages.props every package version, in one place
 - Dockerfile
-- docker-compose.yml
+- docker-compose.yml the function, an OpenTelemetry Collector and the Aspire dashboard
+- otel-collector.yaml where the collector sends logs, traces and metrics
 - global.json
+- NuGet.config
 </FileTree>
 
 | Project | References | Notes |
