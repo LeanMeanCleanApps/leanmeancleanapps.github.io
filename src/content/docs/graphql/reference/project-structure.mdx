@@ -15,37 +15,47 @@ import { FileTree } from '@astrojs/starlight/components';
     - Reviews/ queries, commands and entities for reviews
     - Versions/ the version query
     - Common/
-      - Behaviours/ the validation pipeline behaviour
+      - Behaviours/ the logging and validation pipeline behaviours
+      - Enums/ the entity types NotFoundException names
       - Exceptions/ NotFoundException
       - Paging/ shared paging rules
+      - Telemetry/ the activity source for the use case spans
     - DependencyInjection.cs
   - Infrastructure/ the data
     - Databases/MovieReviews/ the EF Core context, models, mapping, migrations and repositories
     - DependencyInjection.cs
-    - Presentation/ the GraphQL API
-      - GraphQL/
-        - Queries/ the query type, one static class per feature
-        - Mutations/ the review mutations
-        - Types/ object types for every entity, with their resolvers
-        - Inputs/ the create and update review inputs
-        - DataLoaders/ batch the reviews of a whole page into one query
-        - Errors/ ApplicationErrorFilter, Application exceptions to GraphQL errors
-        - Extensions/ offset pages to Relay connections and back
-      - Authentication/ the JWT bearer settings
-      - Extensions/ builder and app configuration
-      - Program.cs
-      - appsettings.json, appsettings.local.json, appsettings.docker.json
+  - Presentation/ the GraphQL API
+    - GraphQL/
+      - Queries/ the query type, one static class per feature
+      - Mutations/ the review mutations
+      - Types/ object types for every entity, with their resolvers
+      - Inputs/ the create and update review inputs
+      - DataLoaders/ batch the reviews of a whole page into one query
+      - Errors/ ApplicationErrorFilter, Application exceptions to GraphQL errors
+      - Extensions/ offset pages to Relay connections and back
+    - Authentication/ the JWT bearer settings, only with `--include-auth`
+    - Telemetry/ the OpenTelemetry settings
+    - Extensions/ builder and app configuration
+    - Program.cs
+    - appsettings.json, appsettings.local.json, appsettings.docker.json
 - tests/
   - Application.Tests.Unit/
   - Infrastructure.Tests.Integration/
   - Presentation.Tests.Integration/
   - Presentation.Tests.Unit/
+- .agents/ Jacques and the skills your coding agent reads
+- .github/workflows/ci.yml formats, builds and tests with the 95% coverage bar
 - docs/RUN.md
+- AGENTS.md the map for coding agents
+- CLAUDE.md points Claude Code at AGENTS.md
+- WorksOnMyMachine.Movies.slnx
 - Directory.Build.props build rules and analyzers for every project
 - Directory.Packages.props every package version, in one place
 - Dockerfile
-- docker-compose.yml
+- docker-compose.yml the API, an OpenTelemetry Collector and the Aspire dashboard
+- otel-collector.yaml where the collector sends logs, traces and metrics
 - global.json
+- NuGet.config
 </FileTree>
 
 | Project | References | Notes |
