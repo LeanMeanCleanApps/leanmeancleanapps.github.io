@@ -1,26 +1,26 @@
 ---
 title: "Secure the server"
-description: "Turn on JWT bearer authentication with two settings, and how MCP clients find your sign-in."
+description: "Create the server with JWT bearer authentication, add it to one you already have, and how MCP clients find your sign-in."
 sidebar:
   order: 6
 ---
 
 import { Steps, Aside } from '@astrojs/starlight/components';
 
-Out of the box the server runs wide open. Anyone who can reach `/mcp` can call every tool, including the one that deletes reviews. That's lovely on a laptop and less lovely in production, so here's how to close the door.
+Out of the box the server runs wide open, and there's no authentication code in it at all. Anyone who can reach `/mcp` can call every tool, including the one that deletes reviews. That's lovely on a laptop and less lovely in production, so here's how to close the door.
 
 ## Turn it on
 
 <Steps>
 
-1. Tell the server who issues tokens and who they're for. Either bake it in when you create the solution:
+1. Create the solution with `--auth`, and tell it who issues tokens and who they're for:
 
    ```bash
    dotnet new cleanmodelcontextprotocol --name WorksOnMyMachine.Movies \
-     --authority https://login.example.com --audience https://movies.example.com/mcp
+     --auth --authority https://login.example.com --audience https://movies.example.com/mcp
    ```
 
-   Or set it on a solution you already have, in `appsettings.json` or as environment variables:
+   `--authority` is required with `--auth`, so `dotnet new` stops and says so if it's missing. To point each environment at its own server, override the settings in `appsettings.json` or with environment variables:
 
    ```bash
    Authentication__Authority=https://login.example.com
@@ -51,6 +51,19 @@ Out of the box the server runs wide open. Anyone who can reach `/mcp` can call e
 
 </Steps>
 
+## Add it to a solution you already have
+
+Created the solution without `--auth`? The code isn't hiding behind a setting, it isn't there at all, so it goes in by hand. The quickest way to see every line is to let the template show you. Create a second solution with the same name and `--auth` next to yours, then compare the two:
+
+```bash
+dotnet new cleanmodelcontextprotocol --name WorksOnMyMachine.Movies --output ../with-auth \
+  --auth --authority https://login.example.com --audience https://movies.example.com/mcp
+git diff --no-index src ../with-auth/src
+git diff --no-index tests ../with-auth/tests
+```
+
+Copy across what's new: the `Microsoft.AspNetCore.Authentication.JwtBearer` package reference, the `Authentication` folder and its section in `appsettings.json`, the authentication regions in startup, `RequireAuthorization()` on `/mcp`, the MCP challenge and protected resource metadata, and the authentication tests, so coverage stays where it was. The `optional-token-auth` skill in `.agents/skills` walks your coding agent through the same steps.
+
 ## How clients find your sign-in
 
 With authentication on, the server publishes [protected resource metadata](https://modelcontextprotocol.io/specification/latest/basic/authorization) at `/.well-known/oauth-protected-resource/mcp`:
@@ -72,7 +85,7 @@ A client that gets a `401` reads it, discovers the authorization server, and run
 
 ## How it works
 
-`AuthenticationSettings` reads the `Authentication` section. When the authority is set, the server registers the JWT bearer handler for authentication, the MCP handler for the challenge and the metadata, and puts `RequireAuthorization()` on the `/mcp` endpoint. When it isn't, none of that is registered and `/mcp` is mapped as it is. The tools don't know either way, which is why turning authentication on doesn't touch a single one.
+`AuthenticationSettings` reads the `Authentication` section. The server registers the JWT bearer handler for authentication and the MCP handler for the challenge and the metadata, and puts `RequireAuthorization()` on the `/mcp` endpoint. An empty authority still lets every request through, which is how the tests run, so make sure every environment you deploy to sets one. The tools don't know either way, which is why adding authentication doesn't touch a single one.
 
 <Aside type="note" title="Tools can still check">
   Need a tool that only some users may call? Tools can take an `HttpContext` or `ClaimsPrincipal` parameter and look at the claims, or you can split the server into groups with different policies. Which claims to check depends entirely on your identity provider, so the template stops at the door and lets you decide who gets past it.

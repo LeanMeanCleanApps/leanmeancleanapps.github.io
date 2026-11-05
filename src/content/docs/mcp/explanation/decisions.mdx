@@ -46,9 +46,9 @@ As a bonus, MediatR and AutoMapper both moved to commercial licences in 2025, an
 
 Validation runs once, in one place, before any handler. Handlers only ever see valid requests, which keeps them short and keeps tests honest. Presentation just has to turn a `ValidationException` into a tool error the model can act on, and it does that in one class.
 
-## Optional authentication, mandatory authorization
+## Authentication is in or out
 
-The `/mcp` endpoint requires authorization only when `Authentication:Authority` is set, and then the server also publishes protected resource metadata so clients can find the sign-in on their own. Turning security on is configuration, not a code change, and the tools never know the difference. See [Secure the server](../../guides/secure-the-server/).
+Authentication is a choice you make when you create the solution. With `--auth`, the `/mcp` endpoint requires authorization, and the server publishes protected resource metadata so clients can find the sign-in on their own. Without it, there's no authentication code at all, rather than code that sits there switched off. The tools never know the difference. See [Secure the server](../../guides/secure-the-server/).
 
 ## SQLite next to the app
 
