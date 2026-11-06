@@ -66,14 +66,14 @@ The sample data uses a fixed seed, so these ids are the same on every machine. S
 
 ```bash
 # Search movies, two at a time
-curl "http://localhost:8080/api/movies?query=global&limit=2"
+curl "http://localhost:8080/api/movies?query=space&limit=2"
 
 # One movie, with its reviews
-curl "http://localhost:8080/api/movies/e159975e-4e6a-1ffd-713e-1eb9d8d4a593"
+curl "http://localhost:8080/api/movies/cb188ef6-14e7-f85f-2f78-924c2ab26b28"
 
 # Write a review
 curl -X POST "http://localhost:8080/api/reviews" -H "Content-Type: application/json" \
-  -d '{"authorId":"01fa8b58-05d2-abd4-e55c-2633222dd0a5","movieId":"e159975e-4e6a-1ffd-713e-1eb9d8d4a593","stars":5}'
+  -d '{"authorId":"01fa8b58-05d2-abd4-e55c-2633222dd0a5","movieId":"cb188ef6-14e7-f85f-2f78-924c2ab26b28","stars":5,"text":"Great film. I cried at the ending."}'
 ```
 
 ## Run the tests

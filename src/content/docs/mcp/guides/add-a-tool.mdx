@@ -89,7 +89,7 @@ This guide adds `authors_get`, which returns one author with every review they'v
    ```
 
    ```bash
-   curl -X POST "http://localhost:5032/mcp" \
+   curl -X POST "http://localhost:8080/mcp" \
      -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
      -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"authors_get","arguments":{"authorId":"01fa8b58-05d2-abd4-e55c-2633222dd0a5"}}}'
    ```
@@ -98,16 +98,16 @@ This guide adds `authors_get`, which returns one author with every review they'v
    {
      "id": "01fa8b58-05d2-abd4-e55c-2633222dd0a5",
      "name": "Jana Auer",
-     "reviewCount": 10,
-     "averageStars": 2.6,
+     "reviewCount": 9,
+     "averageStars": 3.3,
      "reviews": [
-       { "id": "0c13d0af-31ab-1705-228a-619b147ed110", "stars": 2, "movieId": "aea49d3b-0e68-0098-d9c3-70c93ea9e900", "movieTitle": "Persevering non-volatile middleware", "authorId": "01fa8b58-05d2-abd4-e55c-2633222dd0a5", "authorName": "Jana Auer" },
-       { "id": "19bbc1d8-960a-df45-df54-46ad502c3013", "stars": 2, "movieId": "ecff0774-e2f7-f169-49c9-a6820ae88b30", "movieTitle": "Customizable needs-based open architecture", "authorId": "01fa8b58-05d2-abd4-e55c-2633222dd0a5", "authorName": "Jana Auer" }
+       { "id": "03ca222d-2de3-5eef-ec0b-d3915b23c4de", "stars": 2, "movieId": "c68c95ac-b7fa-4134-761c-0014588bfa01", "movieTitle": "The Courtroom Cockatoo", "authorId": "01fa8b58-05d2-abd4-e55c-2633222dd0a5", "authorName": "Jana Auer", "text": "Twenty minutes too long, in a film that needed to be an hour shorter." },
+       { "id": "0ac92e89-50e3-543b-49d7-13ee4064b32e", "stars": 4, "movieId": "c510b73e-4967-949a-7098-8263bb7b8d39", "movieTitle": "Midnight at the Laundromat", "authorId": "01fa8b58-05d2-abd4-e55c-2633222dd0a5", "authorName": "Jana Auer", "text": "It takes a while to warm up, then it really goes." }
      ]
    }
    ```
 
-   Jana averages 2.6 stars across ten reviews. Jana is not easily impressed.
+   Jana averages 3.3 stars across nine reviews, and sat through *Apprentice to a Retired Dragon* out of spite.
 
 </Steps>
 

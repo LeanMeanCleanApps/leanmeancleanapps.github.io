@@ -60,7 +60,7 @@ This guide adds `bestReview` to the `Movie` type: the highest rated review of th
 
    ```bash
    dotnet run --project ./src/Presentation
-   curl "http://localhost:5032/graphql?sdl" > tests/Presentation.Tests.Integration/GraphQL/Schema/schema.graphql
+   curl "http://localhost:8080/graphql?sdl" > tests/Presentation.Tests.Integration/GraphQL/Schema/schema.graphql
    ```
 
    The diff is the one field, described:
@@ -117,7 +117,7 @@ This guide adds `bestReview` to the `Movie` type: the highest rated review of th
 
    ```graphql
    {
-     movie(id: "e159975e-4e6a-1ffd-713e-1eb9d8d4a593") {
+     movie(id: "cb188ef6-14e7-f85f-2f78-924c2ab26b28") {
        title
        bestReview { stars author { firstName lastName } }
      }
@@ -125,10 +125,10 @@ This guide adds `bestReview` to the `Movie` type: the highest rated review of th
    ```
 
    ```json
-   { "data": { "movie": { "title": "Assimilated disintermediate adapter", "bestReview": { "stars": 5, "author": { "firstName": "Jana", "lastName": "Auer" } } } } }
+   { "data": { "movie": { "title": "Deep Space Gardeners", "bestReview": { "stars": 5, "author": { "firstName": "Caroline", "lastName": "Bins" } } } } }
    ```
 
-   Jana gave it five stars. Jana's average is 2.6, so this is high praise.
+   Caroline gave it five stars, and three in a second review. Caroline contains multitudes.
 
 </Steps>
 

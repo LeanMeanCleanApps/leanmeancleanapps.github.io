@@ -30,7 +30,7 @@ Out of the box the API runs wide open, and there's no authentication code in it 
 2. Get a token from the authority for that audience, and send it.
 
    ```bash
-   curl "http://localhost:5032/api/movies" -H "Authorization: Bearer eyJhbGciOi..."
+   curl "http://localhost:8080/api/movies" -H "Authorization: Bearer eyJhbGciOi..."
    ```
 
    Without a token, or with one from the wrong issuer or for the wrong audience, the API answers `401 Unauthorized`.

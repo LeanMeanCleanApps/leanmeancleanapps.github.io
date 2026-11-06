@@ -17,7 +17,7 @@ There are two ready-made environments. `local` is for `dotnet run`: sample data 
     dotnet run --project ./src/Presentation
     ```
 
-    `launchSettings.json` sets the environment to `local` and listens on [http://localhost:5032](http://localhost:5032) and `https://localhost:7032`. The server is at `/mcp`.
+    `launchSettings.json` sets the environment to `local` and listens on [http://localhost:8080](http://localhost:8080) and `https://localhost:8081`, the same port as Docker Compose. The server is at `/mcp`.
   </TabItem>
   <TabItem label="Docker Compose">
     ```bash
@@ -45,6 +45,7 @@ There are two ready-made environments. `local` is for `dotnet run`: sample data 
 | `/health/ready` | Answers 200 when the database can be reached |
 | `/.well-known/oauth-protected-resource/mcp` | Protected resource metadata, only when [authentication is on](../secure-the-server/) |
 | [http://localhost:6274](http://localhost:6274) | The MCP Inspector, when running with Docker Compose |
+| [http://localhost:3000](http://localhost:3000) | Open WebUI, when running with Docker Compose and the `demo` profile |
 | [http://localhost:18888](http://localhost:18888) | The Aspire dashboard, with the logs, traces and metrics, when running with Docker Compose |
 
 The health endpoints answer without a token even when authentication is on, so a load balancer never needs to log in.
@@ -53,11 +54,21 @@ The health endpoints answer without a token even when authentication is on, so a
 
 The [MCP Inspector](https://github.com/modelcontextprotocol/inspector) is the official test client, and Docker Compose runs it already pointed at `http://api:8080/mcp`. Open it, press **Connect**, and:
 
-- **Tools** lists every tool with its description, annotations and input schema, and gives you a form to call it.
-- **Resources** lets you read `server://version` or any `movies://`, `authors://` or `reviews://` URI.
-- **Prompts** renders each prompt with its arguments, and the title and name arguments autocomplete from the database.
+- **Tools** lists every tool with its description, annotations and input schema, and gives you a form to call it. A result lists its movies, authors and reviews under **Resource Links**, and expanding one reads it.
+- **Resources** lets you read `movies://top-rated`, `server://version` or any `movies://`, `authors://` or `reviews://` URI, and the ids autocomplete as you type an id or a title.
+- **Prompts** renders each prompt with its arguments, and the title, name and id arguments autocomplete from the database.
 
-Running with `dotnet run` instead? Start the Inspector yourself with `npx @modelcontextprotocol/inspector` and point it at `http://localhost:5032/mcp`.
+Running with `dotnet run` instead? Start the Inspector yourself with `npx @modelcontextprotocol/inspector` and point it at `http://localhost:8080/mcp`.
+
+## Chat with it
+
+Want to ask for things in plain English? The optional `demo` profile adds [Open WebUI](https://github.com/open-webui/open-webui), already connected to the server.
+
+```bash
+docker compose --profile demo up -d --build
+```
+
+Open [http://localhost:3000](http://localhost:3000), dismiss the release notes and ask it to list the movies. It uses Kilo's free gateway as the model, so there's no account or key, but it only works online, and your prompts and tool results go to Kilo, a third party. Keep it to sample data. Solutions created with `--include-auth` leave it out, because Open WebUI has no token to send. Stop it with `docker compose --profile demo down`.
 
 ## See the telemetry
 
@@ -76,17 +87,17 @@ The server is stateless, so a single `tools/call` works without an `initialize` 
 
 ```bash
 # One movie, with every review
-curl -X POST "http://localhost:5032/mcp" \
+curl -X POST "http://localhost:8080/mcp" \
   -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"movies_get","arguments":{"movieId":"e159975e-4e6a-1ffd-713e-1eb9d8d4a593"}}}'
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"movies_get","arguments":{"movieId":"cb188ef6-14e7-f85f-2f78-924c2ab26b28"}}}'
 
 # Write a review
-curl -X POST "http://localhost:5032/mcp" \
+curl -X POST "http://localhost:8080/mcp" \
   -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
-  -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"reviews_write","arguments":{"authorId":"01fa8b58-05d2-abd4-e55c-2633222dd0a5","movieId":"e159975e-4e6a-1ffd-713e-1eb9d8d4a593","stars":5}}}'
+  -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"reviews_write","arguments":{"authorId":"01fa8b58-05d2-abd4-e55c-2633222dd0a5","movieId":"cb188ef6-14e7-f85f-2f78-924c2ab26b28","stars":5,"text":"Great film. I cried at the ending."}}}'
 
 # Read a resource
-curl -X POST "http://localhost:5032/mcp" \
+curl -X POST "http://localhost:8080/mcp" \
   -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
   -d '{"jsonrpc":"2.0","id":3,"method":"resources/read","params":{"uri":"server://version"}}'
 ```
@@ -125,5 +136,5 @@ docker build . --target run --tag acme-movies:latest \
 The `server://version` resource and the `serverInfo` in the initialize response then report `1.2.3-beta` and the commit it was built from.
 
 <Aside type="tip" title="Stuck?">
-  If curl answers `406 Not Acceptable`, you forgot the `Accept` header. The server insists on `application/json, text/event-stream`, as the spec says it should. If it says connection refused, check that port 5032 isn't busy with something else you forgot about.
+  If curl answers `406 Not Acceptable`, you forgot the `Accept` header. The server insists on `application/json, text/event-stream`, as the spec says it should. If it says connection refused, check that port 8080 isn't busy with something else you forgot about.
 </Aside>

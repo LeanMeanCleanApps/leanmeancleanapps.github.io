@@ -48,7 +48,7 @@ docker run --rm -p 9000:8080 -e Database__SeedSampleData=true acme-reviews:local
   "Presentation::WorksOnMyMachine.Reviews.Presentation.LambdaFunction.Handler_GetReviews_Generated::GetReviews"
 
 curl -X POST "http://localhost:9000/2015-03-31/functions/function/invocations" \
-  -d '{"movieId":"e159975e-4e6a-1ffd-713e-1eb9d8d4a593","limit":2}'
+  -d '{"movieId":"cb188ef6-14e7-f85f-2f78-924c2ab26b28","limit":2}'
 ```
 
 The sample data uses a fixed seed, so that movie id is the same on every machine. See the [function reference](../../reference/functions/) for every request and response.
