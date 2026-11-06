@@ -55,12 +55,12 @@ You need the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0). [
    dotnet run --project ./src/Presentation
    ```
 
-   It answers on `https://localhost:8081`. If your browser or `curl` doesn't trust the .NET development certificate yet, run `dotnet dev-certs https --trust` once.
+   It answers on `https://localhost:8721`. If your browser or `curl` doesn't trust the .NET development certificate yet, run `dotnet dev-certs https --trust` once.
 
 5. Call a tool. The server speaks Streamable HTTP at `/mcp`, and because it's stateless you can send a single JSON-RPC request with nothing before it.
 
    ```bash
-   curl -X POST "https://localhost:8081/mcp" \
+   curl -X POST "https://localhost:8721/mcp" \
      -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
      -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"movies_search","arguments":{"query":"space","limit":2}}}'
    ```
@@ -86,7 +86,7 @@ You need the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0). [
    docker compose up -d --build
    ```
 
-   Open [http://localhost:6274](http://localhost:6274), connect, and the **Tools**, **Resources** and **Prompts** tabs show everything the server offers, with a form for each.
+   Open [http://localhost:8725](http://localhost:8725), connect, and the **Tools**, **Resources** and **Prompts** tabs show everything the server offers, with a form for each.
 
 7. Run the tests while you're here.
 

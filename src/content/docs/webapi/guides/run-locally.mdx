@@ -17,19 +17,19 @@ There are two ready-made environments. `local` is for `dotnet run`: sample data 
     dotnet run --project ./src/Presentation
     ```
 
-    `launchSettings.json` sets the environment to `local` and listens on [https://localhost:8081](https://localhost:8081), and on `https://localhost:8081`, which redirects to it. If your browser or `curl` doesn't trust the .NET development certificate yet, run `dotnet dev-certs https --trust` once.
+    `launchSettings.json` sets the environment to `local` and listens on [https://localhost:8741](https://localhost:8741), and on `https://localhost:8741`, which redirects to it. If your browser or `curl` doesn't trust the .NET development certificate yet, run `dotnet dev-certs https --trust` once.
   </TabItem>
   <TabItem label="Docker Compose">
     ```bash
     docker compose up -d --build
     ```
 
-    Compose builds the `run` stage, starts an OpenTelemetry Collector and the Aspire dashboard next to it, and publishes the API on [http://localhost:8080](http://localhost:8080). Shut it down with `docker compose down`, or `docker compose down -v` to drop the database too.
+    Compose builds the `run` stage, starts an OpenTelemetry Collector and the Aspire dashboard next to it, and publishes the API on [http://localhost:8740](http://localhost:8740). Shut it down with `docker compose down`, or `docker compose down -v` to drop the database too.
   </TabItem>
   <TabItem label="Docker">
     ```bash
     docker build . --target run --tag acme-movies:local
-    docker run --rm -p 8080:8080 -e DOTNET_ENVIRONMENT=docker acme-movies:local
+    docker run --rm -p 8740:8080 -e DOTNET_ENVIRONMENT=docker acme-movies:local
     ```
 
     Without Compose there's no collector, so the logs stay on the console and nothing else is exported. Set `OTEL_EXPORTER_OTLP_ENDPOINT` to send them to a collector of your own.
@@ -45,34 +45,34 @@ There are two ready-made environments. `local` is for `dotnet run`: sample data 
 | `/health/live` | Answers 200 while the process is up |
 | `/health/ready` | Answers 200 when the database can be reached |
 | `/api/version` | The version stamped into the build. Needs a token when authentication is on |
-| [http://localhost:18888](http://localhost:18888) | The Aspire dashboard, with the logs, traces and metrics, when running with Docker Compose |
+| [http://localhost:8742](http://localhost:8742) | The Aspire dashboard, with the logs, traces and metrics, when running with Docker Compose |
 
 The health endpoints answer without a token even when authentication is on, so a load balancer never needs to log in.
 
 ## See the telemetry
 
-Docker Compose runs an [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/) beside the API, and the collector forwards everything to the [Aspire dashboard](https://learn.microsoft.com/dotnet/aspire/fundamentals/dashboard/standalone) at [http://localhost:18888](http://localhost:18888). Open **Traces** to follow a request from the HTTP request to the use case, **Structured** for the logs, each linked to its trace, and **Metrics** for request durations, EF Core queries and the runtime. The dashboard keeps everything in memory, so it's empty again after a restart. The dashboard has no login, and the collector accepts OTLP from anyone on ports 4317 and 4318. That's on purpose, so there's nothing to sign in to on your machine, and it's why the compose file is for your machine only. Don't run it anywhere other people can reach.
+Docker Compose runs an [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/) beside the API, and the collector forwards everything to the [Aspire dashboard](https://learn.microsoft.com/dotnet/aspire/fundamentals/dashboard/standalone) at [http://localhost:8742](http://localhost:8742). Open **Traces** to follow a request from the HTTP request to the use case, **Structured** for the logs, each linked to its trace, and **Metrics** for request durations, EF Core queries and the runtime. The dashboard keeps everything in memory, so it's empty again after a restart. The dashboard has no login, and the collector accepts OTLP from anyone on ports 4317 and 4318. That's on purpose, so there's nothing to sign in to on your machine, and it's why the compose file is for your machine only. Don't run it anywhere other people can reach.
 
 The API only ever talks OTLP to the collector, and `otel-collector.yaml` decides where things go. To send them to a real backend, add its exporter there; the API doesn't change. To see a `dotnet run` in the dashboard, start the collector and point the API at it:
 
 ```bash
 docker compose up -d otel-collector
-OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317 dotnet run --project ./src/Presentation
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:8743 dotnet run --project ./src/Presentation
 ```
 
 ## Try the endpoints
 
-These use the `dotnet run` address; with Docker Compose, use `http://localhost:8080` instead. The sample data uses a fixed seed, so these ids are the same on every machine. See the [endpoint reference](../../reference/endpoints/) for every parameter and response.
+These use the `dotnet run` address; with Docker Compose, use `http://localhost:8740` instead. The sample data uses a fixed seed, so these ids are the same on every machine. See the [endpoint reference](../../reference/endpoints/) for every parameter and response.
 
 ```bash
 # Search movies, two at a time
-curl "https://localhost:8081/api/movies?query=space&limit=2"
+curl "https://localhost:8741/api/movies?query=space&limit=2"
 
 # One movie, with its reviews
-curl "https://localhost:8081/api/movies/cb188ef6-14e7-f85f-2f78-924c2ab26b28"
+curl "https://localhost:8741/api/movies/cb188ef6-14e7-f85f-2f78-924c2ab26b28"
 
 # Write a review
-curl -X POST "https://localhost:8081/api/reviews" -H "Content-Type: application/json" \
+curl -X POST "https://localhost:8741/api/reviews" -H "Content-Type: application/json" \
   -d '{"authorId":"01fa8b58-05d2-abd4-e55c-2633222dd0a5","movieId":"cb188ef6-14e7-f85f-2f78-924c2ab26b28","stars":5,"text":"Great film. I cried at the ending."}'
 ```
 
@@ -110,5 +110,5 @@ docker build . --target run --tag acme-movies:latest \
 `GET /api/version` then reports `1.2.3-beta` and the commit it was built from.
 
 <Aside type="tip" title="Stuck?">
-  If the first request takes a moment, the API is applying migrations and seeding. If `curl` says connection refused, check that ports 8080 and 8081 aren't busy with something else you forgot about.
+  If the first request takes a moment, the API is applying migrations and seeding. If `curl` says connection refused, check that ports 8740 and 8741 aren't busy with something else you forgot about.
 </Aside>

@@ -103,10 +103,10 @@ This guide adds a `GetMovie` function that returns one movie with all of its rev
 
    ```bash
    docker build . --target run --tag acme-reviews:local
-   docker run --rm -p 9000:8080 -e Database__SeedSampleData=true acme-reviews:local \
+   docker run --rm -p 8750:8080 -e Database__SeedSampleData=true acme-reviews:local \
      "Presentation::WorksOnMyMachine.Reviews.Presentation.LambdaFunction.Handler_GetMovie_Generated::GetMovie"
 
-   curl -X POST "http://localhost:9000/2015-03-31/functions/function/invocations" \
+   curl -X POST "http://localhost:8750/2015-03-31/functions/function/invocations" \
      -d '{"id":"cb188ef6-14e7-f85f-2f78-924c2ab26b28"}'
    ```
 

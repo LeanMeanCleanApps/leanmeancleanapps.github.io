@@ -35,10 +35,12 @@ Every setting in `appsettings.json` can be overridden with an environment variab
 
 | Service | What it is | Port |
 | --- | --- | --- |
-| `api` | The image, built from the `run` stage | 8080 |
-| `inspector` | The MCP Inspector, pointed at the server | 6274, on localhost only |
-| `otel-collector` | The [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/), configured by `otel-collector.yaml` | 4317 (gRPC), 4318 (HTTP) |
-| `aspire-dashboard` | The [Aspire dashboard](https://learn.microsoft.com/dotnet/aspire/fundamentals/dashboard/standalone), where the collector sends everything | 18888 |
+| `api` | The image, built from the `run` stage | 8720 (8080 inside the container) |
+| `inspector` | The MCP Inspector, pointed at the server | 8725, on localhost only |
+| `otel-collector` | The [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/), configured by `otel-collector.yaml` | 8723 (gRPC), 8724 (HTTP) |
+| `aspire-dashboard` | The [Aspire dashboard](https://learn.microsoft.com/dotnet/aspire/fundamentals/dashboard/standalone), where the collector sends everything | 8722 |
+
+The ports are the ones on your machine. Each template has its own block of ten, so this one uses 8720 to 8729 and runs beside a solution made from any other template: Minimal API 8710, MCP 8720, GraphQL 8730, Web API 8740 and Lambda Function 8750. Inside their containers the services keep their usual ports, except the Inspector, which only accepts calls from the origin it listens on and so uses 8725 inside too.
 
 The `api` service runs with `DOTNET_ENVIRONMENT=docker`, mounts the `movie-reviews-data` volume at `/app/data`, and sends its logs, traces and metrics over OTLP to `otel-collector`, which forwards them to `aspire-dashboard`.
 
@@ -57,4 +59,4 @@ Every span, metric and log also carries `service.version`, the version stamped i
 
 ## Ports when running with dotnet run
 
-`src/Presentation/Properties/launchSettings.json` sets `DOTNET_ENVIRONMENT=local` and listens on `http://localhost:8080` and `https://localhost:8081`.
+`src/Presentation/Properties/launchSettings.json` sets `DOTNET_ENVIRONMENT=local` and listens on `http://localhost:8720` and `https://localhost:8721`.
