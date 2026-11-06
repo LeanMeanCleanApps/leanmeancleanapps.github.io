@@ -7,7 +7,7 @@ sidebar:
 
 import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
 
-The server speaks [Streamable HTTP](https://modelcontextprotocol.io/specification/latest/basic/transports), the current remote transport in the MCP spec, so any client that supports remote servers can connect to it. Start the server with `dotnet run --project ./src/Presentation` or Docker Compose, and give the client `http://localhost:8080/mcp`. Both listen there.
+The server speaks [Streamable HTTP](https://modelcontextprotocol.io/specification/latest/basic/transports), the current remote transport in the MCP spec, so any client that supports remote servers can connect to it. Start the server with Docker Compose and give the client `http://localhost:8080/mcp`. With `dotnet run` the address is `https://localhost:8081/mcp`, which needs a client that trusts the .NET development certificate, so Compose is the easier one to connect to.
 
 No client to hand? Docker Compose can start one for you: see [Chat with it](../run-locally/#chat-with-it).
 

@@ -17,7 +17,7 @@ There are two ready-made environments. `local` is for `dotnet run`: sample data 
     dotnet run --project ./src/Presentation
     ```
 
-    `launchSettings.json` sets the environment to `local` and listens on [http://localhost:8080](http://localhost:8080) and `https://localhost:8081`, the same port as Docker Compose. The server is at `/mcp`.
+    `launchSettings.json` sets the environment to `local` and listens on [https://localhost:8081](https://localhost:8081), and on `https://localhost:8081`, which redirects to it. If your browser or `curl` doesn't trust the .NET development certificate yet, run `dotnet dev-certs https --trust` once. The server is at `/mcp`.
   </TabItem>
   <TabItem label="Docker Compose">
     ```bash
@@ -58,7 +58,7 @@ The [MCP Inspector](https://github.com/modelcontextprotocol/inspector) is the of
 - **Resources** lets you read `movies://top-rated`, `server://version` or any `movies://`, `authors://` or `reviews://` URI, and the ids autocomplete as you type an id or a title.
 - **Prompts** renders each prompt with its arguments, and the title, name and id arguments autocomplete from the database.
 
-Running with `dotnet run` instead? Start the Inspector yourself with `npx @modelcontextprotocol/inspector` and point it at `http://localhost:8080/mcp`.
+Running with `dotnet run` instead? Start the Inspector yourself with `npx @modelcontextprotocol/inspector` and point it at `https://localhost:8081/mcp`. Node doesn't read the system's trusted certificates by default, so if it can't connect, use Docker Compose instead.
 
 ## Chat with it
 
@@ -83,21 +83,21 @@ OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317 dotnet run --project ./src/Pre
 
 ## Try the tools from the terminal
 
-The server is stateless, so a single `tools/call` works without an `initialize` first. The sample data uses a fixed seed, so these ids are the same on every machine. See the [tool reference](../../reference/tools/) for every argument and result.
+The server is stateless, so a single `tools/call` works without an `initialize` first. These use the `dotnet run` address; with Docker Compose, use `http://localhost:8080/mcp` instead. The sample data uses a fixed seed, so these ids are the same on every machine. See the [tool reference](../../reference/tools/) for every argument and result.
 
 ```bash
 # One movie, with every review
-curl -X POST "http://localhost:8080/mcp" \
+curl -X POST "https://localhost:8081/mcp" \
   -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"movies_get","arguments":{"movieId":"cb188ef6-14e7-f85f-2f78-924c2ab26b28"}}}'
 
 # Write a review
-curl -X POST "http://localhost:8080/mcp" \
+curl -X POST "https://localhost:8081/mcp" \
   -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
   -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"reviews_write","arguments":{"authorId":"01fa8b58-05d2-abd4-e55c-2633222dd0a5","movieId":"cb188ef6-14e7-f85f-2f78-924c2ab26b28","stars":5,"text":"Great film. I cried at the ending."}}}'
 
 # Read a resource
-curl -X POST "http://localhost:8080/mcp" \
+curl -X POST "https://localhost:8081/mcp" \
   -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
   -d '{"jsonrpc":"2.0","id":3,"method":"resources/read","params":{"uri":"server://version"}}'
 ```

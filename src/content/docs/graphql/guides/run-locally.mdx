@@ -17,7 +17,7 @@ There are two ready-made environments. `local` is for `dotnet run`: sample data 
     dotnet run --project ./src/Presentation
     ```
 
-    `launchSettings.json` sets the environment to `local` and listens on [http://localhost:8080](http://localhost:8080) and `https://localhost:8081`, the same port as Docker Compose.
+    `launchSettings.json` sets the environment to `local` and listens on [https://localhost:8081](https://localhost:8081), and on `https://localhost:8081`, which redirects to it. If your browser or `curl` doesn't trust the .NET development certificate yet, run `dotnet dev-certs https --trust` once.
   </TabItem>
   <TabItem label="Docker Compose">
     ```bash
@@ -117,5 +117,5 @@ docker build . --target run --tag acme-movies:latest \
 The `version` query then reports `1.2.3-beta` and the commit it was built from.
 
 <Aside type="tip" title="Stuck?">
-  If Nitro loads but can't reach the schema, you're probably on `https://` with a certificate your browser doesn't trust yet. Use the `http://` address, or run `dotnet dev-certs https --trust` once. If `curl` says connection refused, check that port 8080 isn't busy with something else you forgot about.
+  If Nitro loads but can't reach the schema, you're probably on `https://` with a certificate your browser doesn't trust yet. Run `dotnet dev-certs https --trust` once and reload. The `http://` address only redirects to `https://`, so it doesn't help. If `curl` says connection refused, check that port 8080 isn't busy with something else you forgot about.
 </Aside>

@@ -30,7 +30,7 @@ Out of the box the API runs wide open, and there's no authentication code in it 
 2. Get a token from the authority for that audience, and send it.
 
    ```bash
-   curl -X POST "http://localhost:8080/graphql" -H "Authorization: Bearer eyJhbGciOi..." \
+   curl -X POST "https://localhost:8081/graphql" -H "Authorization: Bearer eyJhbGciOi..." \
      -H "Content-Type: application/json" -d '{"query":"{ movies { totalCount } }"}'
    ```
 
