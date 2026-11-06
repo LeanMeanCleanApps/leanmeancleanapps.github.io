@@ -55,10 +55,10 @@ You need the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) an
    docker compose up -d --build
    ```
 
-5. Invoke the function. The emulator listens on port 8750 and answers the same way Lambda does.
+5. Invoke the function. The emulator listens on port 7350 and answers the same way Lambda does.
 
    ```bash
-   curl -X POST "http://localhost:8750/2015-03-31/functions/function/invocations" \
+   curl -X POST "http://localhost:7350/2015-03-31/functions/function/invocations" \
      -d '{"query":"space","limit":2}'
    ```
 

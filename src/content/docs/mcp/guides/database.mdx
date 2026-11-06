@@ -30,7 +30,7 @@ The next start builds a fresh database and seeds it again.
 Set `ConnectionStrings__MovieReviews`. To keep everything in memory, which is what the tests do:
 
 ```bash
-docker run --rm -p 8720:8080 -e DOTNET_ENVIRONMENT=docker \
+docker run --rm -p 7320:7320 -e DOTNET_ENVIRONMENT=docker \
   -e ConnectionStrings__MovieReviews="Data Source=MovieReviews;Mode=Memory;Cache=Shared" \
   acme-movies:local
 ```

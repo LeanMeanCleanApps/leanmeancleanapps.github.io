@@ -89,7 +89,7 @@ This guide adds `authors_get`, which returns one author with every review they'v
    ```
 
    ```bash
-   curl -X POST "https://localhost:8721/mcp" \
+   curl -X POST "https://localhost:7321/mcp" \
      -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
      -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"authors_get","arguments":{"authorId":"01fa8b58-05d2-abd4-e55c-2633222dd0a5"}}}'
    ```

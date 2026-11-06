@@ -42,7 +42,7 @@ Out of the box the server runs wide open, and there's no authentication code in 
 3. Get a token from the authority for that audience, and send it.
 
    ```bash
-   curl -X POST "https://localhost:8721/mcp" -H "Authorization: Bearer eyJhbGciOi..." \
+   curl -X POST "https://localhost:7321/mcp" -H "Authorization: Bearer eyJhbGciOi..." \
      -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
      -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
    ```

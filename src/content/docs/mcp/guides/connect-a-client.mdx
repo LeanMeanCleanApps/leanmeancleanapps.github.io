@@ -7,14 +7,14 @@ sidebar:
 
 import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
 
-The server speaks [Streamable HTTP](https://modelcontextprotocol.io/specification/latest/basic/transports), the current remote transport in the MCP spec, so any client that supports remote servers can connect to it. Start the server with Docker Compose and give the client `http://localhost:8720/mcp`. With `dotnet run` the address is `https://localhost:8721/mcp`, which needs a client that trusts the .NET development certificate, so Compose is the easier one to connect to.
+The server speaks [Streamable HTTP](https://modelcontextprotocol.io/specification/latest/basic/transports), the current remote transport in the MCP spec, so any client that supports remote servers can connect to it. Start the server with Docker Compose and give the client `http://localhost:7320/mcp`. With `dotnet run` the address is `https://localhost:7321/mcp`, which needs a client that trusts the .NET development certificate, so Compose is the easier one to connect to.
 
 No client to hand? Docker Compose can start one for you: see [Chat with it](../run-locally/#chat-with-it).
 
 <Tabs>
   <TabItem label="Claude Code">
     ```bash
-    claude mcp add --transport http acme-movies http://localhost:8720/mcp
+    claude mcp add --transport http acme-movies http://localhost:7320/mcp
     ```
 
     Then ask it something like "which movie has the best reviews?" and watch it call `movies_search` and `movies_get` on its own.
@@ -28,7 +28,7 @@ No client to hand? Docker Compose can start one for you: see [Chat with it](../r
     ```json
     {
       "servers": {
-        "acme-movies": { "type": "http", "url": "http://localhost:8720/mcp" }
+        "acme-movies": { "type": "http", "url": "http://localhost:7320/mcp" }
       }
     }
     ```
@@ -39,7 +39,7 @@ No client to hand? Docker Compose can start one for you: see [Chat with it](../r
     ```json
     {
       "mcpServers": {
-        "acme-movies": { "url": "http://localhost:8720/mcp" }
+        "acme-movies": { "url": "http://localhost:7320/mcp" }
       }
     }
     ```
@@ -51,7 +51,7 @@ No client to hand? Docker Compose can start one for you: see [Chat with it](../r
     using ModelContextProtocol.Client;
 
     await using var client = await McpClient.CreateAsync(
-        new HttpClientTransport(new HttpClientTransportOptions { Endpoint = new Uri("http://localhost:8720/mcp") }));
+        new HttpClientTransport(new HttpClientTransportOptions { Endpoint = new Uri("http://localhost:7320/mcp") }));
 
     var result = await client.CallToolAsync("movies_search", new Dictionary<string, object?> { ["query"] = "space" });
     ```

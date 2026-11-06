@@ -55,9 +55,9 @@ You need the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0). [
    dotnet run --project ./src/Presentation
    ```
 
-   It answers on `https://localhost:8731`. If your browser or `curl` doesn't trust the .NET development certificate yet, run `dotnet dev-certs https --trust` once.
+   It answers on `https://localhost:7331`. If your browser or `curl` doesn't trust the .NET development certificate yet, run `dotnet dev-certs https --trust` once.
 
-5. Open Nitro, the GraphQL IDE, at [https://localhost:8731/graphql](https://localhost:8731/graphql). The schema is on the left, with every type and field described, and the editor autocompletes as you type. Paste this in and press play:
+5. Open Nitro, the GraphQL IDE, at [https://localhost:7331/graphql](https://localhost:7331/graphql). The schema is on the left, with every type and field described, and the editor autocompletes as you type. Paste this in and press play:
 
    ```graphql
    {
@@ -72,7 +72,7 @@ You need the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0). [
 6. Or ask from the terminal.
 
    ```bash
-   curl -X POST "https://localhost:8731/graphql" -H "Content-Type: application/json" \
+   curl -X POST "https://localhost:7331/graphql" -H "Content-Type: application/json" \
      -d '{"query":"{ movies(query: \"space\", first: 2) { totalCount nodes { id title reviewCount averageStars } } }"}'
    ```
 
