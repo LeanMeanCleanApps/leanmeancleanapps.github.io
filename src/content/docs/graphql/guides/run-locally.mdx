@@ -117,5 +117,5 @@ docker build . --target run --tag acme-movies:latest \
 The `version` query then reports `1.2.3-beta` and the commit it was built from.
 
 <Aside type="tip" title="Stuck?">
-  If Nitro loads but can't reach the schema, you're probably on `https://` with a certificate your browser doesn't trust yet. Run `dotnet dev-certs https --trust` once and reload. The `http://` address only redirects to `https://`, so it doesn't help. If `curl` says connection refused, check that port 8080 isn't busy with something else you forgot about.
+  If Nitro loads but can't reach the schema, you're probably on `https://` with a certificate your browser doesn't trust yet. Run `dotnet dev-certs https --trust` once and reload. The `http://` address only redirects to `https://`, so it doesn't help. If `curl` says connection refused, check that ports 8080 and 8081 aren't busy with something else you forgot about.
 </Aside>

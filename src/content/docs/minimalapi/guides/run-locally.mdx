@@ -110,5 +110,5 @@ docker build . --target run --tag acme-movies:latest \
 `GET /api/version` then reports `1.2.3-beta` and the commit it was built from.
 
 <Aside type="tip" title="Stuck?">
-  If the first request takes a moment, the API is applying migrations and seeding. If `curl` says connection refused, check that port 8080 isn't busy with something else you forgot about.
+  If the first request takes a moment, the API is applying migrations and seeding. If `curl` says connection refused, check that ports 8080 and 8081 aren't busy with something else you forgot about.
 </Aside>
