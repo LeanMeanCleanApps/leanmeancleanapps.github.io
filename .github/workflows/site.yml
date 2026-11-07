@@ -64,8 +64,10 @@ jobs:
         id: build
         run: npm run build
         env:
-          # Public by design: the token ends up in every page. Leave the variable unset to build without analytics.
+          # Public by design: these end up in every page. Leave a variable unset to build without that counter.
           PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN: ${{ vars.CLOUDFLARE_ANALYTICS_TOKEN }}
+          PUBLIC_POSTHOG_KEY: ${{ vars.POSTHOG_KEY }}
+          PUBLIC_POSTHOG_HOST: ${{ vars.POSTHOG_HOST }}
 
       - name: Upload Site
         id: upload
