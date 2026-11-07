@@ -16,7 +16,7 @@ docker build . --target run --tag acme-movies:1.2.3 \
   --build-arg VERSION_PREFIX=1.2.3
 ```
 
-The version is stamped into the assemblies, so the `version` query tells you exactly which build is running, and so does `service.version` on every span, metric and log. See the [configuration reference](../../reference/configuration/) for every build argument.
+The version is stamped into the assemblies, so the `version` query tells you exactly which build is running, and so does `service.version` on every span, metric and log. See the [configuration reference](/graphql/reference/configuration/) for every build argument.
 
 ## Pick an environment
 
@@ -51,11 +51,11 @@ Both answer without a token, even when authentication is on.
 
 ## Keep the data somewhere safe
 
-The SQLite file lives in `/app/data`. Mount a volume there or, better, [point Infrastructure at a real database](../database/#swap-sqlite-for-something-real) before anyone relies on it. A database inside a container that gets replaced on every deploy is a database with a short memory.
+The SQLite file lives in `/app/data`. Mount a volume there or, better, [point Infrastructure at a real database](/graphql/guides/database/#swap-sqlite-for-something-real) before anyone relies on it. A database inside a container that gets replaced on every deploy is a database with a short memory.
 
 ## Turn authentication on
 
-In a solution created with `--include-auth`, set `Authentication__Authority` and `Authentication__Audience` as environment variables to point each environment at its own authorization server. Without `--include-auth` there's nothing to turn on yet. The [security guide](../secure-the-api/) has the details.
+In a solution created with `--include-auth`, set `Authentication__Authority` and `Authentication__Audience` as environment variables to point each environment at its own authorization server. Without `--include-auth` there's nothing to turn on yet. The [security guide](/graphql/guides/secure-the-api/) has the details.
 
 <Aside type="tip" title="Where to run it">
   Azure Container Apps, AWS App Runner and ECS, Google Cloud Run, Fly.io, Kubernetes, or a Raspberry Pi under the desk. The image doesn't care. It only wants port 7330 (point the platform's target port at it), a `DOTNET_ENVIRONMENT`, and to be left alone.

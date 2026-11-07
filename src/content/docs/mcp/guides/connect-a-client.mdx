@@ -9,7 +9,7 @@ import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
 
 The server speaks [Streamable HTTP](https://modelcontextprotocol.io/specification/latest/basic/transports), the current remote transport in the MCP spec, so any client that supports remote servers can connect to it. Start the server with Docker Compose and give the client `http://localhost:7320/mcp`. With `dotnet run` the address is `https://localhost:7321/mcp`, which needs a client that trusts the .NET development certificate, so Compose is the easier one to connect to.
 
-No client to hand? Docker Compose can start one for you: see [Chat with it](../run-locally/#chat-with-it).
+No client to hand? Docker Compose can start one for you: see [Chat with it](/mcp/guides/run-locally/#chat-with-it).
 
 <Tabs>
   <TabItem label="Claude Code">
@@ -71,5 +71,5 @@ Those instructions are in `WebApplicationBuilderExtensions.cs`, and they're wort
 Each tool carries annotations: `readOnlyHint`, `destructiveHint`, `idempotentHint` and `openWorldHint`. A good client uses them to decide what to run without asking, what to confirm, and what to retry. `reviews_delete` is destructive, so Claude asks first. `movies_search` is read-only and idempotent, so it just runs. Set them honestly on every tool you add, because a model will believe you.
 
 <Aside type="note" title="Behind a token">
-  When [authentication is on](../secure-the-server/), the server publishes protected resource metadata at `/.well-known/oauth-protected-resource/mcp`. Clients that support the MCP authorization flow, Claude and VS Code among them, read it, find your authorization server, and take the user through sign-in on their own.
+  When [authentication is on](/mcp/guides/secure-the-server/), the server publishes protected resource metadata at `/.well-known/oauth-protected-resource/mcp`. Clients that support the MCP authorization flow, Claude and VS Code among them, read it, find your authorization server, and take the user through sign-in on their own.
 </Aside>
