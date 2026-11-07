@@ -3,12 +3,12 @@ title: Design tokens
 description: The colours and typefaces as JSON, CSS variables and Starlight themes.
 ---
 
-The same colours and typefaces you see on [Colour](../../colour/) and [Typography](../../typography/), in files code can use. They're all in `tokens/`, generated from `scripts/brand.mjs`, so never edit them by hand.
+The same colours and typefaces you see on [Colour](/brand/colour/) and [Typography](/brand/typography/), in files code can use. They're all in `tokens/`, generated from `scripts/brand.mjs`, so never edit them by hand.
 
 | File | What it's for |
 | --- | --- |
-| [`tokens.json`](../../tokens/tokens.json) | Every colour scale, the template hues and the font stacks, in the [Design Tokens Community Group](https://www.designtokens.org) format. Style Dictionary, Figma Tokens Studio and most token tools read it. |
-| [`tokens.css`](../../tokens/tokens.css) | The same values as CSS custom properties, for any website. |
+| [`tokens.json`](/brand/tokens/tokens.json) | Every colour scale, the template hues and the font stacks, in the [Design Tokens Community Group](https://www.designtokens.org) format. Style Dictionary, Figma Tokens Studio and most token tools read it. |
+| [`tokens.css`](/brand/tokens/tokens.css) | The same values as CSS custom properties, for any website. |
 | `starlight/base.css` | The shared Starlight theme: ink and paper greys, the three typefaces. |
 | `starlight/<key>.css` | One accent per template, plus `org.css` for the organisation. Pair one with `base.css`. |
 
@@ -54,4 +54,4 @@ Template hues are aliases, so a token tool keeps them in step with the scale the
 
 ## Starlight themes
 
-Each accent file sets Starlight's accent colours (and its purple, which some components use instead) from the template's scale: step 400 in dark mode and 700 in light mode, so links pass contrast on both. [Using the assets](../platforms/#docs-sites) shows the full setup.
+Each accent file sets Starlight's accent colours (and its purple, which some components use instead) from the template's scale: step 400 in dark mode and 700 in light mode, so links pass contrast on both. [Using the assets](/brand/kit/platforms/#docs-sites) shows the full setup.
