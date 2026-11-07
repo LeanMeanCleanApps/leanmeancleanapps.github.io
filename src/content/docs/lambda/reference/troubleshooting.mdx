@@ -1,0 +1,86 @@
+---
+title: Troubleshooting
+description: Fixes for the common snags when creating, building and invoking a solution locally.
+sidebar:
+  order: 5
+---
+
+The template is set up to work out of the box, which mostly means the things that go wrong are environmental: a port already taken, calling the Lambda emulator like an ordinary web server, or Docker taking a nap.
+
+## Calling `http://localhost:7350` returns `404` or hangs
+
+**Symptom:** Sending a `GET` request to `http://localhost:7350/` or `http://localhost:7350/movies` returns `404 page not found`, or calling `https://localhost:7350` fails with an SSL error.
+
+The container runs the [AWS Lambda Runtime Interface Emulator](https://github.com/aws/aws-lambda-runtime-interface-emulator) over plain HTTP, not an HTTP web server at `/` and not HTTPS. Every local invocation must `POST` a JSON payload to the emulator's invocation endpoint:
+
+```bash
+curl -X POST "http://localhost:7350/2015-03-31/functions/function/invocations" \
+  -d '{"query":"space","limit":2}'
+```
+
+And because the emulator runs one invocation at a time per container, wait for a call to return before sending the next one.
+
+## Invoking an `Http*` handler returns `400` or ignores query parameters
+
+**Symptom:** You started the container with `HttpGetMovies`, `HttpGetMovieById` or `HttpSearchReviews` as the handler and sent `{"query":"space"}`, and the function returned `400` or treated every parameter as empty.
+
+The default container entrypoint (`SearchMovies`) takes the plain JSON request object. The `Http*` handlers are wired for API Gateway HTTP API (payload format 2.0), and the emulator doesn't translate raw HTTP into an API Gateway event — you pass the event envelope that API Gateway would have sent:
+
+```bash
+curl -X POST "http://localhost:7350/2015-03-31/functions/function/invocations" \
+  -d '{ "version": "2.0", "routeKey": "GET /movies", "rawPath": "/movies", "queryStringParameters": { "query": "space", "limit": "2" }, "requestContext": { "http": { "method": "GET", "path": "/movies" } } }'
+```
+
+See [Run it locally](/lambda/guides/run-locally/) for switching the container handler.
+
+## Port 7350 is already in use
+
+**Symptom:** `docker compose up` fails with `Bind for 0.0.0.0:7350 failed: port is already allocated`.
+
+Each Lean Mean Clean template has its own block of ten ports so different templates don't step on each other. Clean Lambda Function uses `7350` to `7359` (`7350` Lambda runtime emulator, `7352` Aspire dashboard, `7353` and `7354` OpenTelemetry Collector). A clash usually means another copy of this template is still running.
+
+- Check what's running in Docker and stop it:
+  ```bash
+  docker compose ps
+  docker compose down
+  ```
+- Find a stray host process holding the port (`lsof -i :7350` on macOS and Linux, `netstat -ano | findstr :7350` on Windows) and stop it.
+- To move a Docker port, change the left-hand side of its mapping in `docker-compose.yml` (for example `"7355:8080"`; keep the right-hand side as `8080`, which is what the Lambda emulator listens on inside the container) and check the mapped port with:
+  ```bash
+  docker compose port function 8080
+  ```
+
+## `.NET SDK` version refused by `dotnet new` or `global.json`
+
+**Symptom:** `dotnet new cleanlambdafunction` refuses to run because the SDK constraint `[10.0.100,)` isn't met, or `dotnet build` fails with `NETSDK1141` / `A compatible .NET SDK was not found`.
+
+Both `.template.config/template.json` and the generated `global.json` require a stable .NET 10 SDK (`10.0.100` or newer, rolling forward to the latest feature band with `allowPrerelease: false`).
+
+- Check which SDKs are installed:
+  ```bash
+  dotnet --list-sdks
+  ```
+- Install the current stable [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0). If you only have a preview SDK installed on the machine, either install the stable SDK alongside it or set `"allowPrerelease": true` in `global.json`.
+
+## `--include-auth` is not recognised
+
+**Symptom:** Running `dotnet new cleanlambdafunction --include-auth` fails with `Error: Invalid option(s): --include-auth`.
+
+Unlike the four HTTP server templates, Clean Lambda Function doesn't have an `--include-auth` template option. In AWS Lambda, authentication sits in front of the function — as an IAM policy on the function or a JWT authoriser on the API Gateway HTTP API in `src/Presentation/serverless.template` — rather than middleware inside the handler. If you copy a `dotnet new` command from one of the HTTP templates and include `--include-auth` without `--authority`, those templates exit with code `102`; on Lambda, omit `--include-auth` altogether and see [Secure the function](/lambda/guides/secure-the-function/) for adding an API Gateway JWT authoriser or IAM auth.
+
+## Docker is not running
+
+**Symptom:** `docker compose up -d --build` fails with `Cannot connect to the Docker daemon` or `error during connect`.
+
+Start Docker Desktop (or the Docker service on Linux) and wait for `docker info` to return cleanly before running `docker compose up -d --build`. You don't need Docker for `dotnet build` or `dotnet test`; the integration tests invoke the handler in-process against an in-memory SQLite database.
+
+## `SQLite Error 5: 'database is locked'`
+
+**Symptom:** A function invocation fails with `Microsoft.Data.Sqlite.SqliteException (0x80004005): SQLite Error 5: 'database is locked'`.
+
+Inside the container, the function writes to `/tmp/movie-reviews.db`. If that file gets wedged during local testing, recreate the container so `/tmp/movie-reviews.db` is rebuilt and re-seeded from scratch:
+
+```bash
+docker compose down
+docker compose up -d --build
+```
