@@ -50,6 +50,8 @@ CI checks out the newest brand release into `.brand` on every build, and builds 
 
 Every push to `main`, and every morning, builds the site and publishes it to GitHub Pages. Pull requests build it without publishing, so you can break things in private.
 
+The published site counts visits with [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/). It sets no cookies and keeps no personal data, so there's no banner to click through. The build only adds it when the `CLOUDFLARE_ANALYTICS_TOKEN` repository variable is set, so forks and local builds count nobody.
+
 ## Contributing and support
 
 Spotted a typo, a broken link or a template we forgot? Open an issue or a pull request. Branch from `main` as `feature/`, `fix/` or `chore/`, run `npm run build` before you push, and keep each change to one thing. The organisation's [contributing guide](https://github.com/LeanMeanCleanApps/.github/blob/main/CONTRIBUTING.md), [code of conduct](https://github.com/LeanMeanCleanApps/.github/blob/main/CODE_OF_CONDUCT.md) and [security policy](https://github.com/LeanMeanCleanApps/.github/blob/main/SECURITY.md) apply here too.

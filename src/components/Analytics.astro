@@ -1,0 +1,17 @@
+---
+// Cloudflare Web Analytics. It sets no cookies and keeps no personal data, so there's no banner to accept.
+// The token comes from the CLOUDFLARE_ANALYTICS_TOKEN repository variable at build time. Without it, as in a fork or
+// on your machine, nothing is added and nobody is counted.
+const token = import.meta.env.PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN;
+---
+
+{
+  token && (
+    <script
+      is:inline
+      defer
+      src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon={JSON.stringify({ token })}
+    />
+  )
+}
