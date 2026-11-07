@@ -17,7 +17,7 @@ There are two ready-made environments. `local` is for `dotnet run`: sample data 
     dotnet run --project ./src/Presentation
     ```
 
-    `launchSettings.json` sets the environment to `local` and listens on [http://localhost:5032](http://localhost:5032) and `https://localhost:7032`.
+    `launchSettings.json` sets the environment to `local` and listens on [https://localhost:8081](https://localhost:8081), and on `https://localhost:8081`, which redirects to it. If your browser or `curl` doesn't trust the .NET development certificate yet, run `dotnet dev-certs https --trust` once.
   </TabItem>
   <TabItem label="Docker Compose">
     ```bash
@@ -66,9 +66,9 @@ Nitro is the easy way: it knows the schema, autocompletes, and keeps your query 
 ```graphql
 # One movie, its reviews and who wrote them
 {
-  movie(id: "e159975e-4e6a-1ffd-713e-1eb9d8d4a593") {
+  movie(id: "cb188ef6-14e7-f85f-2f78-924c2ab26b28") {
     title
-    reviews { stars author { firstName lastName } }
+    reviews { stars text author { firstName lastName } }
   }
 }
 ```
@@ -76,8 +76,8 @@ Nitro is the easy way: it knows the schema, autocompletes, and keeps your query 
 ```graphql
 # Write a review
 mutation {
-  createReview(input: { authorId: "01fa8b58-05d2-abd4-e55c-2633222dd0a5", movieId: "e159975e-4e6a-1ffd-713e-1eb9d8d4a593", stars: 5 }) {
-    review { id stars }
+  createReview(input: { authorId: "01fa8b58-05d2-abd4-e55c-2633222dd0a5", movieId: "cb188ef6-14e7-f85f-2f78-924c2ab26b28", stars: 5, text: "Great film. I cried at the ending." }) {
+    review { id stars text }
     errors { __typename ... on Error { message } }
   }
 }
@@ -117,5 +117,5 @@ docker build . --target run --tag acme-movies:latest \
 The `version` query then reports `1.2.3-beta` and the commit it was built from.
 
 <Aside type="tip" title="Stuck?">
-  If Nitro loads but can't reach the schema, you're probably on `https://` with a certificate your browser doesn't trust yet. Use the `http://` address, or run `dotnet dev-certs https --trust` once. If `curl` says connection refused, check that port 5032 isn't busy with something else you forgot about.
+  If Nitro loads but can't reach the schema, you're probably on `https://` with a certificate your browser doesn't trust yet. Run `dotnet dev-certs https --trust` once and reload. The `http://` address only redirects to `https://`, so it doesn't help. If `curl` says connection refused, check that ports 8080 and 8081 aren't busy with something else you forgot about.
 </Aside>

@@ -33,7 +33,7 @@ Lists movies ordered by title, one page at a time, optionally only those whose t
 | `limit` | integer | `10` | 1 to 50 |
 
 ```json
-{ "query": "global", "offset": 0, "limit": 2 }
+{ "query": "space", "offset": 0, "limit": 2 }
 ```
 
 ### Response
@@ -50,10 +50,11 @@ A [page](#pages) of movies.
 ```json
 {
   "items": [
-    { "id": "30fca414-247a-779e-105a-d81aa2506f58", "title": "Assimilated global infrastructure", "reviewCount": 1, "averageStars": 1 },
-    { "id": "c27d6600-79a6-9346-2595-a52b7f07dc3e", "title": "Automated global alliance", "reviewCount": 3, "averageStars": 3.3 }
+    { "id": "cb188ef6-14e7-f85f-2f78-924c2ab26b28", "title": "Deep Space Gardeners", "reviewCount": 5, "averageStars": 3.4 },
+    { "id": "dfefa450-5454-6a4d-a4aa-95a9b047c17b", "title": "Postcards from Outer Space", "reviewCount": 1, "averageStars": 3 }
   ],
-  "totalCount": 2
+  "totalCount": 4,
+  "nextOffset": 2
 }
 ```
 
@@ -80,8 +81,8 @@ A [page](#pages) of authors.
 ```json
 {
   "items": [
-    { "id": "01fa8b58-05d2-abd4-e55c-2633222dd0a5", "firstName": "Jana", "lastName": "Auer", "reviewCount": 10, "averageStars": 2.6 },
-    { "id": "1cc2ad51-61c5-63ee-dd6e-15308cfe6e51", "firstName": "Caroline", "lastName": "Bins", "reviewCount": 12, "averageStars": 2.7 }
+    { "id": "01fa8b58-05d2-abd4-e55c-2633222dd0a5", "firstName": "Jana", "lastName": "Auer", "reviewCount": 9, "averageStars": 3.3 },
+    { "id": "1cc2ad51-61c5-63ee-dd6e-15308cfe6e51", "firstName": "Caroline", "lastName": "Bins", "reviewCount": 10, "averageStars": 3.2 }
   ],
   "totalCount": 15,
   "nextOffset": 2
@@ -90,7 +91,7 @@ A [page](#pages) of authors.
 
 ## GetReviews
 
-Lists reviews ordered by movie then author, one page at a time, optionally only those of one movie, by one author, or both.
+Lists reviews ordered by movie then author, one page at a time. Filter by movie, by author, by words in the review text and by a minimum star rating, in any combination.
 
 ### Request
 
@@ -98,11 +99,13 @@ Lists reviews ordered by movie then author, one page at a time, optionally only 
 | --- | --- | --- | --- |
 | `movieId` | guid | none | Only reviews of this movie |
 | `authorId` | guid | none | Only reviews by this author |
+| `query` | string | none | Up to 100 characters. Matches the review text, ignoring case |
+| `minStars` | integer | none | 1 to 5. Only reviews with at least this many stars |
 | `offset` | integer | `0` | 0 or more |
 | `limit` | integer | `10` | 1 to 50 |
 
 ```json
-{ "movieId": "e159975e-4e6a-1ffd-713e-1eb9d8d4a593", "limit": 2 }
+{ "movieId": "cb188ef6-14e7-f85f-2f78-924c2ab26b28", "limit": 2 }
 ```
 
 ### Response
@@ -115,24 +118,27 @@ A [page](#pages) of reviews.
 | `stars` | integer | The rating, from 1 to 5 |
 | `reviewedMovie` | object | The reviewed movie's `id` and `title`. Its `reviewCount` is always 0 here, so use GetMovies for the real numbers |
 | `reviewAuthor` | object | The author's `id`, `firstName` and `lastName`. Its `reviewCount` is always 0 here, so use GetAuthors for the real numbers |
+| `text` | string | What the author said about the movie. Left out when there's no text |
 
 ```json
 {
   "items": [
     {
-      "id": "969cb90c-95ae-9189-1e52-0b38d34a911b",
-      "stars": 4,
-      "reviewedMovie": { "id": "e159975e-4e6a-1ffd-713e-1eb9d8d4a593", "title": "Assimilated disintermediate adapter", "reviewCount": 0 },
-      "reviewAuthor": { "id": "1cc2ad51-61c5-63ee-dd6e-15308cfe6e51", "firstName": "Caroline", "lastName": "Bins", "reviewCount": 0 }
+      "id": "45911e6f-a366-417b-1453-f34097338ee2",
+      "stars": 5,
+      "reviewedMovie": { "id": "cb188ef6-14e7-f85f-2f78-924c2ab26b28", "title": "Deep Space Gardeners", "reviewCount": 0 },
+      "reviewAuthor": { "id": "1cc2ad51-61c5-63ee-dd6e-15308cfe6e51", "firstName": "Caroline", "lastName": "Bins", "reviewCount": 0 },
+      "text": "Everyone involved should be very proud."
     },
     {
-      "id": "a5ebd747-0408-0a96-1af1-eb5cb93bc814",
-      "stars": 1,
-      "reviewedMovie": { "id": "e159975e-4e6a-1ffd-713e-1eb9d8d4a593", "title": "Assimilated disintermediate adapter", "reviewCount": 0 },
-      "reviewAuthor": { "id": "1cc2ad51-61c5-63ee-dd6e-15308cfe6e51", "firstName": "Caroline", "lastName": "Bins", "reviewCount": 0 }
+      "id": "8832846c-4100-e92a-0b66-e59dcfde2acc",
+      "stars": 3,
+      "reviewedMovie": { "id": "cb188ef6-14e7-f85f-2f78-924c2ab26b28", "title": "Deep Space Gardeners", "reviewCount": 0 },
+      "reviewAuthor": { "id": "1cc2ad51-61c5-63ee-dd6e-15308cfe6e51", "firstName": "Caroline", "lastName": "Bins", "reviewCount": 0 },
+      "text": "I laughed twice and looked at my phone once."
     }
   ],
-  "totalCount": 6,
+  "totalCount": 5,
   "nextOffset": 2
 }
 ```
@@ -172,10 +178,10 @@ The three lists are also on an [API Gateway HTTP API](https://docs.aws.amazon.co
 | --- | --- | --- |
 | `GET /movies` | `HttpGetMovies` | `query`, `offset`, `limit` |
 | `GET /authors` | `HttpGetAuthors` | `query`, `offset`, `limit` |
-| `GET /reviews` | `HttpGetReviews` | `movieId`, `authorId`, `offset`, `limit` |
+| `GET /reviews` | `HttpGetReviews` | `movieId`, `authorId`, `query`, `minStars`, `offset`, `limit` |
 
 ```bash
-curl "${API_URL}movies?query=global&limit=2"
+curl "${API_URL}movies?query=space&limit=2"
 ```
 
 | Status | When |

@@ -95,22 +95,22 @@ This guide adds `GET /api/movies/{id}/reviews`, one page of the reviews written 
    ```bash
    dotnet test
    dotnet run --project ./src/Presentation
-   curl "http://localhost:8080/api/movies/e159975e-4e6a-1ffd-713e-1eb9d8d4a593/reviews?limit=2"
+   curl "https://localhost:8081/api/movies/cb188ef6-14e7-f85f-2f78-924c2ab26b28/reviews?limit=2"
    ```
 
    ```json
    {
      "items": [
-       { "id": "969cb90c-95ae-9189-1e52-0b38d34a911b", "stars": 4, "reviewedMovie": { "id": "e159975e-4e6a-1ffd-713e-1eb9d8d4a593", "title": "Assimilated disintermediate adapter" }, "reviewAuthor": { "id": "1cc2ad51-61c5-63ee-dd6e-15308cfe6e51", "firstName": "Caroline", "lastName": "Bins" } },
-       { "id": "a5ebd747-0408-0a96-1af1-eb5cb93bc814", "stars": 1, "reviewedMovie": { "id": "e159975e-4e6a-1ffd-713e-1eb9d8d4a593", "title": "Assimilated disintermediate adapter" }, "reviewAuthor": { "id": "1cc2ad51-61c5-63ee-dd6e-15308cfe6e51", "firstName": "Caroline", "lastName": "Bins" } }
+       { "id": "45911e6f-a366-417b-1453-f34097338ee2", "stars": 5, "reviewedMovie": { "id": "cb188ef6-14e7-f85f-2f78-924c2ab26b28", "title": "Deep Space Gardeners" }, "reviewAuthor": { "id": "1cc2ad51-61c5-63ee-dd6e-15308cfe6e51", "firstName": "Caroline", "lastName": "Bins" }, "text": "Everyone involved should be very proud." },
+       { "id": "8832846c-4100-e92a-0b66-e59dcfde2acc", "stars": 3, "reviewedMovie": { "id": "cb188ef6-14e7-f85f-2f78-924c2ab26b28", "title": "Deep Space Gardeners" }, "reviewAuthor": { "id": "1cc2ad51-61c5-63ee-dd6e-15308cfe6e51", "firstName": "Caroline", "lastName": "Bins" }, "text": "I laughed twice and looked at my phone once." }
      ],
      "offset": 0,
      "limit": 2,
-     "totalCount": 6
+     "totalCount": 5
    }
    ```
 
-   Caroline gave the same movie a 4 and a 1. Sample data has no continuity editor.
+   Caroline gave the same movie a 5 and a 3. Sample data has no continuity editor.
 
 </Steps>
 

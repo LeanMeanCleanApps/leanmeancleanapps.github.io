@@ -57,11 +57,13 @@ You need the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0). [
    dotnet run --project ./src/Presentation
    ```
 
-5. Open Nitro, the GraphQL IDE, at [http://localhost:5032/graphql](http://localhost:5032/graphql). The schema is on the left, with every type and field described, and the editor autocompletes as you type. Paste this in and press play:
+   It answers on `https://localhost:8081`. If your browser or `curl` doesn't trust the .NET development certificate yet, run `dotnet dev-certs https --trust` once.
+
+5. Open Nitro, the GraphQL IDE, at [https://localhost:8081/graphql](https://localhost:8081/graphql). The schema is on the left, with every type and field described, and the editor autocompletes as you type. Paste this in and press play:
 
    ```graphql
    {
-     movies(query: "global", first: 2) {
+     movies(query: "space", first: 2) {
        totalCount
        pageInfo { hasNextPage endCursor }
        nodes { id title reviewCount averageStars }
@@ -72,8 +74,8 @@ You need the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0). [
 6. Or ask from the terminal.
 
    ```bash
-   curl -X POST "http://localhost:5032/graphql" -H "Content-Type: application/json" \
-     -d '{"query":"{ movies(query: \"global\", first: 2) { totalCount nodes { id title reviewCount averageStars } } }"}'
+   curl -X POST "https://localhost:8081/graphql" -H "Content-Type: application/json" \
+     -d '{"query":"{ movies(query: \"space\", first: 2) { totalCount nodes { id title reviewCount averageStars } } }"}'
    ```
 
    Either way you get a page of movies back:
@@ -82,18 +84,18 @@ You need the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0). [
    {
      "data": {
        "movies": {
-         "totalCount": 2,
-         "pageInfo": { "hasNextPage": false, "endCursor": "b2Zmc2V0OjI=" },
+         "totalCount": 4,
+         "pageInfo": { "hasNextPage": true, "endCursor": "b2Zmc2V0OjI=" },
          "nodes": [
-           { "id": "30fca414-247a-779e-105a-d81aa2506f58", "title": "Assimilated global infrastructure", "reviewCount": 1, "averageStars": 1 },
-           { "id": "c27d6600-79a6-9346-2595-a52b7f07dc3e", "title": "Automated global alliance", "reviewCount": 3, "averageStars": 3.3 }
+           { "id": "cb188ef6-14e7-f85f-2f78-924c2ab26b28", "title": "Deep Space Gardeners", "reviewCount": 5, "averageStars": 3.4 },
+           { "id": "dfefa450-5454-6a4d-a4aa-95a9b047c17b", "title": "Postcards from Outer Space", "reviewCount": 1, "averageStars": 3 }
          ]
        }
      }
    }
    ```
 
-   Yes, the movies are named by a corporate buzzword generator. *Assimilated global infrastructure* only got one star. Critics can be harsh.
+   The sample movies are all made up. *Deep Space Gardeners* averages 3.4 stars from five reviews, which seems fair for a film about weeding in zero gravity.
 
 7. Run the tests while you're here.
 

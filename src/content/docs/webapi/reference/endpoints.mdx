@@ -5,9 +5,9 @@ sidebar:
   order: 1
 ---
 
-Every endpoint lives in `src/Presentation/Controllers`, one controller per feature. Requests and responses are JSON with camelCase property names, read case-insensitively. Properties with no value are left out of responses. Every endpoint requires authorization, which only has an effect when [authentication is on](../../guides/secure-the-api/).
+Every endpoint lives in `src/Presentation/Controllers`, one controller per feature. Requests and responses are JSON with camelCase property names, read case-insensitively. Properties with no value are left out of responses. In a solution created with `--include-auth`, every endpoint except health needs a token (see [Secure the API](../../guides/secure-the-api/)).
 
-The OpenAPI document at `/openapi/v1.json` describes all of this too, and Scalar at `/scalar` lets you call it.
+The OpenAPI document at `/openapi/v1.json` describes all of this too, and Scalar at `/scalar` lets you call it. The examples use the `dotnet run` address, `https://localhost:8081`; with Docker Compose it's `http://localhost:8080`.
 
 | Method | Route | Returns |
 | --- | --- | --- |
@@ -35,18 +35,18 @@ Lists movies ordered by title, one page at a time, optionally only those whose t
 | `limit` | integer | `10` | 1 to 50 |
 
 ```bash
-curl "http://localhost:8080/api/movies?query=global&limit=2"
+curl "https://localhost:8081/api/movies?query=space&limit=2"
 ```
 
 ```json
 {
   "items": [
-    { "id": "30fca414-247a-779e-105a-d81aa2506f58", "title": "Assimilated global infrastructure", "reviewCount": 1, "averageStars": 1 },
-    { "id": "c27d6600-79a6-9346-2595-a52b7f07dc3e", "title": "Automated global alliance", "reviewCount": 3, "averageStars": 3.3 }
+    { "id": "cb188ef6-14e7-f85f-2f78-924c2ab26b28", "title": "Deep Space Gardeners", "reviewCount": 5, "averageStars": 3.4 },
+    { "id": "dfefa450-5454-6a4d-a4aa-95a9b047c17b", "title": "Postcards from Outer Space", "reviewCount": 1, "averageStars": 3 }
   ],
   "offset": 0,
   "limit": 2,
-  "totalCount": 2
+  "totalCount": 4
 }
 ```
 
@@ -63,8 +63,8 @@ Lists authors ordered by last name then first name, one page at a time, optional
 ```json
 {
   "items": [
-    { "id": "01fa8b58-05d2-abd4-e55c-2633222dd0a5", "firstName": "Jana", "lastName": "Auer", "reviewCount": 10, "averageStars": 2.6 },
-    { "id": "1cc2ad51-61c5-63ee-dd6e-15308cfe6e51", "firstName": "Caroline", "lastName": "Bins", "reviewCount": 12, "averageStars": 2.7 }
+    { "id": "01fa8b58-05d2-abd4-e55c-2633222dd0a5", "firstName": "Jana", "lastName": "Auer", "reviewCount": 9, "averageStars": 3.3 },
+    { "id": "1cc2ad51-61c5-63ee-dd6e-15308cfe6e51", "firstName": "Caroline", "lastName": "Bins", "reviewCount": 10, "averageStars": 3.2 }
   ],
   "offset": 0,
   "limit": 2,
@@ -80,24 +80,42 @@ Returns one [author](#author) with every review they have written, or `404` when
 
 ### GET /api/reviews
 
-Lists reviews ordered by movie then author, one page at a time, optionally only those of one movie, by one author, or both.
+Lists reviews ordered by movie then author, one page at a time. Filter by movie, by author, by words in the review text and by a minimum star rating, in any combination.
 
 | Query parameter | Type | Default | Rules |
 | --- | --- | --- | --- |
 | `movieId` | guid | none | Only reviews of this movie |
 | `authorId` | guid | none | Only reviews by this author |
+| `query` | string | none | Up to 100 characters. Matches the review text, ignoring case |
+| `minStars` | integer | none | 1 to 5. Only reviews with at least this many stars |
 | `offset` | integer | `0` | 0 or more |
 | `limit` | integer | `10` | 1 to 50 |
 
 ```bash
-curl "http://localhost:8080/api/reviews?movieId=e159975e-4e6a-1ffd-713e-1eb9d8d4a593&limit=2"
+curl "https://localhost:8081/api/reviews?movieId=cb188ef6-14e7-f85f-2f78-924c2ab26b28&limit=2"
 ```
 
 ```json
 {
   "items": [
-    { "id": "969cb90c-95ae-9189-1e52-0b38d34a911b", "stars": 4, "reviewedMovie": { "id": "e159975e-4e6a-1ffd-713e-1eb9d8d4a593", "title": "Assimilated disintermediate adapter" }, "reviewAuthor": { "id": "1cc2ad51-61c5-63ee-dd6e-15308cfe6e51", "firstName": "Caroline", "lastName": "Bins" } },
-    { "id": "a5ebd747-0408-0a96-1af1-eb5cb93bc814", "stars": 1, "reviewedMovie": { "id": "e159975e-4e6a-1ffd-713e-1eb9d8d4a593", "title": "Assimilated disintermediate adapter" }, "reviewAuthor": { "id": "1cc2ad51-61c5-63ee-dd6e-15308cfe6e51", "firstName": "Caroline", "lastName": "Bins" } }
+    { "id": "45911e6f-a366-417b-1453-f34097338ee2", "stars": 5, "reviewedMovie": { "id": "cb188ef6-14e7-f85f-2f78-924c2ab26b28", "title": "Deep Space Gardeners" }, "reviewAuthor": { "id": "1cc2ad51-61c5-63ee-dd6e-15308cfe6e51", "firstName": "Caroline", "lastName": "Bins" }, "text": "Everyone involved should be very proud." },
+    { "id": "8832846c-4100-e92a-0b66-e59dcfde2acc", "stars": 3, "reviewedMovie": { "id": "cb188ef6-14e7-f85f-2f78-924c2ab26b28", "title": "Deep Space Gardeners" }, "reviewAuthor": { "id": "1cc2ad51-61c5-63ee-dd6e-15308cfe6e51", "firstName": "Caroline", "lastName": "Bins" }, "text": "I laughed twice and looked at my phone once." }
+  ],
+  "offset": 0,
+  "limit": 2,
+  "totalCount": 5
+}
+```
+
+```bash
+curl "https://localhost:8081/api/reviews?query=funny&minStars=4&limit=2"
+```
+
+```json
+{
+  "items": [
+    { "id": "85196da9-b404-4905-a1f8-9e0dc88f67e4", "stars": 5, "reviewedMovie": { "id": "33b07882-f520-65ee-5997-b1024edd80b5", "title": "A Quiet Murder in Wagga Wagga" }, "reviewAuthor": { "id": "cb188ef6-14e7-f85f-2f78-924c2ab26b28", "firstName": "Martha", "lastName": "Nicolas" }, "text": "Funny, sad and completely gripping." },
+    { "id": "625d83d4-587f-f872-f5b5-7f923a37856f", "stars": 4, "reviewedMovie": { "id": "ac6e5917-e549-db65-a0b7-aff1fc817570", "title": "Dragon of the Salt Flats" }, "reviewAuthor": { "id": "cb188ef6-14e7-f85f-2f78-924c2ab26b28", "firstName": "Martha", "lastName": "Nicolas" }, "text": "Funny, warm and better than it needed to be." }
   ],
   "offset": 0,
   "limit": 2,
@@ -118,21 +136,23 @@ Creates a review. The author and the movie must already exist.
 | `authorId` | guid | Required. An existing author |
 | `movieId` | guid | Required. An existing movie |
 | `stars` | integer | 1 to 5 |
+| `text` | string | Optional. Up to 1000 characters |
 
 ```bash
-curl -X POST "http://localhost:8080/api/reviews" -H "Content-Type: application/json" \
-  -d '{"authorId":"01fa8b58-05d2-abd4-e55c-2633222dd0a5","movieId":"e159975e-4e6a-1ffd-713e-1eb9d8d4a593","stars":5}'
+curl -X POST "https://localhost:8081/api/reviews" -H "Content-Type: application/json" \
+  -d '{"authorId":"01fa8b58-05d2-abd4-e55c-2633222dd0a5","movieId":"cb188ef6-14e7-f85f-2f78-924c2ab26b28","stars":5,"text":"Great film. I cried at the ending."}'
 ```
 
 Answers `201 Created` with the new [review](#review) in the body and its URL in the `Location` header. An unknown author or movie answers `404`.
 
 ### PUT /api/reviews/\{id\}
 
-Changes the star rating of a review. The author and the movie of a review can't change.
+Changes the star rating of a review, and its text when there's new text. The author and the movie of a review can't change.
 
 | Body property | Type | Rules |
 | --- | --- | --- |
 | `stars` | integer | 1 to 5 |
+| `text` | string | Optional. Up to 1000 characters. Leave it out to keep the text the review has |
 
 Answers `204 No Content`, or `404` when there's no review with that id.
 
@@ -144,7 +164,7 @@ Permanently removes a review. Answers `204 No Content`, or `404` when there's no
 
 ### GET /api/version
 
-Returns the [version](#version) stamped into the build. It needs a token when authentication is on, like everything else; the version is also on every span, metric and log as `service.version`.
+Returns the [version](#version) stamped into the build. With `--include-auth` it needs a token, like everything else; the version is also on every span, metric and log as `service.version`.
 
 ```json
 { "fileVersion": "1.1.0.0", "informationalVersion": "1.1.0.0+044d2922e197f24d9a3f311f87a7e323add1a530" }
@@ -209,6 +229,7 @@ To read everything, start at `offset` 0 and add `limit` to it until `offset` rea
 | `stars` | integer | The rating, from 1 to 5 |
 | `reviewedMovie` | object | The movie's `id` and `title` |
 | `reviewAuthor` | object | The author's `id`, `firstName` and `lastName` |
+| `text` | string | What the author said about the movie. Left out when there's no text |
 
 ### Version
 

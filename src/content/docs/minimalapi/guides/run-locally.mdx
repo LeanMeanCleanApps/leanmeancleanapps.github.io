@@ -17,7 +17,7 @@ There are two ready-made environments. `local` is for `dotnet run`: sample data 
     dotnet run --project ./src/Presentation
     ```
 
-    `launchSettings.json` sets the environment to `local` and listens on [http://localhost:5032](http://localhost:5032) and `https://localhost:7032`.
+    `launchSettings.json` sets the environment to `local` and listens on [https://localhost:8081](https://localhost:8081), and on `https://localhost:8081`, which redirects to it. If your browser or `curl` doesn't trust the .NET development certificate yet, run `dotnet dev-certs https --trust` once.
   </TabItem>
   <TabItem label="Docker Compose">
     ```bash
@@ -62,18 +62,18 @@ OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317 dotnet run --project ./src/Pre
 
 ## Try the endpoints
 
-The sample data uses a fixed seed, so these ids are the same on every machine. See the [endpoint reference](../../reference/endpoints/) for every parameter and response.
+These use the `dotnet run` address; with Docker Compose, use `http://localhost:8080` instead. The sample data uses a fixed seed, so these ids are the same on every machine. See the [endpoint reference](../../reference/endpoints/) for every parameter and response.
 
 ```bash
 # Search movies, two at a time
-curl "http://localhost:5032/api/movies?query=global&limit=2"
+curl "https://localhost:8081/api/movies?query=space&limit=2"
 
 # One movie, with its reviews
-curl "http://localhost:5032/api/movies/e159975e-4e6a-1ffd-713e-1eb9d8d4a593"
+curl "https://localhost:8081/api/movies/cb188ef6-14e7-f85f-2f78-924c2ab26b28"
 
 # Write a review
-curl -X POST "http://localhost:5032/api/reviews" -H "Content-Type: application/json" \
-  -d '{"authorId":"01fa8b58-05d2-abd4-e55c-2633222dd0a5","movieId":"e159975e-4e6a-1ffd-713e-1eb9d8d4a593","stars":5}'
+curl -X POST "https://localhost:8081/api/reviews" -H "Content-Type: application/json" \
+  -d '{"authorId":"01fa8b58-05d2-abd4-e55c-2633222dd0a5","movieId":"cb188ef6-14e7-f85f-2f78-924c2ab26b28","stars":5,"text":"Great film. I cried at the ending."}'
 ```
 
 ## Run the tests
@@ -110,5 +110,5 @@ docker build . --target run --tag acme-movies:latest \
 `GET /api/version` then reports `1.2.3-beta` and the commit it was built from.
 
 <Aside type="tip" title="Stuck?">
-  If the first request takes a moment, the API is applying migrations and seeding. If `curl` says connection refused, check that port 5032 isn't busy with something else you forgot about.
+  If the first request takes a moment, the API is applying migrations and seeding. If `curl` says connection refused, check that ports 8080 and 8081 aren't busy with something else you forgot about.
 </Aside>

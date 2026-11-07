@@ -57,27 +57,30 @@ You need the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0). [
    dotnet run --project ./src/Presentation
    ```
 
+   It answers on `https://localhost:8081`. If your browser or `curl` doesn't trust the .NET development certificate yet, run `dotnet dev-certs https --trust` once.
+
 5. Call a tool. The server speaks Streamable HTTP at `/mcp`, and because it's stateless you can send a single JSON-RPC request with nothing before it.
 
    ```bash
-   curl -X POST "http://localhost:5032/mcp" \
+   curl -X POST "https://localhost:8081/mcp" \
      -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
-     -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"movies_search","arguments":{"query":"global","limit":2}}}'
+     -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"movies_search","arguments":{"query":"space","limit":2}}}'
    ```
 
-   The answer arrives as a server-sent event. Inside it, the tool's result is there twice: once as text for models that read, once as `structuredContent` for clients that parse.
+   The answer arrives as a server-sent event. Inside it, the tool's result is there twice: once as text for models that read, once as `structuredContent` for clients that parse. A `resource_link` for each movie follows the text, so a client can open it as a resource.
 
    ```json
    {
      "items": [
-       { "id": "30fca414-247a-779e-105a-d81aa2506f58", "title": "Assimilated global infrastructure", "reviewCount": 1, "averageStars": 1 },
-       { "id": "c27d6600-79a6-9346-2595-a52b7f07dc3e", "title": "Automated global alliance", "reviewCount": 3, "averageStars": 3.3 }
+       { "id": "cb188ef6-14e7-f85f-2f78-924c2ab26b28", "title": "Deep Space Gardeners", "reviewCount": 5, "averageStars": 3.4, "reviews": null },
+       { "id": "dfefa450-5454-6a4d-a4aa-95a9b047c17b", "title": "Postcards from Outer Space", "reviewCount": 1, "averageStars": 3, "reviews": null }
      ],
-     "totalCount": 2
+     "totalCount": 4,
+     "nextOffset": 2
    }
    ```
 
-   Yes, the movies are named by a corporate buzzword generator. *Assimilated global infrastructure* only got one star. Critics can be harsh.
+   The sample movies are all made up. *Deep Space Gardeners* averages 3.4 stars from five reviews, which seems fair for a film about weeding in zero gravity.
 
 6. Or skip curl and use the Inspector. Docker Compose starts it already pointed at the server.
 

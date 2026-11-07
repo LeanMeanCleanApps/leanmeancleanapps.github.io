@@ -7,12 +7,14 @@ sidebar:
 
 import { Tabs, TabItem, Aside } from '@astrojs/starlight/components';
 
-The server speaks [Streamable HTTP](https://modelcontextprotocol.io/specification/latest/basic/transports), the current remote transport in the MCP spec, so any client that supports remote servers can connect to it. Start the server with `dotnet run --project ./src/Presentation` and give the client `http://localhost:5032/mcp`. With Docker Compose the address is `http://localhost:8080/mcp`.
+The server speaks [Streamable HTTP](https://modelcontextprotocol.io/specification/latest/basic/transports), the current remote transport in the MCP spec, so any client that supports remote servers can connect to it. Start the server with Docker Compose and give the client `http://localhost:8080/mcp`. With `dotnet run` the address is `https://localhost:8081/mcp`, which needs a client that trusts the .NET development certificate, so Compose is the easier one to connect to.
+
+No client to hand? Docker Compose can start one for you: see [Chat with it](../run-locally/#chat-with-it).
 
 <Tabs>
   <TabItem label="Claude Code">
     ```bash
-    claude mcp add --transport http acme-movies http://localhost:5032/mcp
+    claude mcp add --transport http acme-movies http://localhost:8080/mcp
     ```
 
     Then ask it something like "which movie has the best reviews?" and watch it call `movies_search` and `movies_get` on its own.
@@ -26,7 +28,7 @@ The server speaks [Streamable HTTP](https://modelcontextprotocol.io/specificatio
     ```json
     {
       "servers": {
-        "acme-movies": { "type": "http", "url": "http://localhost:5032/mcp" }
+        "acme-movies": { "type": "http", "url": "http://localhost:8080/mcp" }
       }
     }
     ```
@@ -37,7 +39,7 @@ The server speaks [Streamable HTTP](https://modelcontextprotocol.io/specificatio
     ```json
     {
       "mcpServers": {
-        "acme-movies": { "url": "http://localhost:5032/mcp" }
+        "acme-movies": { "url": "http://localhost:8080/mcp" }
       }
     }
     ```
@@ -49,9 +51,9 @@ The server speaks [Streamable HTTP](https://modelcontextprotocol.io/specificatio
     using ModelContextProtocol.Client;
 
     await using var client = await McpClient.CreateAsync(
-        new HttpClientTransport(new HttpClientTransportOptions { Endpoint = new Uri("http://localhost:5032/mcp") }));
+        new HttpClientTransport(new HttpClientTransportOptions { Endpoint = new Uri("http://localhost:8080/mcp") }));
 
-    var result = await client.CallToolAsync("movies_search", new Dictionary<string, object?> { ["query"] = "global" });
+    var result = await client.CallToolAsync("movies_search", new Dictionary<string, object?> { ["query"] = "space" });
     ```
   </TabItem>
 </Tabs>
@@ -60,7 +62,7 @@ The server speaks [Streamable HTTP](https://modelcontextprotocol.io/specificatio
 
 On `initialize` the server introduces itself with a name, title, version, description, icon and website, and a block of instructions for the model:
 
-> This server holds a catalogue of movies, the authors who review them, and their reviews. A review links one author to one movie with a star rating from 1 (worst) to 5 (best). Find things by name first: movies_search and authors_search return ids, review counts and average stars, and reviews_list filters reviews by movie or author. Every search returns one page at a time, so pass nextOffset back as the offset to continue rather than raising the limit. reviews_write creates a review, or changes the stars of one when you pass its reviewId. A review's movie and author can't change. reviews_delete can't be undone, so confirm with the user before calling it. Each movie, author and review can also be read as a resource at movies://\{id\}, authors://\{id\} or reviews://\{id\}, and server://version gives this server's version.
+> This server holds a catalogue of movies, the authors who review them, and their reviews. A review links one author to one movie with a star rating from 1 (worst) to 5 (best). Find things by name first: movies_search and authors_search return ids, review counts and average stars, and reviews_list filters reviews by movie or author. Every search returns one page at a time, so pass nextOffset back as the offset to continue rather than raising the limit. reviews_write creates a review, or changes the stars of one when you pass its reviewId. A review's movie and author can't change. reviews_delete can't be undone, so confirm with the user before calling it. Each movie, author and review can also be read as a resource at movies://\{id\}, authors://\{id\} or reviews://\{id\}. movies://top-rated lists the ten best rated movies, and server://version gives this server's version.
 
 Those instructions are in `WebApplicationBuilderExtensions.cs`, and they're worth keeping up to date when you add a tool. A model that knows the shape of the data makes fewer calls and better ones.
 

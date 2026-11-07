@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-Every tool lives in `src/Presentation/Tools`, one static class per feature. Arguments are JSON, named in camelCase. Every tool returns its result twice: as a text content block holding JSON, for models that read, and as `structuredContent`, for clients that parse, with an output schema in the tool's listing. When [authentication is on](../../guides/secure-the-server/), every tool needs a token.
+Every tool lives in `src/Presentation/Tools`, one static class per feature. Arguments are JSON, named in camelCase. Every tool returns its result twice: as a text content block holding JSON, for models that read, and as `structuredContent`, for clients that parse, with an output schema in the tool's listing. After the text comes a `resource_link` block for each movie, author or review in the result, pointing at its `movies://`, `authors://` or `reviews://` [resource](../resources-and-prompts/), so a client can open it. In a solution created with `--include-auth`, every tool needs a token.
 
 | Tool | Title | Read-only | Destructive | Idempotent |
 | --- | --- | --- | --- | --- |
@@ -16,7 +16,7 @@ Every tool lives in `src/Presentation/Tools`, one static class per feature. Argu
 | [`reviews_write`](#reviews_write) | Write review | | yes | |
 | [`reviews_delete`](#reviews_delete) | Delete review | | yes | yes |
 
-Every tool has `openWorldHint` false: they only ever touch this server's own database.
+Every tool has `openWorldHint` false: they only ever touch this server's own database. Every tool also has an icon, a movie, an author or a review, from the [brand repository](https://github.com/LeanMeanCleanApps/brand).
 
 ## movies_search
 
@@ -34,10 +34,11 @@ Returns a [page](#pages) of [movies](#movie).
 ```json
 {
   "items": [
-    { "id": "30fca414-247a-779e-105a-d81aa2506f58", "title": "Assimilated global infrastructure", "reviewCount": 1, "averageStars": 1 },
-    { "id": "c27d6600-79a6-9346-2595-a52b7f07dc3e", "title": "Automated global alliance", "reviewCount": 3, "averageStars": 3.3 }
+    { "id": "cb188ef6-14e7-f85f-2f78-924c2ab26b28", "title": "Deep Space Gardeners", "reviewCount": 5, "averageStars": 3.4, "reviews": null },
+    { "id": "dfefa450-5454-6a4d-a4aa-95a9b047c17b", "title": "Postcards from Outer Space", "reviewCount": 1, "averageStars": 3, "reviews": null }
   ],
-  "totalCount": 2
+  "totalCount": 4,
+  "nextOffset": 2
 }
 ```
 
@@ -80,7 +81,7 @@ Returns a [page](#pages) of [reviews](#review).
 
 ## reviews_write
 
-Creates a review of a movie by an author, or changes the stars of an existing review when `reviewId` is passed. A review's movie and author can't change.
+Creates a review of a movie by an author, with optional text, or changes the stars and text of an existing review when `reviewId` is passed. A review's movie and author can't change.
 
 | Argument | Type | Rules |
 | --- | --- | --- |
@@ -88,6 +89,7 @@ Creates a review of a movie by an author, or changes the stars of an existing re
 | `movieId` | guid | Needed to create a review. An existing movie |
 | `authorId` | guid | Needed to create a review. An existing author |
 | `reviewId` | guid | Leave empty to create. An existing review to change |
+| `text` | string | Optional. Up to 1000 characters. Leave it empty when changing a review to keep its text |
 
 Returns the saved [review](#review).
 
@@ -103,6 +105,8 @@ Returns `{ "reviewId": "...", "deleted": true }`.
 
 ## Results
 
+Properties with no value are written as `null`, not left out, so every result matches its output schema. The schema describes them with `anyOf` and a `null` type, which clients that only understand one type per property accept too.
+
 ### Pages
 
 Every search and list tool returns one page.
@@ -111,7 +115,7 @@ Every search and list tool returns one page.
 | --- | --- | --- |
 | `items` | array | The results on this page |
 | `totalCount` | integer | The number of results across every page |
-| `nextOffset` | integer | Pass it as `offset` to get the next page. Left out on the last page |
+| `nextOffset` | integer | Pass it as `offset` to get the next page. Null on the last page |
 
 ### Movie
 
@@ -120,8 +124,8 @@ Every search and list tool returns one page.
 | `id` | guid | The movie's id |
 | `title` | string | The movie's title |
 | `reviewCount` | integer | How many reviews the movie has |
-| `averageStars` | number | The average rating to one decimal place. Left out when there are no reviews |
-| `reviews` | array of [review](#review) | Every review of the movie. Only when asked for |
+| `averageStars` | number | The average rating to one decimal place. Null when there are no reviews |
+| `reviews` | array of [review](#review) | Every review of the movie. Null unless asked for |
 
 ### Author
 
@@ -130,8 +134,8 @@ Every search and list tool returns one page.
 | `id` | guid | The author's id |
 | `name` | string | The author's full name |
 | `reviewCount` | integer | How many reviews the author has written |
-| `averageStars` | number | The average rating they give. Left out when there are no reviews |
-| `reviews` | array of [review](#review) | Every review by the author. Only when asked for |
+| `averageStars` | number | The average rating they give. Null when there are no reviews |
+| `reviews` | array of [review](#review) | Every review by the author. Null unless asked for |
 
 ### Review
 
@@ -143,6 +147,7 @@ Every search and list tool returns one page.
 | `movieTitle` | string | The movie's title |
 | `authorId` | guid | The author's id |
 | `authorName` | string | The author's full name |
+| `text` | string | What the author said about the movie, or null when there's no text |
 
 ## Errors
 
