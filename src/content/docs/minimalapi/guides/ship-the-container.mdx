@@ -7,7 +7,7 @@ sidebar:
 
 import { Aside } from '@astrojs/starlight/components';
 
-The `run` stage of the `Dockerfile` is the whole API: one image, built on `mcr.microsoft.com/dotnet/aspnet:10.0-alpine`, that listens on port 8080 and runs as the image's non-root `app` user. It runs anywhere a container runs, which these days is everywhere, including a surprising number of fridges.
+The `run` stage of the `Dockerfile` is the whole API: one image, built on `mcr.microsoft.com/dotnet/aspnet:10.0-alpine`, that listens on port 7310 and runs as the image's non-root `app` user. It runs anywhere a container runs, which these days is everywhere, including a surprising number of fridges.
 
 ## Build it
 
@@ -58,5 +58,5 @@ The SQLite file lives in `/app/data`. Mount a volume there or, better, [point In
 In a solution created with `--include-auth`, set `Authentication__Authority` and `Authentication__Audience` as environment variables to point each environment at its own authorization server. Without `--include-auth` there's nothing to turn on yet. The [security guide](../secure-the-api/) has the details.
 
 <Aside type="tip" title="Where to run it">
-  Azure Container Apps, AWS App Runner and ECS, Google Cloud Run, Fly.io, Kubernetes, or a Raspberry Pi under the desk. The image doesn't care. It only wants port 8080, a `DOTNET_ENVIRONMENT`, and to be left alone.
+  Azure Container Apps, AWS App Runner and ECS, Google Cloud Run, Fly.io, Kubernetes, or a Raspberry Pi under the desk. The image doesn't care. It only wants port 7310 (point the platform's target port at it), a `DOTNET_ENVIRONMENT`, and to be left alone.
 </Aside>

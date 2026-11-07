@@ -12,7 +12,7 @@ Every setting in `appsettings.json` can be overridden with an environment variab
 | Variable | Default | Description |
 | --- | --- | --- |
 | `DOTNET_ENVIRONMENT` | none | Layers `appsettings.<environment>.json` over `appsettings.json`. The template ships `local` and `docker` |
-| `ASPNETCORE_URLS` | `http://+:8080` in the container | The addresses to listen on |
+| `ASPNETCORE_HTTP_PORTS` | `7340` in the container | The port to listen on |
 | `ASPNETCORE_FORWARDEDHEADERS_ENABLED` | none | Set to `true` behind a proxy that ends TLS, so HTTPS redirection sees the original scheme |
 | `ConnectionStrings__MovieReviews` | `Data Source=movie-reviews.db` | The SQLite connection string. `appsettings.docker.json` points it at `/app/data/movie-reviews.db` |
 | `Database__SeedSampleData` | `false` | When `true`, seeds sample data into an empty database. On in `local` and `docker` |
@@ -34,9 +34,11 @@ Every setting in `appsettings.json` can be overridden with an environment variab
 
 | Service | What it is | Port |
 | --- | --- | --- |
-| `api` | The image, built from the `run` stage | 8080 |
-| `otel-collector` | The [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/), configured by `otel-collector.yaml` | 4317 (gRPC), 4318 (HTTP) |
-| `aspire-dashboard` | The [Aspire dashboard](https://learn.microsoft.com/dotnet/aspire/fundamentals/dashboard/standalone), where the collector sends everything | 18888 |
+| `api` | The image, built from the `run` stage | 7340, inside the container too |
+| `otel-collector` | The [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/), configured by `otel-collector.yaml` | 7343 (gRPC), 7344 (HTTP) |
+| `aspire-dashboard` | The [Aspire dashboard](https://learn.microsoft.com/dotnet/aspire/fundamentals/dashboard/standalone), where the collector sends everything | 7342 |
+
+The ports are the ones on your machine. Each template has its own block of ten, so this one uses 7340 to 7349 and runs beside a solution made from any other template: Minimal API 7310, MCP 7320, GraphQL 7330, Web API 7340 and Lambda Function 7350. The app uses the same port inside its container; the dashboard and collector keep their usual ones.
 
 The `api` service runs with `DOTNET_ENVIRONMENT=docker`, mounts the `movie-reviews-data` volume at `/app/data`, and sends its logs, traces and metrics over OTLP to `otel-collector`, which forwards them to `aspire-dashboard`.
 
@@ -55,4 +57,4 @@ Every span, metric and log also carries `service.version`, the version stamped i
 
 ## Ports when running with dotnet run
 
-`src/Presentation/Properties/launchSettings.json` sets `DOTNET_ENVIRONMENT=local` and listens on `http://localhost:8080` and `https://localhost:8081`.
+`src/Presentation/Properties/launchSettings.json` sets `DOTNET_ENVIRONMENT=local` and listens on `http://localhost:7340` and `https://localhost:7341`.

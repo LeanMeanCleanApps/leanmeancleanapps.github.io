@@ -7,7 +7,7 @@ sidebar:
 
 Every endpoint lives in `src/Presentation/Controllers`, one controller per feature. Requests and responses are JSON with camelCase property names, read case-insensitively. Properties with no value are left out of responses. In a solution created with `--include-auth`, every endpoint except health needs a token (see [Secure the API](../../guides/secure-the-api/)).
 
-The OpenAPI document at `/openapi/v1.json` describes all of this too, and Scalar at `/scalar` lets you call it. The examples use the `dotnet run` address, `https://localhost:8081`; with Docker Compose it's `http://localhost:8080`.
+The OpenAPI document at `/openapi/v1.json` describes all of this too, and Scalar at `/scalar` lets you call it. The examples use the `dotnet run` address, `https://localhost:7341`; with Docker Compose it's `http://localhost:7340`.
 
 | Method | Route | Returns |
 | --- | --- | --- |
@@ -35,7 +35,7 @@ Lists movies ordered by title, one page at a time, optionally only those whose t
 | `limit` | integer | `10` | 1 to 50 |
 
 ```bash
-curl "https://localhost:8081/api/movies?query=space&limit=2"
+curl "https://localhost:7341/api/movies?query=space&limit=2"
 ```
 
 ```json
@@ -92,7 +92,7 @@ Lists reviews ordered by movie then author, one page at a time. Filter by movie,
 | `limit` | integer | `10` | 1 to 50 |
 
 ```bash
-curl "https://localhost:8081/api/reviews?movieId=cb188ef6-14e7-f85f-2f78-924c2ab26b28&limit=2"
+curl "https://localhost:7341/api/reviews?movieId=cb188ef6-14e7-f85f-2f78-924c2ab26b28&limit=2"
 ```
 
 ```json
@@ -108,7 +108,7 @@ curl "https://localhost:8081/api/reviews?movieId=cb188ef6-14e7-f85f-2f78-924c2ab
 ```
 
 ```bash
-curl "https://localhost:8081/api/reviews?query=funny&minStars=4&limit=2"
+curl "https://localhost:7341/api/reviews?query=funny&minStars=4&limit=2"
 ```
 
 ```json
@@ -139,7 +139,7 @@ Creates a review. The author and the movie must already exist.
 | `text` | string | Optional. Up to 1000 characters |
 
 ```bash
-curl -X POST "https://localhost:8081/api/reviews" -H "Content-Type: application/json" \
+curl -X POST "https://localhost:7341/api/reviews" -H "Content-Type: application/json" \
   -d '{"authorId":"01fa8b58-05d2-abd4-e55c-2633222dd0a5","movieId":"cb188ef6-14e7-f85f-2f78-924c2ab26b28","stars":5,"text":"Great film. I cried at the ending."}'
 ```
 

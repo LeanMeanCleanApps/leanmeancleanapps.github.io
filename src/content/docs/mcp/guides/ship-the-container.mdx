@@ -7,7 +7,7 @@ sidebar:
 
 import { Aside } from '@astrojs/starlight/components';
 
-The `run` stage of the `Dockerfile` is the whole server: one image, built on `mcr.microsoft.com/dotnet/aspnet:10.0-alpine`, that listens on port 8080 and runs as the image's non-root `app` user. It runs anywhere a container runs, which these days is everywhere, including a surprising number of fridges.
+The `run` stage of the `Dockerfile` is the whole server: one image, built on `mcr.microsoft.com/dotnet/aspnet:10.0-alpine`, that listens on port 7320 and runs as the image's non-root `app` user. It runs anywhere a container runs, which these days is everywhere, including a surprising number of fridges.
 
 ## Build it
 
@@ -59,8 +59,8 @@ In a solution created with `--include-auth`, set `Authentication__Authority` and
 
 ## Leave the Inspector at home
 
-`docker-compose.yml` starts the MCP Inspector next to the server because it's handy on a laptop. It's a development tool, not part of the server, so don't ship it. In production, the only thing listening is the server on port 8080.
+`docker-compose.yml` starts the MCP Inspector next to the server because it's handy on a laptop. It's a development tool, not part of the server, so don't ship it. In production, the only thing listening is the server on port 7320.
 
 <Aside type="tip" title="Where to run it">
-  Azure Container Apps, AWS App Runner and ECS, Google Cloud Run, Fly.io, Kubernetes, or a Raspberry Pi under the desk. The image doesn't care. It only wants port 8080, a `DOTNET_ENVIRONMENT`, and to be left alone.
+  Azure Container Apps, AWS App Runner and ECS, Google Cloud Run, Fly.io, Kubernetes, or a Raspberry Pi under the desk. The image doesn't care. It only wants port 7320 (point the platform's target port at it), a `DOTNET_ENVIRONMENT`, and to be left alone.
 </Aside>

@@ -22,7 +22,7 @@ Every time a container starts, the handler applies any pending Entity Framework 
 Set `ConnectionStrings__MovieReviews`. To keep everything in memory:
 
 ```bash
-docker run --rm -p 9000:8080 \
+docker run --rm -p 7350:8080 \
   -e ConnectionStrings__MovieReviews="Data Source=MovieReviews;Mode=Memory;Cache=Shared" \
   -e Database__SeedSampleData=true \
   acme-reviews:local

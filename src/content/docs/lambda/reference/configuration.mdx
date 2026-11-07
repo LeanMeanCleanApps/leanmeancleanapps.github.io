@@ -21,9 +21,11 @@ sidebar:
 
 | Service | What it is | Port |
 | --- | --- | --- |
-| `function` | The image, built from the `run` stage, behind the runtime interface emulator | 9000 |
-| `otel-collector` | The [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/), configured by `otel-collector.yaml` | 4317 (gRPC), 4318 (HTTP) |
-| `aspire-dashboard` | The [Aspire dashboard](https://learn.microsoft.com/dotnet/aspire/fundamentals/dashboard/standalone), where the collector sends everything | 18888 |
+| `function` | The image, built from the `run` stage, behind the runtime interface emulator | 7350 (the emulator listens on 8080 inside the container) |
+| `otel-collector` | The [OpenTelemetry Collector](https://opentelemetry.io/docs/collector/), configured by `otel-collector.yaml` | 7353 (gRPC), 7354 (HTTP) |
+| `aspire-dashboard` | The [Aspire dashboard](https://learn.microsoft.com/dotnet/aspire/fundamentals/dashboard/standalone), where the collector sends everything | 7352 |
+
+The ports are the ones on your machine. Each template has its own block of ten, so this one uses 7350 to 7359 and runs beside a solution made from any other template: Minimal API 7310, MCP 7320, GraphQL 7330, Web API 7340 and Lambda Function 7350. Inside their containers the emulator, dashboard and collector keep their usual ports.
 
 ## Docker build arguments
 
