@@ -50,7 +50,7 @@ CI checks out the newest brand release into `.brand` on every build, and builds 
 
 Every push to `main`, and every morning, builds the site and publishes it to GitHub Pages. Pull requests build it without publishing, so you can break things in private.
 
-The published site counts visits with [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/) and [PostHog](https://posthog.com/), side by side while we decide which one earns its keep. Neither sets cookies, so there's no banner to click through. The build only adds each one when its repository variable is set (`CLOUDFLARE_ANALYTICS_TOKEN`, and `POSTHOG_KEY` with an optional `POSTHOG_HOST`), so forks and local builds count nobody.
+The published site counts visits with [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/) and [PostHog](https://posthog.com/), side by side while we decide which one earns its keep. Neither sets cookies, so there's no banner to click through. The build only adds each one when its repository variable or secret is set (`CLOUDFLARE_ANALYTICS_TOKEN`, and `POSTHOG_KEY` with an optional `POSTHOG_HOST`), so forks and local builds count nobody.
 
 ## Contributing and support
 
