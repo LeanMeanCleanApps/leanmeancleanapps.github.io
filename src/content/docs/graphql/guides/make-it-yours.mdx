@@ -1,0 +1,504 @@
+---
+title: "Make it yours"
+description: "Add your own entity end to end, then clear out the sample movies, authors and reviews without dropping below the 95% coverage gate."
+sidebar:
+  order: 2
+---
+
+import { Steps, Aside, FileTree } from '@astrojs/starlight/components';
+
+Sooner or later you'll want to evict *Deep Space Gardeners* and move your own domain in. The tempting move is to delete `Movies`, `Authors` and `Reviews` first. Don't. Half the tests stop compiling, and the shared plumbing (paging, validation, logging, the error filter and telemetry) suddenly has nothing to exercise it, so coverage falls through the floor.
+
+Go the other way round. Build your first slice beside the sample domain, prove it works end to end, then take the movies out. This guide adds cinemas, with a `cinemas` query to list and search them and a `createCinema` mutation to add one, and finishes with a solution that has no movies left in it. We ran every step on a fresh solution: it ends with 77 passing tests and 99.1% line coverage.
+
+<Aside type="tip" title="Let Jacques do the typing">
+  Each step names the skill in `.agents/skills/` that covers it. Point your coding agent at this page and your own domain, and it follows the same recipe.
+</Aside>
+
+The code below assumes you named the solution `WorksOnMyMachine.Movies`. Swap in your own name wherever you see it.
+
+<Steps>
+
+1. **Add the entity and use cases to `src/Application`** (`add-a-use-case`).
+
+   The entity, the repository interface, one query and one command, each with a validator. Handlers and validators are `public`, like the samples, so Mediator's source generator and the tests can see them.
+
+   <FileTree>
+   - src/Application/Cinemas/
+     - Entities/Cinema.cs
+     - ICinemasRepository.cs
+     - Queries/GetCinemas/
+       - GetCinemasQuery.cs
+       - GetCinemasHandler.cs
+       - GetCinemasValidator.cs
+     - Commands/CreateCinema/
+       - CreateCinemaCommand.cs
+       - CreateCinemaHandler.cs
+       - CreateCinemaValidator.cs
+   </FileTree>
+
+   ```csharp title="src/Application/Cinemas/Entities/Cinema.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas.Entities;
+
+   /// <summary>
+   /// A cinema that shows movies.
+   /// </summary>
+   /// <param name="Id">The unique identifier of the cinema.</param>
+   /// <param name="Name">The name of the cinema.</param>
+   public record Cinema(Guid Id, string Name);
+   ```
+
+   ```csharp title="src/Application/Cinemas/ICinemasRepository.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas;
+
+   using Common.Paging;
+   using Entities;
+
+   public interface ICinemasRepository
+   {
+       public Task<Page<Cinema>> GetCinemas(
+           string? query,
+           PageRequest page,
+           CancellationToken cancellationToken);
+
+       public Task<Cinema> CreateCinema(string name, CancellationToken cancellationToken);
+   }
+   ```
+
+   The query reuses the shared paging and search rules, so `Common/Paging` stays covered once the sample queries are gone.
+
+   ```csharp title="src/Application/Cinemas/Queries/GetCinemas/GetCinemasQuery.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas.Queries.GetCinemas;
+
+   using Common.Paging;
+   using Entities;
+   using Mediator;
+
+   /// <summary>
+   /// Lists cinemas one page at a time, optionally only those whose name contains a search term.
+   /// </summary>
+   public class GetCinemasQuery : IRequest<Page<Cinema>>
+   {
+       /// <summary>The words to look for in the name, ignoring case. Leave empty to list every cinema.</summary>
+       public string? Query { get; init; }
+
+       /// <summary>The number of results to skip, 0 for the first page.</summary>
+       public int Offset { get; init; }
+
+       /// <summary>The largest number of results to return, from 1 to 50.</summary>
+       public int Limit { get; init; } = Paging.DefaultLimit;
+   }
+   ```
+
+   ```csharp title="src/Application/Cinemas/Queries/GetCinemas/GetCinemasHandler.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas.Queries.GetCinemas;
+
+   using Common.Paging;
+   using Entities;
+   using Mediator;
+
+   public class GetCinemasHandler(ICinemasRepository repository) : IRequestHandler<GetCinemasQuery, Page<Cinema>>
+   {
+       public async ValueTask<Page<Cinema>> Handle(GetCinemasQuery request, CancellationToken cancellationToken)
+       {
+           return await repository.GetCinemas(request.Query, new PageRequest(request.Offset, request.Limit), cancellationToken);
+       }
+   }
+   ```
+
+   ```csharp title="src/Application/Cinemas/Queries/GetCinemas/GetCinemasValidator.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas.Queries.GetCinemas;
+
+   using Common.Paging;
+   using FluentValidation;
+
+   public class GetCinemasValidator : AbstractValidator<GetCinemasQuery>
+   {
+       public GetCinemasValidator()
+       {
+           _ = this.RuleFor(r => r.Query).ValidSearchTerm();
+           _ = this.RuleFor(r => r.Offset).ValidOffset();
+           _ = this.RuleFor(r => r.Limit).ValidLimit();
+       }
+   }
+   ```
+
+   ```csharp title="src/Application/Cinemas/Commands/CreateCinema/CreateCinemaCommand.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas.Commands.CreateCinema;
+
+   using Entities;
+   using Mediator;
+
+   public class CreateCinemaCommand : IRequest<Cinema>
+   {
+       public string Name { get; init; } = string.Empty;
+   }
+   ```
+
+   ```csharp title="src/Application/Cinemas/Commands/CreateCinema/CreateCinemaHandler.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas.Commands.CreateCinema;
+
+   using Entities;
+   using Mediator;
+
+   public class CreateCinemaHandler(ICinemasRepository repository) : IRequestHandler<CreateCinemaCommand, Cinema>
+   {
+       public async ValueTask<Cinema> Handle(CreateCinemaCommand request, CancellationToken cancellationToken)
+       {
+           return await repository.CreateCinema(request.Name, cancellationToken);
+       }
+   }
+   ```
+
+   ```csharp title="src/Application/Cinemas/Commands/CreateCinema/CreateCinemaValidator.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas.Commands.CreateCinema;
+
+   using FluentValidation;
+
+   public class CreateCinemaValidator : AbstractValidator<CreateCinemaCommand>
+   {
+       public CreateCinemaValidator()
+       {
+           _ = this.RuleFor(r => r.Name).NotEmpty().WithMessage("A cinema needs a name.");
+           _ = this.RuleFor(r => r.Name).MaximumLength(100).WithMessage("A cinema name can't be longer than 100 characters.");
+       }
+   }
+   ```
+
+2. **Store and map it in `src/Infrastructure`** (`data-access-ef-core` and `mapping-with-mapperly`).
+
+   Add the database model and its configuration beside the sample ones. Every model inherits `Entity`, which brings the id and the created and modified dates, and every configuration inherits `EntityConfiguration<T>`, which sets them up.
+
+   ```csharp title="src/Infrastructure/Databases/MovieReviews/Models/Cinema.cs"
+   namespace WorksOnMyMachine.Movies.Infrastructure.Databases.MovieReviews.Models;
+
+   using System.Diagnostics.CodeAnalysis;
+
+   [ExcludeFromCodeCoverage]
+   internal record Cinema : Entity
+   {
+       public required string Name { get; init; }
+   }
+   ```
+
+   ```csharp title="src/Infrastructure/Databases/MovieReviews/Configuration/CinemaConfiguration.cs"
+   namespace WorksOnMyMachine.Movies.Infrastructure.Databases.MovieReviews.Configuration;
+
+   using Microsoft.EntityFrameworkCore;
+   using Microsoft.EntityFrameworkCore.Metadata.Builders;
+   using Models;
+
+   internal class CinemaConfiguration : EntityConfiguration<Cinema>
+   {
+       public override void Configure(EntityTypeBuilder<Cinema> builder)
+       {
+           base.Configure(builder);
+
+           _ = builder.Property(c => c.Name).HasMaxLength(100).UseCollation(Collations.NoCase);
+           _ = builder.HasIndex(c => c.Name);
+       }
+   }
+   ```
+
+   Then wire it in:
+
+   - **`MovieReviewsDbContext.cs`:** add `public DbSet<Cinema> Cinemas => this.Set<Cinema>();` beside the other sets.
+   - **`Mapping/MovieReviewsMapper.cs`:** add `using AppCinema = Application.Cinemas.Entities.Cinema;` and `using InfraCinema = Models.Cinema;` with the other aliases, and this method:
+
+     ```csharp
+     [MapperIgnoreSource(nameof(InfraCinema.DateCreated))]
+     [MapperIgnoreSource(nameof(InfraCinema.DateModified))]
+     public partial AppCinema ToDomain(InfraCinema cinema);
+     ```
+
+   - **`EntityFrameworkMovieReviewsRepository.cs`:** add `using Application.Cinemas;` and `using ApplicationCinema = Application.Cinemas.Entities.Cinema;`, add `ICinemasRepository` to the interfaces the class implements, and add a `Cinemas` region. The search reuses the repository's own `ContainsPattern` and `EscapeCharacter`, so a `%` or `_` in a search term matches itself, the same as for movies.
+
+     ```csharp
+     #region Cinemas
+
+     public async Task<Page<ApplicationCinema>> GetCinemas(
+         string? query,
+         PageRequest page,
+         CancellationToken cancellationToken)
+     {
+         var cinemas = this.context.Cinemas.AsQueryable();
+
+         if (!string.IsNullOrWhiteSpace(query))
+         {
+             var pattern = ContainsPattern(query);
+
+             cinemas = cinemas.Where(c => EF.Functions.Like(c.Name, pattern, EscapeCharacter));
+         }
+
+         var totalCount = await cinemas.CountAsync(cancellationToken);
+
+         var result = await cinemas
+             .OrderBy(c => c.Name)
+             .ThenBy(c => c.Id)
+             .Skip(page.Offset)
+             .Take(page.Limit)
+             .ToListAsync(cancellationToken);
+
+         return new([.. result.Select(this.mapper.ToDomain)], page.Offset, page.Limit, totalCount);
+     }
+
+     public async Task<ApplicationCinema> CreateCinema(string name, CancellationToken cancellationToken)
+     {
+         var now = this.timeProvider.GetUtcNow().UtcDateTime;
+
+         var cinema = new Cinema
+         {
+             Name = name,
+             DateCreated = now,
+             DateModified = now
+         };
+
+         _ = this.context.Add(cinema);
+
+         _ = await this.context.SaveChangesAsync(cancellationToken);
+
+         return this.mapper.ToDomain(cinema);
+     }
+
+     #endregion Cinemas
+     ```
+
+   - **`src/Infrastructure/DependencyInjection.cs`:** add `using Application.Cinemas;` and register the interface against the same repository, like the others:
+
+     ```csharp
+     _ = services.AddScoped<ICinemasRepository>(x =>
+         x.GetRequiredService<EntityFrameworkMovieReviewsRepository>());
+     ```
+
+   - **`Extensions/MovieReviewsDbContextExtensions.cs`** (`sample-data`): give `local` and `docker` some cinemas to look at. Add this to `AddData` before `SaveChanges`:
+
+     ```csharp
+     var cinemas = new Faker<Cinema>()
+         .UseSeed(Seed)
+         .RuleFor(c => c.Id, f => f.Random.Guid())
+         .RuleFor(c => c.Name, f => $"{f.Address.City()} Picture House")
+         .RuleFor(c => c.DateCreated, f => f.Date.Past(refDate: ReferenceDate))
+         .RuleFor(c => c.DateModified, f => f.Date.Past(refDate: ReferenceDate))
+         .Generate(5);
+
+     context.AddRange(cinemas);
+     ```
+
+3. **Add a migration** (`database-migrations`).
+
+   ```bash
+   dotnet tool install --global dotnet-ef
+   dotnet ef migrations add AddCinemas \
+     --project ./src/Infrastructure \
+     --output-dir Databases/MovieReviews/Migrations \
+     --namespace WorksOnMyMachine.Movies.Infrastructure.Databases.MovieReviews.Migrations
+   sed -i '1s/^\xEF\xBB\xBF//' src/Infrastructure/Databases/MovieReviews/Migrations/*.cs
+   ```
+
+   Without `--namespace` the migration lands in a namespace of its own. The `sed` strips the byte order mark the tool adds. On macOS, use `sed -i ''`. Then make `// <auto-generated />` the first line of the new `<timestamp>_AddCinemas.cs`, as it is in the other migrations, so the analysers leave generated code alone.
+
+4. **Put it on the schema in `src/Presentation`** (`expose-a-use-case` and `xml-docs-and-openapi`).
+
+   A type says what a cinema looks like to a client, a query lists them and a mutation creates one. The XML comments become the descriptions in the schema, so Nitro and every client's tooling show them.
+
+   ```csharp title="src/Presentation/GraphQL/Types/CinemaType.cs"
+   namespace WorksOnMyMachine.Movies.Presentation.GraphQL.Types;
+
+   using Application.Cinemas.Entities;
+   using HotChocolate.Types;
+
+   [ObjectType<Cinema>]
+   public static partial class CinemaType
+   {
+       static partial void Configure(IObjectTypeDescriptor<Cinema> descriptor)
+       {
+           _ = descriptor.Description("A cinema that shows movies.");
+           _ = descriptor.Field(c => c.Id);
+           _ = descriptor.Field(c => c.Name).Type<NonNullType<StringType>>();
+       }
+   }
+   ```
+
+   ```csharp title="src/Presentation/GraphQL/Queries/CinemaQueries.cs"
+   namespace WorksOnMyMachine.Movies.Presentation.GraphQL.Queries;
+
+   using Application.Cinemas.Entities;
+   using Application.Common.Paging;
+   using Extensions;
+   using HotChocolate.Types;
+   using HotChocolate.Types.Pagination;
+   using Mediator;
+   using Cinemas = Application.Cinemas.Queries;
+
+   [QueryType]
+   public static partial class CinemaQueries
+   {
+       /// <summary>
+       /// Lists cinemas ordered by name, one page at a time, optionally only those whose name contains a search term.
+       /// </summary>
+       /// <param name="query">The words to look for in the name, ignoring case. Leave empty to list every cinema.</param>
+       [UsePaging(ConnectionName = "Cinemas")]
+       public static async Task<Connection<Cinema>> GetCinemas(
+           string? query,
+           int? first,
+           string? after,
+           ISender sender,
+           CancellationToken cancellationToken)
+       {
+           var page = await sender.Send(new Cinemas.GetCinemas.GetCinemasQuery
+           {
+               Query = query,
+               Offset = after.ToOffset(),
+               Limit = first ?? Paging.DefaultLimit
+           }, cancellationToken);
+
+           return page.ToConnection();
+       }
+   }
+   ```
+
+   `[UsePaging]` turns the shared offset paging into a cursor connection, with `first`, `after`, `nodes`, `pageInfo` and `totalCount`, the same as `movies`.
+
+   ```csharp title="src/Presentation/GraphQL/Mutations/CinemaMutations.cs"
+   namespace WorksOnMyMachine.Movies.Presentation.GraphQL.Mutations;
+
+   using Application.Cinemas.Entities;
+   using Errors;
+   using HotChocolate.Types;
+   using Mediator;
+   using Commands = Application.Cinemas.Commands;
+
+   /// <summary>
+   /// The cinema mutations. Each one takes a single input and returns a payload holding either the result or the typed
+   /// errors.
+   /// </summary>
+   [MutationType]
+   public static partial class CinemaMutations
+   {
+       /// <summary>
+       /// Creates a cinema and returns it.
+       /// </summary>
+       /// <param name="name">The name of the cinema, up to 100 characters.</param>
+       [Error<ValidationError>]
+       public static async Task<Cinema> CreateCinema(string name, ISender sender, CancellationToken cancellationToken)
+       {
+           return await sender.Send(new Commands.CreateCinema.CreateCinemaCommand { Name = name }, cancellationToken);
+       }
+   }
+   ```
+
+   Mutation conventions do the rest: the schema gets a `CreateCinemaInput`, a `CreateCinemaPayload` with the `cinema` and an `errors` list, and a validation failure comes back in `errors` as a `ValidationError` rather than as a failed request.
+
+   There's nothing to register. The source generator finds `[QueryType]`, `[MutationType]` and `[ObjectType<T>]` classes by themselves. If you created the solution with `--include-auth`, add `using HotChocolate.Authorization;` and put `[Authorize]` on both methods, as the sample queries and mutations have it.
+
+5. **Test the new slice** (`test-design`, `unit-tests`, `integration-tests` and `schema-snapshot`).
+
+   Each new test has a sample test that already does the same job for movies or reviews. Copy it and rename it, and you have the shape, the names and the house style without having to think about them.
+
+   | New test | Copy from |
+   | --- | --- |
+   | `tests/Application.Tests.Unit/Cinemas/Queries/GetCinemas/GetCinemasHandlerTests.cs` | `Movies/Queries/GetMovies/GetMoviesHandlerTests.cs` |
+   | `tests/Application.Tests.Unit/Cinemas/Queries/GetCinemas/GetCinemasValidatorTests.cs` | `Movies/Queries/GetMovies/GetMoviesValidatorTests.cs` |
+   | `tests/Application.Tests.Unit/Cinemas/Commands/CreateCinema/CreateCinemaHandlerTests.cs` | `Reviews/Commands/CreateReview/CreateReviewHandlerTests.cs` |
+   | `tests/Application.Tests.Unit/Cinemas/Commands/CreateCinema/CreateCinemaValidatorTests.cs` | `Reviews/Commands/CreateReview/CreateReviewValidatorTests.cs` |
+   | A `Cinemas` region in `tests/Infrastructure.Tests.Integration/Databases/MovieReviews/EntityFrameworkMovieReviewsRepositoryTests.cs` | The `Movies` region: search, paging and create |
+   | `tests/Presentation.Tests.Integration/GraphQL/Cinemas/CinemaTests.cs` and `CinemaData.cs` | `Movies/MovieTests.cs` for the list, `Reviews/ReviewTests.cs` for the mutation and its validation error |
+
+   The repository tests need some cinemas. Add three to `AddTestData` in `tests/Infrastructure.Tests.Integration/Databases/MovieReviews/Extensions/MovieReviewsCollectionData.cs`, named the same way as the sample rows:
+
+   ```csharp
+   List<Cinema> cinemas =
+   [
+       new() { Id = Guid.NewGuid(), Name = "One" },
+       new() { Id = Guid.NewGuid(), Name = "Two" },
+       new() { Id = Guid.NewGuid(), Name = "Three" }
+   ];
+
+   context.Cinemas.AddRange(cinemas);
+   ```
+
+   The integration tests read the response into `GraphQL/Common/Data.cs`, so add the new fields there:
+
+   ```csharp
+   [JsonPropertyName("cinemas")]
+   public Connection<Cinemas.Cinema> Cinemas { get; set; } = null!;
+
+   [JsonPropertyName("createCinema")]
+   public Cinemas.CinemaPayload? CreateCinema { get; set; }
+   ```
+
+   The schema snapshot test fails as soon as the new fields exist. It's doing its job: `schema.graphql` is the schema clients see, and every change to it should show up in a pull request. Run the app, open `http://localhost:7330/graphql?sdl` and copy what it returns into `tests/Presentation.Tests.Integration/GraphQL/Schema/schema.graphql`. Read the diff before you commit it. It should only add cinemas.
+
+   ```bash
+   dotnet build
+   dotnet test
+   dotnet format --verify-no-changes
+   ```
+
+   Both domains now run side by side. Stop here if you're keeping the sample for reference, which is a perfectly respectable choice.
+
+6. **Take out the sample movies, authors and reviews** (`sample-data` and `database-migrations`).
+
+   This step is mostly deleting, but the template's own tests use the sample as their test subject, so a few of them change instead of going. Work through it layer by layer and build as you go. The compiler finds what's left faster than any list.
+
+   - **Application:** delete `src/Application/Authors/`, `Movies/` and `Reviews/`. In `Common/Enums/EntityType.cs`, replace `Author`, `Movie` and `Review` with `Cinema`. `NotFoundException` uses it, and you'll want it the day you add `GetCinemaById`.
+   - **Infrastructure:** delete `Author.cs`, `Movie.cs` and `Review.cs` from `Models/`, and the matching `*Configuration.cs` files. Then remove from:
+     - `MovieReviewsDbContext.cs`: their three `DbSet` properties.
+     - `MovieReviewsMapper.cs`: their aliases and mapping methods.
+     - `EntityFrameworkMovieReviewsRepository.cs`: the `Authors`, `Movies`, `Reviews` and `Helpers` regions, their `using` lines and aliases, and their three interfaces.
+     - `DependencyInjection.cs`: their three registrations and `using` lines.
+     - `MovieReviewsDbContextExtensions.cs`: the titles, the review texts and the author, movie and review fakers. Change the guard at the top of `AddData` to `context.Cinemas.Any()`.
+   - **Presentation:** delete `GraphQL/DataLoaders/`, `GraphQL/Mutations/ReviewMutations.cs`, the `Author`, `Movie` and `Review` files in `GraphQL/Queries/`, and every type in `GraphQL/Types/` except `CinemaType.cs`.
+   - **Migrations:** replace the history with one migration for your schema. With the old snapshot gone, the tool files the new one under a folder named after the namespace, so move it back beside the migration. Then add `// <auto-generated />` to the first line of `<timestamp>_InitialCreate.cs`, as in step 3.
+
+     ```bash
+     rm src/Infrastructure/Databases/MovieReviews/Migrations/*.cs
+     dotnet ef migrations add InitialCreate \
+       --project ./src/Infrastructure \
+       --output-dir Databases/MovieReviews/Migrations \
+       --namespace WorksOnMyMachine.Movies.Infrastructure.Databases.MovieReviews.Migrations
+     mv src/Infrastructure/WorksOnMyMachine/Movies/Infrastructure/Databases/MovieReviews/Migrations/MovieReviewsDbContextModelSnapshot.cs \
+       src/Infrastructure/Databases/MovieReviews/Migrations/
+     rm -r src/Infrastructure/WorksOnMyMachine
+     sed -i '1s/^\xEF\xBB\xBF//' src/Infrastructure/Databases/MovieReviews/Migrations/*.cs
+     ```
+
+     Delete `src/Presentation/movie-reviews.db` too, if you've run the API. It still holds the old tables, and the new migration history won't recognise it.
+
+   - **Tests to delete:**
+     - `tests/Application.Tests.Unit/`: the `Authors/`, `Movies/` and `Reviews/` folders.
+     - `tests/Presentation.Tests.Integration/GraphQL/`: the `Authors/`, `Movies/` and `Reviews/` folders.
+     - `EntityFrameworkMovieReviewsRepositoryTests.cs`: the `Authors`, `Movies` and `Reviews` regions.
+     - `MovieReviewsCollectionData.cs`: the author, movie and review rows.
+   - **Tests to change:** these test the template's plumbing, and they used the sample as their subject. Point them at cinemas.
+
+     | Test | Change |
+     | --- | --- |
+     | `Common/Behaviours/LoggingBehaviourTests.cs` and `ValidationBehaviourTests.cs` | Use `CreateCinemaCommand`, `CreateCinemaValidator` and `Cinema` in place of `GetAuthorByIdQuery`, its validator and `Author`. The invalid case is an empty `Name`, so the expected property is `Name`. The logged message names `CreateCinemaCommand`. |
+     | `Common/Exceptions/NotFoundExceptionTests.cs` | Use `EntityType.Cinema` and a `Cinema`. The message becomes "The Cinema with the supplied id was not found." |
+     | `MovieReviewsConfigurationTests.cs` | Check a cinema loads, ignoring case: look up `"one"` and expect `"One"`. |
+     | `DependencyInjectionTests.cs` | Expect `ICinemasRepository`, 5 seeded cinemas and none when seeding is off. Use `GetCinemas` for the concurrency and same-sample-data checks. |
+     | `GraphQL/Common/Data.cs` and `Payload.cs` | Keep `cinemas`, `version` and `createCinema` in `Data`, and drop `ReviewPayload` and `DeleteReviewPayload`. |
+     | `GraphQL/Schema/schema.graphql` | Copy the new SDL in again, as in step 5. `NotFoundError` goes with the review mutations, because nothing left can raise it. |
+     | `Telemetry/TelemetryTests.cs` | Send `{cinemas(first:5){nodes{id}}}` and expect a `GetCinemasQuery` span. |
+     | `Authentication/AuthenticationTests.cs`, only with `--include-auth` | Send `{cinemas{nodes{id}}}` in place of the movie, author and review queries, and check `Cinemas` and `Version` come back empty. |
+
+7. **Check it the way CI will** (`coverage`).
+
+   ```bash
+   dotnet build
+   dotnet format --verify-no-changes
+   dotnet test -m:1 \
+     -p:CollectCoverage=true -p:CoverletOutput=../results/ -p:MergeWith="../results/coverage.json" \
+     -p:CoverletOutputFormat=opencover%2cjson \
+     -p:ExcludeByFile="**/Program.cs%2c**/Migrations/*.cs%2c**/obj/**/*.cs" \
+     -p:ExcludeByAttribute="GeneratedCodeAttribute"
+   ```
+
+   The last table it prints is the merged total. Ours came out at 99.1%. If yours is under 95%, `coverage` says what to do about it, and it isn't "lower the number".
+
+</Steps>
+
+## What's still called "movie reviews"
+
+The database plumbing keeps its sample name: the `Databases/MovieReviews` folder, `MovieReviewsDbContext`, `EntityFrameworkMovieReviewsRepository`, the `MovieReviews` connection string and the `movie-reviews.db` file. They all work as they are. Everything in `src/Infrastructure` is `internal`, so renaming them later is a refactor that never reaches Application or Presentation. Do it when the name starts to bother you, and change the connection string in every `appsettings.*.json` and in `docker-compose.yml` at the same time.

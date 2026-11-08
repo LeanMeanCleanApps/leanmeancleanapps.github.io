@@ -1,0 +1,689 @@
+---
+title: "Make it yours"
+description: "Add your own entity end to end, then clear out the sample movies, authors and reviews without dropping below the 95% coverage gate."
+sidebar:
+  order: 2
+---
+
+import { Steps, Aside, FileTree } from '@astrojs/starlight/components';
+
+Sooner or later you'll want to evict *Deep Space Gardeners* and move your own domain in. The tempting move is to delete `Movies`, `Authors` and `Reviews` first. Don't. Half the tests stop compiling, and the shared plumbing (paging, validation, logging, the error filters, resource links, completions and telemetry) suddenly has nothing to exercise it, so coverage falls through the floor.
+
+Go the other way round. Build your first slice beside the sample domain, prove it works end to end, then take the movies out. This guide adds cinemas, with a `cinemas_search` tool to list and search them, a `cinemas_add` tool to add one, a `cinemas://{id}` resource to read one and a `describe_cinema` prompt to write a blurb for one, and finishes with a solution that has no movies left in it. We ran every step on a fresh solution: it ends with 112 passing tests and 99.8% line coverage.
+
+<Aside type="tip" title="Let Jacques do the typing">
+  Each step names the skill in `.agents/skills/` that covers it. Point your coding agent at this page and your own domain, and it follows the same recipe.
+</Aside>
+
+The code below assumes you named the solution `WorksOnMyMachine.Movies`. Swap in your own name wherever you see it.
+
+<Steps>
+
+1. **Add the entity and use cases to `src/Application`** (`add-a-use-case`).
+
+   The entity, the repository interface, two queries and one command, each with a validator. An MCP server needs the second query, `GetCinemaById`, more than an API does: every cinema a tool returns comes with a link to a `cinemas://{id}` resource, and something has to answer when a client opens it. Handlers and validators are `public`, like the samples, so Mediator's source generator and the tests can see them.
+
+   <FileTree>
+   - src/Application/Cinemas/
+     - Entities/Cinema.cs
+     - ICinemasRepository.cs
+     - Queries/GetCinemas/
+       - GetCinemasQuery.cs
+       - GetCinemasHandler.cs
+       - GetCinemasValidator.cs
+     - Queries/GetCinemaById/
+       - GetCinemaByIdQuery.cs
+       - GetCinemaByIdHandler.cs
+       - GetCinemaByIdValidator.cs
+     - Commands/CreateCinema/
+       - CreateCinemaCommand.cs
+       - CreateCinemaHandler.cs
+       - CreateCinemaValidator.cs
+   </FileTree>
+
+   ```csharp title="src/Application/Cinemas/Entities/Cinema.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas.Entities;
+
+   /// <summary>
+   /// A cinema that shows movies.
+   /// </summary>
+   /// <param name="Id">The unique identifier of the cinema.</param>
+   /// <param name="Name">The name of the cinema.</param>
+   public record Cinema(Guid Id, string Name);
+   ```
+
+   ```csharp title="src/Application/Cinemas/ICinemasRepository.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas;
+
+   using Common.Paging;
+   using Entities;
+
+   public interface ICinemasRepository
+   {
+       public Task<Page<Cinema>> GetCinemas(
+           string? query,
+           PageRequest page,
+           CancellationToken cancellationToken);
+
+       public Task<Cinema?> GetCinemaById(Guid id, CancellationToken cancellationToken);
+
+       public Task<Cinema> CreateCinema(string name, CancellationToken cancellationToken);
+   }
+   ```
+
+
+   The query reuses the shared paging and search rules, so `Common/Paging` stays covered once the sample queries are gone.
+
+   ```csharp title="src/Application/Cinemas/Queries/GetCinemas/GetCinemasQuery.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas.Queries.GetCinemas;
+
+   using Common.Paging;
+   using Entities;
+   using Mediator;
+
+   /// <summary>
+   /// Lists cinemas one page at a time, optionally only those whose name contains a search term.
+   /// </summary>
+   public class GetCinemasQuery : IRequest<Page<Cinema>>
+   {
+       /// <summary>The words to look for in the name, ignoring case. Leave empty to list every cinema.</summary>
+       public string? Query { get; init; }
+
+       /// <summary>The number of results to skip, 0 for the first page.</summary>
+       public int Offset { get; init; }
+
+       /// <summary>The largest number of results to return, from 1 to 50.</summary>
+       public int Limit { get; init; } = Paging.DefaultLimit;
+   }
+   ```
+
+   ```csharp title="src/Application/Cinemas/Queries/GetCinemas/GetCinemasHandler.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas.Queries.GetCinemas;
+
+   using Common.Paging;
+   using Entities;
+   using Mediator;
+
+   public class GetCinemasHandler(ICinemasRepository repository) : IRequestHandler<GetCinemasQuery, Page<Cinema>>
+   {
+       public async ValueTask<Page<Cinema>> Handle(GetCinemasQuery request, CancellationToken cancellationToken)
+       {
+           return await repository.GetCinemas(request.Query, new PageRequest(request.Offset, request.Limit), cancellationToken);
+       }
+   }
+   ```
+
+   ```csharp title="src/Application/Cinemas/Queries/GetCinemas/GetCinemasValidator.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas.Queries.GetCinemas;
+
+   using Common.Paging;
+   using FluentValidation;
+
+   public class GetCinemasValidator : AbstractValidator<GetCinemasQuery>
+   {
+       public GetCinemasValidator()
+       {
+           _ = this.RuleFor(r => r.Query).ValidSearchTerm();
+           _ = this.RuleFor(r => r.Offset).ValidOffset();
+           _ = this.RuleFor(r => r.Limit).ValidLimit();
+       }
+   }
+   ```
+
+   ```csharp title="src/Application/Cinemas/Queries/GetCinemaById/GetCinemaByIdQuery.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas.Queries.GetCinemaById;
+
+   using Entities;
+   using Mediator;
+
+   public class GetCinemaByIdQuery : IRequest<Cinema>
+   {
+       public Guid Id { get; init; }
+   }
+   ```
+
+   ```csharp title="src/Application/Cinemas/Queries/GetCinemaById/GetCinemaByIdHandler.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas.Queries.GetCinemaById;
+
+   using Common.Enums;
+   using Common.Exceptions;
+   using Entities;
+   using Mediator;
+
+   public class GetCinemaByIdHandler(ICinemasRepository repository) : IRequestHandler<GetCinemaByIdQuery, Cinema>
+   {
+       public async ValueTask<Cinema> Handle(GetCinemaByIdQuery request, CancellationToken cancellationToken)
+       {
+           var result = await repository.GetCinemaById(request.Id, cancellationToken);
+
+           NotFoundException.ThrowIfNull(result, EntityType.Cinema);
+
+           return result;
+       }
+   }
+   ```
+
+   ```csharp title="src/Application/Cinemas/Queries/GetCinemaById/GetCinemaByIdValidator.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas.Queries.GetCinemaById;
+
+   using FluentValidation;
+
+   public class GetCinemaByIdValidator : AbstractValidator<GetCinemaByIdQuery>
+   {
+       public GetCinemaByIdValidator()
+       {
+           _ = this.RuleFor(r => r.Id).NotEqual(Guid.Empty).WithMessage("A Cinema Id was not supplied.");
+       }
+   }
+   ```
+
+   Add `Cinema` to `Common/Enums/EntityType.cs` too, so `NotFoundException` can name what it didn't find.
+
+   ```csharp title="src/Application/Cinemas/Commands/CreateCinema/CreateCinemaCommand.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas.Commands.CreateCinema;
+
+   using Entities;
+   using Mediator;
+
+   public class CreateCinemaCommand : IRequest<Cinema>
+   {
+       public string Name { get; init; } = string.Empty;
+   }
+   ```
+
+   ```csharp title="src/Application/Cinemas/Commands/CreateCinema/CreateCinemaHandler.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas.Commands.CreateCinema;
+
+   using Entities;
+   using Mediator;
+
+   public class CreateCinemaHandler(ICinemasRepository repository) : IRequestHandler<CreateCinemaCommand, Cinema>
+   {
+       public async ValueTask<Cinema> Handle(CreateCinemaCommand request, CancellationToken cancellationToken)
+       {
+           return await repository.CreateCinema(request.Name, cancellationToken);
+       }
+   }
+   ```
+
+   ```csharp title="src/Application/Cinemas/Commands/CreateCinema/CreateCinemaValidator.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas.Commands.CreateCinema;
+
+   using FluentValidation;
+
+   public class CreateCinemaValidator : AbstractValidator<CreateCinemaCommand>
+   {
+       public CreateCinemaValidator()
+       {
+           _ = this.RuleFor(r => r.Name).NotEmpty().WithMessage("A cinema needs a name.");
+           _ = this.RuleFor(r => r.Name).MaximumLength(100).WithMessage("A cinema name can't be longer than 100 characters.");
+       }
+   }
+   ```
+
+2. **Store and map it in `src/Infrastructure`** (`data-access-ef-core` and `mapping-with-mapperly`).
+
+   Add the database model and its configuration beside the sample ones. Every model inherits `Entity`, which brings the id and the created and modified dates, and every configuration inherits `EntityConfiguration<T>`, which sets them up.
+
+   ```csharp title="src/Infrastructure/Databases/MovieReviews/Models/Cinema.cs"
+   namespace WorksOnMyMachine.Movies.Infrastructure.Databases.MovieReviews.Models;
+
+   using System.Diagnostics.CodeAnalysis;
+
+   [ExcludeFromCodeCoverage]
+   internal record Cinema : Entity
+   {
+       public required string Name { get; init; }
+   }
+   ```
+
+   ```csharp title="src/Infrastructure/Databases/MovieReviews/Configuration/CinemaConfiguration.cs"
+   namespace WorksOnMyMachine.Movies.Infrastructure.Databases.MovieReviews.Configuration;
+
+   using Microsoft.EntityFrameworkCore;
+   using Microsoft.EntityFrameworkCore.Metadata.Builders;
+   using Models;
+
+   internal class CinemaConfiguration : EntityConfiguration<Cinema>
+   {
+       public override void Configure(EntityTypeBuilder<Cinema> builder)
+       {
+           base.Configure(builder);
+
+           _ = builder.Property(c => c.Name).HasMaxLength(100).UseCollation(Collations.NoCase);
+           _ = builder.HasIndex(c => c.Name);
+       }
+   }
+   ```
+
+   Then wire it in:
+
+   - **`MovieReviewsDbContext.cs`:** add `public DbSet<Cinema> Cinemas => this.Set<Cinema>();` beside the other sets.
+   - **`Mapping/MovieReviewsMapper.cs`:** add `using AppCinema = Application.Cinemas.Entities.Cinema;` and `using InfraCinema = Models.Cinema;` with the other aliases, and this method:
+
+     ```csharp
+     [MapperIgnoreSource(nameof(InfraCinema.DateCreated))]
+     [MapperIgnoreSource(nameof(InfraCinema.DateModified))]
+     public partial AppCinema ToDomain(InfraCinema cinema);
+     ```
+
+   - **`EntityFrameworkMovieReviewsRepository.cs`:** add `using Application.Cinemas;` and `using ApplicationCinema = Application.Cinemas.Entities.Cinema;`, add `ICinemasRepository` to the interfaces the class implements, and add a `Cinemas` region. The search reuses the repository's own `ContainsPattern` and `EscapeCharacter`, so a `%` or `_` in a search term matches itself, the same as for movies.
+
+     ```csharp
+     #region Cinemas
+
+     public async Task<Page<ApplicationCinema>> GetCinemas(
+         string? query,
+         PageRequest page,
+         CancellationToken cancellationToken)
+     {
+         var cinemas = this.context.Cinemas.AsQueryable();
+
+         if (!string.IsNullOrWhiteSpace(query))
+         {
+             var pattern = ContainsPattern(query);
+
+             cinemas = cinemas.Where(c => EF.Functions.Like(c.Name, pattern, EscapeCharacter));
+         }
+
+         var totalCount = await cinemas.CountAsync(cancellationToken);
+
+         var result = await cinemas
+             .OrderBy(c => c.Name)
+             .ThenBy(c => c.Id)
+             .Skip(page.Offset)
+             .Take(page.Limit)
+             .ToListAsync(cancellationToken);
+
+         return new([.. result.Select(this.mapper.ToDomain)], page.Offset, page.Limit, totalCount);
+     }
+
+     public async Task<ApplicationCinema?> GetCinemaById(Guid id, CancellationToken cancellationToken)
+     {
+         var result = await this.context.Cinemas.FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+
+         return result is null ? null : this.mapper.ToDomain(result);
+     }
+
+     public async Task<ApplicationCinema> CreateCinema(string name, CancellationToken cancellationToken)
+     {
+         var now = this.timeProvider.GetUtcNow().UtcDateTime;
+
+         var cinema = new Cinema
+         {
+             Name = name,
+             DateCreated = now,
+             DateModified = now
+         };
+
+         _ = this.context.Add(cinema);
+
+         _ = await this.context.SaveChangesAsync(cancellationToken);
+
+         return this.mapper.ToDomain(cinema);
+     }
+
+     #endregion Cinemas
+     ```
+
+   - **`src/Infrastructure/DependencyInjection.cs`:** add `using Application.Cinemas;` and register the interface against the same repository, like the others:
+
+     ```csharp
+     _ = services.AddScoped<ICinemasRepository>(x =>
+         x.GetRequiredService<EntityFrameworkMovieReviewsRepository>());
+     ```
+
+   - **`Extensions/MovieReviewsDbContextExtensions.cs`** (`sample-data`): give `local` and `docker` some cinemas to look at. Add this to `AddData` before `SaveChanges`:
+
+     ```csharp
+     var cinemas = new Faker<Cinema>()
+         .UseSeed(Seed)
+         .RuleFor(c => c.Id, f => f.Random.Guid())
+         .RuleFor(c => c.Name, f => $"{f.Address.City()} Picture House")
+         .RuleFor(c => c.DateCreated, f => f.Date.Past(refDate: ReferenceDate))
+         .RuleFor(c => c.DateModified, f => f.Date.Past(refDate: ReferenceDate))
+         .Generate(5);
+
+     context.AddRange(cinemas);
+     ```
+
+3. **Add a migration** (`database-migrations`).
+
+   ```bash
+   dotnet tool install --global dotnet-ef
+   dotnet ef migrations add AddCinemas \
+     --project ./src/Infrastructure \
+     --output-dir Databases/MovieReviews/Migrations \
+     --namespace WorksOnMyMachine.Movies.Infrastructure.Databases.MovieReviews.Migrations
+   sed -i '1s/^\xEF\xBB\xBF//' src/Infrastructure/Databases/MovieReviews/Migrations/*.cs
+   ```
+
+   Without `--namespace` the migration lands in a namespace of its own. The `sed` strips the byte order mark the tool adds. On macOS, use `sed -i ''`. Then make `// <auto-generated />` the first line of the new `<timestamp>_AddCinemas.cs`, as it is in the other migrations, so the analysers leave generated code alone.
+
+4. **Put it on tools, a resource and a prompt in `src/Presentation`** (`expose-a-use-case`, `api-conventions` and `json-serialization`).
+
+   This is where an MCP server earns its keep. A model reads the tool names, titles, annotations and descriptions to decide what to call, so they're written for a model to read, the same way the sample's are. Tools return a result model rather than the Application entity, so the server decides exactly what a client sees.
+
+   ```csharp title="src/Presentation/Models/CinemaResult.cs"
+   namespace WorksOnMyMachine.Movies.Presentation.Models;
+
+   using System.ComponentModel;
+
+   /// <summary>
+   /// A cinema that shows movies.
+   /// </summary>
+   /// <param name="Id">The cinema's id.</param>
+   /// <param name="Name">The cinema's name.</param>
+   public record CinemaResult(
+       [property: Description("The cinema's id.")] Guid Id,
+       [property: Description("The cinema's name.")] string Name);
+   ```
+
+   ```csharp title="src/Presentation/Tools/CinemaTools.cs"
+   namespace WorksOnMyMachine.Movies.Presentation.Tools;
+
+   using Mediator;
+   using ModelContextProtocol.Server;
+   using Presentation.Models;
+   using Commands = Application.Cinemas.Commands;
+   using Queries = Application.Cinemas.Queries;
+
+   [McpServerToolType]
+   public static partial class CinemaTools
+   {
+       /// <summary>
+       /// Find cinemas by name, ignoring case, in name order. Each result has the cinema's id and name. Leave the query
+       /// empty to browse every cinema a page at a time. Use this to check a cinema isn't already there before calling
+       /// cinemas_add.
+       /// </summary>
+       /// <param name="query">Part of the cinema's name, such as 'astor'. Leave empty to list every cinema.</param>
+       /// <param name="offset">The number of results to skip, 0 for the first page. Pass the nextOffset from a previous call to get the next page.</param>
+       /// <param name="limit">The most results to return, from 1 to 50.</param>
+       [McpServerTool(Name = "cinemas_search", Title = "Search cinemas", ReadOnly = true, Idempotent = true, OpenWorld = false, UseStructuredContent = true, IconSource = ItemIcons.Cinema)]
+       public static async partial Task<ResultPage<CinemaResult>> SearchCinemas(
+           ISender sender,
+           CancellationToken cancellationToken,
+           string? query = null,
+           int offset = 0,
+           int limit = 10)
+       {
+           var page = await sender.Send(new Queries.GetCinemas.GetCinemasQuery
+           {
+               Query = query,
+               Offset = offset,
+               Limit = limit
+           }, cancellationToken);
+
+           return page.ToResult(c => c.ToResult());
+       }
+
+       /// <summary>
+       /// Add a cinema and return it with its new id. Calling it twice adds two cinemas, so search first with
+       /// cinemas_search if you're not sure it's already there.
+       /// </summary>
+       /// <param name="name">The cinema's name, up to 100 characters, such as 'The Astor'.</param>
+       [McpServerTool(Name = "cinemas_add", Title = "Add cinema", ReadOnly = false, Destructive = false, Idempotent = false, OpenWorld = false, UseStructuredContent = true, IconSource = ItemIcons.Cinema)]
+       public static async partial Task<CinemaResult> AddCinema(
+           ISender sender,
+           string name,
+           CancellationToken cancellationToken)
+       {
+           var cinema = await sender.Send(new Commands.CreateCinema.CreateCinemaCommand
+           {
+               Name = name
+           }, cancellationToken);
+
+           return cinema.ToResult();
+       }
+   }
+   ```
+
+   The annotations tell the client how careful to be. `cinemas_search` is read-only and safe to repeat. `cinemas_add` changes data, so it isn't read-only, but it doesn't destroy anything, and it isn't idempotent, because calling it twice adds two cinemas. The description says so, and points the model at `cinemas_search` first.
+
+   Every cinema a tool returns gets a resource link to `cinemas://{id}`, because the scheme is the start of the tool's name. That link has to open, so add the resource:
+
+   ```csharp title="src/Presentation/Resources/CinemaResources.cs"
+   namespace WorksOnMyMachine.Movies.Presentation.Resources;
+
+   using Mediator;
+   using ModelContextProtocol.Server;
+   using Presentation.Models;
+   using Presentation.Serialization;
+   using Presentation.Tools;
+   using Queries = Application.Cinemas.Queries;
+
+   [McpServerResourceType]
+   public static partial class CinemaResources
+   {
+       /// <summary>A cinema, by its id.</summary>
+       /// <param name="cinemaId">The cinema's id (a GUID).</param>
+       [McpServerResource(UriTemplate = "cinemas://{cinemaId}", Name = "cinema", Title = "Cinema", MimeType = "application/json", IconSource = ItemIcons.Cinema)]
+       public static async partial Task<string> GetCinema(
+           ISender sender,
+           Guid cinemaId,
+           CancellationToken cancellationToken)
+       {
+           var cinema = await sender.Send(new Queries.GetCinemaById.GetCinemaByIdQuery
+           {
+               Id = cinemaId
+           }, cancellationToken);
+
+           return McpSerializer.Serialize(cinema.ToResult());
+       }
+   }
+   ```
+
+   And a prompt, so a client has something to offer the user for cinemas, not just the model:
+
+   ```csharp title="src/Presentation/Prompts/CinemaPrompts.cs"
+   namespace WorksOnMyMachine.Movies.Presentation.Prompts;
+
+   using Mediator;
+   using ModelContextProtocol.Protocol;
+   using ModelContextProtocol.Server;
+   using Presentation.Models;
+   using Presentation.Serialization;
+   using Presentation.Tools;
+   using Queries = Application.Cinemas.Queries;
+
+   [McpServerPromptType]
+   public static partial class CinemaPrompts
+   {
+       /// <summary>Write a short, friendly blurb for a cinema's listing, from the cinema's details.</summary>
+       /// <param name="cinemaId">The cinema's id (a GUID).</param>
+       [McpServerPrompt(Name = "describe_cinema", Title = "Describe a cinema", IconSource = ItemIcons.Cinema)]
+       public static async partial Task<GetPromptResult> DescribeCinema(
+           ISender sender,
+           Guid cinemaId,
+           CancellationToken cancellationToken)
+       {
+           var cinema = (await sender.Send(new Queries.GetCinemaById.GetCinemaByIdQuery { Id = cinemaId }, cancellationToken)).ToResult();
+
+           return new GetPromptResult
+           {
+               Description = $"Describe {cinema.Name}",
+               Messages =
+               [
+                   PromptContent.Text($"Write a short, friendly blurb for the listing of {cinema.Name}, using the cinema below. Keep it to two sentences."),
+                   PromptContent.Embed($"cinemas://{cinema.Id}", McpSerializer.Serialize(cinema))
+               ]
+           };
+       }
+   }
+   ```
+
+   Then wire it in:
+
+   - **`Models/ResultMapper.cs`:** add `using Application.Cinemas.Entities;` and the mapping.
+
+     ```csharp
+     public static CinemaResult ToResult(this Cinema cinema)
+     {
+         return new CinemaResult(cinema.Id, cinema.Name);
+     }
+     ```
+
+   - **`Tools/ItemIcons.cs`:** add `public const string Cinema = Source + "movie-64.png";`. Every tool, resource and prompt needs an icon, and a test checks. The movie icon will do until you have your own: point `Cinema` at its URL when you do.
+   - **`Serialization/AppJsonSerializerContext.cs`:** add `[JsonSerializable(typeof(CinemaResult))]` and `[JsonSerializable(typeof(ResultPage<CinemaResult>))]`.
+   - **`Completions/CompletionHandler.cs`:** add `using CinemaQueries = Application.Cinemas.Queries;` and a case to `CompleteResourceId`, so a client can find a cinema's id by its name or its first few characters:
+
+     ```csharp
+     case "cinemaId":
+     {
+         var page = await sender.Send(new CinemaQueries.GetCinemas.GetCinemasQuery
+         {
+             Query = argument.Value,
+             Limit = Paging.MaxLimit
+         }, cancellationToken);
+
+         if (page.Items.Count > 0)
+         {
+             return Result([.. page.Items.Select(c => c.Id.ToString())], page.TotalCount);
+         }
+
+         var cinemas = await GetAll(offset => sender.Send(new CinemaQueries.GetCinemas.GetCinemasQuery
+         {
+             Offset = offset,
+             Limit = Paging.MaxLimit
+         }, cancellationToken));
+
+         return IdsStartingWith(cinemas.Select(c => c.Id), argument.Value);
+     }
+     ```
+
+   - **`Extensions/WebApplicationBuilderExtensions.cs`:** mention the cinema tools in `ServerInstructions`. The model reads them before it reads anything else.
+
+   There's nothing else to register: the server finds tools, resources and prompts in the assembly by themselves, and with `--include-auth` the whole `/mcp` endpoint already needs a token.
+
+5. **Test the new slice** (`test-design`, `unit-tests`, `integration-tests` and `presentation-integration-tests`).
+
+   Each new test has a sample test that already does the same job for movies or reviews. Copy it and rename it, and you have the shape, the names and the house style without having to think about them.
+
+   | New test | Copy from |
+   | --- | --- |
+   | `tests/Application.Tests.Unit/Cinemas/Queries/GetCinemas/GetCinemasHandlerTests.cs` | `Movies/Queries/GetMovies/GetMoviesHandlerTests.cs` |
+   | `tests/Application.Tests.Unit/Cinemas/Queries/GetCinemas/GetCinemasValidatorTests.cs` | `Movies/Queries/GetMovies/GetMoviesValidatorTests.cs` |
+   | `tests/Application.Tests.Unit/Cinemas/Queries/GetCinemaById/GetCinemaByIdHandlerTests.cs` and `GetCinemaByIdValidatorTests.cs` | The tests in `Movies/Queries/GetMovieById/` |
+   | `tests/Application.Tests.Unit/Cinemas/Commands/CreateCinema/CreateCinemaHandlerTests.cs` | `Reviews/Commands/CreateReview/CreateReviewHandlerTests.cs` |
+   | `tests/Application.Tests.Unit/Cinemas/Commands/CreateCinema/CreateCinemaValidatorTests.cs` | `Reviews/Commands/CreateReview/CreateReviewValidatorTests.cs` |
+   | A `Cinemas` region in `tests/Infrastructure.Tests.Integration/Databases/MovieReviews/EntityFrameworkMovieReviewsRepositoryTests.cs` | The `Movies` region: search, paging, get by id and create |
+   | `tests/Presentation.Tests.Unit/Tools/CinemaToolTests.cs` | `MovieToolTests.cs` and `ReviewToolTests.cs` |
+   | `tests/Presentation.Tests.Integration/Tools/CinemaToolTests.cs` | `MovieToolTests.cs` and `ReviewToolTests.cs` |
+
+   The repository tests need some cinemas. Add three to `AddTestData` in `tests/Infrastructure.Tests.Integration/Databases/MovieReviews/Extensions/MovieReviewsCollectionData.cs`, named the same way as the sample rows:
+
+   ```csharp
+   List<Cinema> cinemas =
+   [
+       new() { Id = Guid.NewGuid(), Name = "One" },
+       new() { Id = Guid.NewGuid(), Name = "Two" },
+       new() { Id = Guid.NewGuid(), Name = "Three" }
+   ];
+
+   context.Cinemas.AddRange(cinemas);
+   ```
+
+   A few integration tests list everything the server offers, so they fail until they know about cinemas. They're doing their job: they pin down exactly what a client sees.
+
+   - **`Tools/ToolListTests.cs`:** add `{ "cinemas_search", "Search cinemas", true, false, true }` and `{ "cinemas_add", "Add cinema", false, false, false }` to the expected tools and their annotations.
+   - **`Resources/ResourceTests.cs`:** add `"cinemas://{cinemaId}"` to the expected templates, and read a cinema, an unknown id and an empty id, as the movie tests do.
+   - **`Prompts/PromptTests.cs`:** add `"describe_cinema"` to the expected prompts.
+   - **`Tools/ResourceLinkTests.cs`** and **`Completions/CompletionTests.cs`:** add a test that `cinemas_add` links the new cinema, and one that completes a `cinemaId` by name and by its first eight characters.
+
+   ```bash
+   dotnet build
+   dotnet test
+   dotnet format --verify-no-changes
+   ```
+
+   Both domains now run side by side. Stop here if you're keeping the sample for reference, which is a perfectly respectable choice.
+
+6. **Take out the sample movies, authors and reviews** (`sample-data` and `database-migrations`).
+
+   This step is mostly deleting, but the template's own tests use the sample as their test subject, so a few of them change instead of going. Work through it layer by layer and build as you go. The compiler finds what's left faster than any list.
+
+   - **Application:** delete `src/Application/Authors/`, `Movies/` and `Reviews/`. In `Common/Enums/EntityType.cs`, remove `Author`, `Movie` and `Review`, which leaves `Cinema`.
+   - **Infrastructure:** delete `Author.cs`, `Movie.cs` and `Review.cs` from `Models/`, and the matching `*Configuration.cs` files. Then remove from:
+     - `MovieReviewsDbContext.cs`: their three `DbSet` properties.
+     - `MovieReviewsMapper.cs`: their aliases and mapping methods.
+     - `EntityFrameworkMovieReviewsRepository.cs`: the `Authors`, `Movies`, `Reviews` and `Helpers` regions, their `using` lines and aliases, and their three interfaces.
+     - `DependencyInjection.cs`: their three registrations and `using` lines.
+     - `MovieReviewsDbContextExtensions.cs`: the titles, the review texts and the author, movie and review fakers. Change the guard at the top of `AddData` to `context.Cinemas.Any()`.
+   - **Presentation:** delete the author, movie and review files in `Tools/`, `Resources/` and `Prompts/`, and `AuthorResult.cs`, `MovieResult.cs`, `ReviewResult.cs` and `DeletedReview.cs` from `Models/`. Then change:
+     - `ResultMapper.cs`: keep the cinema mapping and the paging `ToResult`.
+     - `AppJsonSerializerContext.cs`: remove their `[JsonSerializable]` lines.
+     - `ItemIcons.cs`: remove `Movie`, `Author` and `Review`.
+     - `CompletionHandler.cs`: keep only the `cinemaId` case, and send every request to it. The prompt branch only existed for the sample prompts' title and name arguments, and `describe_cinema`'s `cinemaId` completes the same way as the resource's.
+     - `ToolErrorFilter.cs` and `ProtocolErrorFilter.cs`: the not found hint names the sample tools. Point it at `cinemas_search` instead.
+     - `ResourceLinkFilter.cs`: `GetName` falls back to a review's movie and author. Make the fallback the item's id: `GetText(item, "title") ?? GetText(item, "name") ?? GetText(item, "id")!`.
+     - `WebApplicationBuilderExtensions.cs`: rewrite `ServerInstructions` for what's left.
+
+       ```csharp
+       options.ServerInstructions = """
+           This server holds a list of cinemas.
+           Search first: cinemas_search finds cinemas by name and returns their ids, one page at a time, so pass
+           nextOffset back as the offset to continue rather than raising the limit.
+           cinemas_add adds a cinema. Calling it twice adds two, so search before you add.
+           Each cinema can also be read as a resource at cinemas://{id}, the describe_cinema prompt writes a
+           blurb for one, and server://version gives this server's version.
+           """;
+       ```
+
+     Keep at least one prompt. With none, the server stops offering `prompts/list` at all, and the icon test fails trying to list them.
+
+   - **Migrations:** replace the history with one migration for your schema. With the old snapshot gone, the tool files the new one under a folder named after the namespace, so move it back beside the migration. Then add `// <auto-generated />` to the first line of `<timestamp>_InitialCreate.cs`, as in step 3.
+
+     ```bash
+     rm src/Infrastructure/Databases/MovieReviews/Migrations/*.cs
+     dotnet ef migrations add InitialCreate \
+       --project ./src/Infrastructure \
+       --output-dir Databases/MovieReviews/Migrations \
+       --namespace WorksOnMyMachine.Movies.Infrastructure.Databases.MovieReviews.Migrations
+     mv src/Infrastructure/WorksOnMyMachine/Movies/Infrastructure/Databases/MovieReviews/Migrations/MovieReviewsDbContextModelSnapshot.cs \
+       src/Infrastructure/Databases/MovieReviews/Migrations/
+     rm -r src/Infrastructure/WorksOnMyMachine
+     sed -i '1s/^\xEF\xBB\xBF//' src/Infrastructure/Databases/MovieReviews/Migrations/*.cs
+     ```
+
+     Delete `src/Presentation/movie-reviews.db` too, if you've run the API. It still holds the old tables, and the new migration history won't recognise it.
+
+   - **Tests to delete:**
+     - `tests/Application.Tests.Unit/`: the `Authors/`, `Movies/` and `Reviews/` folders.
+     - `tests/Presentation.Tests.Unit/Tools/` and `tests/Presentation.Tests.Integration/Tools/`: `AuthorToolTests.cs`, `MovieToolTests.cs` and `ReviewToolTests.cs`.
+     - `EntityFrameworkMovieReviewsRepositoryTests.cs`: the `Authors`, `Movies` and `Reviews` regions.
+     - `MovieReviewsCollectionData.cs`: the author, movie and review rows.
+   - **Tests to change:** these test the template's plumbing, and they used the sample as their subject. Point them at cinemas.
+
+     | Test | Change |
+     | --- | --- |
+     | `Common/Behaviours/LoggingBehaviourTests.cs` and `ValidationBehaviourTests.cs` | Use `CreateCinemaCommand`, `CreateCinemaValidator` and `Cinema` in place of `GetAuthorByIdQuery`, its validator and `Author`. The invalid case is an empty `Name`, so the expected property is `Name`. The logged message names `CreateCinemaCommand`. |
+     | `Common/Exceptions/NotFoundExceptionTests.cs` | Use `EntityType.Cinema` and a `Cinema`. The message becomes "The Cinema with the supplied id was not found." |
+     | `MovieReviewsConfigurationTests.cs` | Check a cinema loads, ignoring case: look up `"one"` and expect `"One"`. |
+     | `DependencyInjectionTests.cs` | Expect `ICinemasRepository`, 5 seeded cinemas and none when seeding is off. Use `GetCinemas` for the concurrency and same-sample-data checks. |
+     | `Completions/CompletionHandlerTests.cs` | Use a `cinemas://{cinemaId}` reference, and check a value too long to search returns nothing without sending a query. |
+     | `Errors/ToolErrorFilterTests.cs` and `ProtocolErrorFilterTests.cs` | Expect the new not found hint. |
+     | `Models/ResultMapperTests.cs` | Map a cinema, and keep the paging test, using cinemas. |
+     | `Tools/ToolListTests.cs` and `Prompts/PromptTests.cs` | Expect only the cinema tools and `describe_cinema`. |
+     | `Resources/ResourceTests.cs` | Expect only `cinemas://{cinemaId}` and the version resource. |
+     | `Tools/ResourceLinkTests.cs` and `Completions/CompletionTests.cs` | Use cinemas for every case: links from `cinemas_search` and `cinemas_add`, no link for a failed call, and completion by name, by id prefix, with an empty value and with no match. |
+     | `Telemetry/TelemetryTests.cs` | Call `cinemas_search` and expect a `GetCinemasQuery` span. |
+
+7. **Check it the way CI will** (`coverage`).
+
+   ```bash
+   dotnet build
+   dotnet format --verify-no-changes
+   dotnet test -m:1 \
+     -p:CollectCoverage=true -p:CoverletOutput=../results/ -p:MergeWith="../results/coverage.json" \
+     -p:CoverletOutputFormat=opencover%2cjson \
+     -p:ExcludeByFile="**/Program.cs%2c**/Migrations/*.cs%2c**/obj/**/*.cs" \
+     -p:ExcludeByAttribute="GeneratedCodeAttribute"
+   ```
+
+   The last table it prints is the merged total. Ours came out at 99.8%. If yours is under 95%, `coverage` says what to do about it, and it isn't "lower the number".
+
+</Steps>
+
+## What's still called "movie reviews"
+
+The database plumbing keeps its sample name: the `Databases/MovieReviews` folder, `MovieReviewsDbContext`, `EntityFrameworkMovieReviewsRepository`, the `MovieReviews` connection string and the `movie-reviews.db` file. They all work as they are. Everything in `src/Infrastructure` is `internal`, so renaming them later is a refactor that never reaches Application or Presentation. Do it when the name starts to bother you, and change the connection string in every `appsettings.*.json` and in `docker-compose.yml` at the same time.
