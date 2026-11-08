@@ -12,7 +12,7 @@ const sidebars = {
     { label: 'Start here', items: ['minimalapi/getting-started', 'minimalapi/guides/run-locally'] },
     {
       label: 'Guides',
-      items: ['minimalapi/guides/add-an-endpoint', 'minimalapi/guides/database', 'minimalapi/guides/secure-the-api', 'minimalapi/guides/ship-the-container', 'minimalapi/guides/set-up-ci'],
+      items: ['minimalapi/guides/make-it-yours', 'minimalapi/guides/add-an-endpoint', 'minimalapi/guides/database', 'minimalapi/guides/secure-the-api', 'minimalapi/guides/ship-the-container', 'minimalapi/guides/set-up-ci'],
     },
     { label: 'Reference', items: [{ autogenerate: { directory: 'minimalapi/reference' } }] },
     {

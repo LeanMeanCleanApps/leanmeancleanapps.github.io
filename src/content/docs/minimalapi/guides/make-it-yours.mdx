@@ -1,0 +1,376 @@
+---
+title: "Make it yours"
+description: "Add your own entity, migration, use cases and endpoints, then clear out the sample movies, authors and reviews without dropping below 95% coverage."
+sidebar:
+  order: 2
+---
+
+import { Steps, Aside } from '@astrojs/starlight/components';
+
+The first thing anyone wants to do after `dotnet new` is evict *Deep Space Gardeners* and put their own domain in its place. If you delete `Movies`, `Authors` and `Reviews` straight away, half the shared plumbing tests fail to compile and the rest drop below the 95% coverage gate because the paging, validation, logging, OpenAPI and telemetry code suddenly has nothing to exercise it.
+
+The painless order is the other way round: build your first vertical slice alongside the sample domain, prove it works end to end, and then delete the movies. This guide adds a `Cinema` slice (`GET /api/cinemas` and `POST /api/cinemas`) and clears out the sample code at the end.
+
+<Aside type="tip" title="Let Jacques do the typing">
+  Every step on this page has a matching skill in `.agents/skills/`: `add-a-use-case`, `mapping-with-mapperly`, `data-access-ef-core`, `database-migrations`, `expose-a-use-case`, `sample-data` and `coverage`. Point your coding agent at your domain and it will follow the same playbook.
+</Aside>
+
+<Steps>
+
+1. **Add the entity and use cases in `src/Application`** (`add-a-use-case` in `.agents/skills`).
+
+   Add `Cinema` to `src/Application/Common/Enums/EntityType.cs`, then create the domain record and repository interface in `src/Application/Cinemas/`:
+
+   ```csharp title="src/Application/Cinemas/Entities/Cinema.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas.Entities;
+
+   public sealed record Cinema
+   {
+       public Guid Id { get; init; }
+
+       public string Name { get; init; } = string.Empty;
+   }
+   ```
+
+   ```csharp title="src/Application/Cinemas/ICinemasRepository.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas;
+
+   using Common.Paging;
+   using Entities;
+
+   public interface ICinemasRepository
+   {
+       public Task<Cinema> CreateCinema(string name, CancellationToken cancellationToken);
+
+       public Task<Page<Cinema>> GetCinemas(PageRequest page, string? searchTerm, CancellationToken cancellationToken);
+   }
+   ```
+
+   Add a paged query in `src/Application/Cinemas/Queries/GetCinemas/` so `Common/Paging` stays covered when the sample queries go:
+
+   ```csharp title="src/Application/Cinemas/Queries/GetCinemas/GetCinemasQuery.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas.Queries.GetCinemas;
+
+   using Common.Paging;
+   using Entities;
+   using Mediator;
+
+   public sealed record GetCinemasQuery : IRequest<Page<Cinema>>
+   {
+       public string? SearchTerm { get; init; }
+
+       public int Offset { get; init; }
+
+       public int Limit { get; init; } = Paging.DefaultLimit;
+   }
+   ```
+
+   ```csharp title="src/Application/Cinemas/Queries/GetCinemas/GetCinemasHandler.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas.Queries.GetCinemas;
+
+   using Common.Paging;
+   using Entities;
+   using Mediator;
+
+   internal sealed class GetCinemasHandler(ICinemasRepository repository) : IRequestHandler<GetCinemasQuery, Page<Cinema>>
+   {
+       public async ValueTask<Page<Cinema>> Handle(GetCinemasQuery request, CancellationToken cancellationToken)
+       {
+           return await repository.GetCinemas(
+               new PageRequest(request.Offset, request.Limit),
+               request.SearchTerm,
+               cancellationToken);
+       }
+   }
+   ```
+
+   ```csharp title="src/Application/Cinemas/Queries/GetCinemas/GetCinemasValidator.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas.Queries.GetCinemas;
+
+   using Common.Paging;
+   using FluentValidation;
+
+   public sealed class GetCinemasValidator : AbstractValidator<GetCinemasQuery>
+   {
+       public GetCinemasValidator()
+       {
+           _ = this.RuleFor(r => r.Offset).ValidOffset();
+           _ = this.RuleFor(r => r.Limit).ValidLimit();
+           _ = this.RuleFor(r => r.SearchTerm).ValidSearchTerm();
+       }
+   }
+   ```
+
+   Add a command in `src/Application/Cinemas/Commands/CreateCinema/`:
+
+   ```csharp title="src/Application/Cinemas/Commands/CreateCinema/CreateCinemaCommand.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas.Commands.CreateCinema;
+
+   using Entities;
+   using Mediator;
+
+   public sealed record CreateCinemaCommand : IRequest<Cinema>
+   {
+       public string Name { get; init; } = string.Empty;
+   }
+   ```
+
+   ```csharp title="src/Application/Cinemas/Commands/CreateCinema/CreateCinemaHandler.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas.Commands.CreateCinema;
+
+   using Entities;
+   using Mediator;
+
+   internal sealed class CreateCinemaHandler(ICinemasRepository repository) : IRequestHandler<CreateCinemaCommand, Cinema>
+   {
+       public async ValueTask<Cinema> Handle(CreateCinemaCommand request, CancellationToken cancellationToken)
+       {
+           return await repository.CreateCinema(request.Name, cancellationToken);
+       }
+   }
+   ```
+
+   ```csharp title="src/Application/Cinemas/Commands/CreateCinema/CreateCinemaValidator.cs"
+   namespace WorksOnMyMachine.Movies.Application.Cinemas.Commands.CreateCinema;
+
+   using FluentValidation;
+
+   public sealed class CreateCinemaValidator : AbstractValidator<CreateCinemaCommand>
+   {
+       public CreateCinemaValidator()
+       {
+           _ = this.RuleFor(r => r.Name)
+               .NotEmpty()
+               .MaximumLength(100);
+       }
+   }
+   ```
+
+2. **Persist and map it in `src/Infrastructure`** (`data-access-ef-core` and `mapping-with-mapperly` in `.agents/skills`).
+
+   Add the EF Core model and configuration under `src/Infrastructure/Databases/MovieReviews/`:
+
+   ```csharp title="src/Infrastructure/Databases/MovieReviews/Models/Cinema.cs"
+   namespace WorksOnMyMachine.Movies.Infrastructure.Databases.MovieReviews.Models;
+
+   internal sealed record Cinema : BaseEntity
+   {
+       public string Name { get; set; } = string.Empty;
+   }
+   ```
+
+   ```csharp title="src/Infrastructure/Databases/MovieReviews/Configuration/CinemaConfiguration.cs"
+   namespace WorksOnMyMachine.Movies.Infrastructure.Databases.MovieReviews.Configuration;
+
+   using Microsoft.EntityFrameworkCore.Metadata.Builders;
+   using Models;
+
+   internal sealed class CinemaConfiguration : BaseConfiguration<Cinema>
+   {
+       public override void Configure(EntityTypeBuilder<Cinema> builder)
+       {
+           base.Configure(builder);
+
+           _ = builder.Property(e => e.Name)
+               .HasMaxLength(100)
+               .IsRequired();
+       }
+   }
+   ```
+
+   Add `internal DbSet<Cinema> Cinemas { get; set; }` to `MovieReviewsDbContext.cs`, add the Mapperly method to `Mapping/MovieReviewsMapper.cs`:
+
+   ```csharp title="src/Infrastructure/Databases/MovieReviews/Mapping/MovieReviewsMapper.cs"
+   using AppCinema = Application.Cinemas.Entities.Cinema;
+   using InfraCinema = Models.Cinema;
+   ```
+
+   ```csharp title="src/Infrastructure/Databases/MovieReviews/Mapping/MovieReviewsMapper.cs"
+   [MapperIgnoreSource(nameof(InfraCinema.DateCreated))]
+   [MapperIgnoreSource(nameof(InfraCinema.DateModified))]
+   internal partial AppCinema ToDomain(InfraCinema cinema);
+   ```
+
+   Implement `ICinemasRepository` on `EntityFrameworkMovieReviewsRepository.cs` and register it in `src/Infrastructure/DependencyInjection.cs`:
+
+   ```csharp title="src/Infrastructure/Databases/MovieReviews/EntityFrameworkMovieReviewsRepository.cs"
+   public async Task<AppCinema> CreateCinema(string name, CancellationToken cancellationToken)
+   {
+       var utcNow = this.timeProvider.GetUtcNow().UtcDateTime;
+       var cinema = new Cinema
+       {
+           Name = name,
+           DateCreated = utcNow,
+           DateModified = utcNow
+       };
+
+       _ = await this.context.Cinemas.AddAsync(cinema, cancellationToken);
+       _ = await this.context.SaveChangesAsync(cancellationToken);
+
+       return this.mapper.ToDomain(cinema);
+   }
+
+   public async Task<Page<AppCinema>> GetCinemas(PageRequest page, string? searchTerm, CancellationToken cancellationToken)
+   {
+       IQueryable<Cinema> cinemas = this.context.Cinemas.AsNoTracking();
+
+       if (!string.IsNullOrWhiteSpace(searchTerm))
+       {
+           var term = searchTerm.Trim();
+           cinemas = cinemas.Where(c => EF.Functions.Like(c.Name, $"%{term}%"));
+       }
+
+       var totalCount = await cinemas.CountAsync(cancellationToken);
+       var items = await cinemas
+           .OrderBy(c => c.Name)
+           .ThenBy(c => c.Id)
+           .Skip(page.Offset)
+           .Take(page.Limit)
+           .Select(c => this.mapper.ToDomain(c))
+           .ToListAsync(cancellationToken);
+
+       return new Page<AppCinema>(items, page.Offset, page.Limit, totalCount);
+   }
+   ```
+
+   ```csharp title="src/Infrastructure/DependencyInjection.cs"
+   _ = services.AddScoped<ICinemasRepository>(sp => sp.GetRequiredService<EntityFrameworkMovieReviewsRepository>());
+   ```
+
+3. **Create the migration** (`database-migrations` in `.agents/skills`).
+
+   ```bash
+   dotnet tool install --global dotnet-ef
+   dotnet ef migrations add AddCinemas \
+     --project ./src/Infrastructure \
+     --output-dir Databases/MovieReviews/Migrations
+   ```
+
+   Put `// <auto-generated />` at the top of the new `<Timestamp>_AddCinemas.cs` file (EF Core already puts it on `.Designer.cs`) so the style analysers skip generated migration code.
+
+4. **Expose the endpoints in `src/Presentation`** (`expose-a-use-case` in `.agents/skills`).
+
+   Add a request DTO in `src/Presentation/Requests/CreateCinemaRequest.cs` and the endpoint group in `src/Presentation/Endpoints/CinemaEndpoints.cs`:
+
+   ```csharp title="src/Presentation/Requests/CreateCinemaRequest.cs"
+   namespace WorksOnMyMachine.Movies.Presentation.Requests;
+
+   /// <summary>
+   /// The details of a new Cinema to create.
+   /// </summary>
+   /// <param name="Name">The name of the cinema.</param>
+   public sealed record CreateCinemaRequest(string Name);
+   ```
+
+   ```csharp title="src/Presentation/Endpoints/CinemaEndpoints.cs"
+   namespace WorksOnMyMachine.Movies.Presentation.Endpoints;
+
+   using Application.Common.Paging;
+   using Mediator;
+   using Microsoft.AspNetCore.Http.HttpResults;
+   using Microsoft.AspNetCore.Mvc;
+   using Requests;
+   using Commands = Application.Cinemas.Commands;
+   using Entities = Application.Cinemas.Entities;
+   using Queries = Application.Cinemas.Queries;
+
+   internal static class CinemaEndpoints
+   {
+       internal static WebApplication MapCinemaEndpoints(this WebApplication app)
+       {
+           var root = app.MapGroup("/api/cinemas")
+               .WithTags("Cinemas");
+
+           _ = root.MapGet("/", GetCinemas)
+               .WithName(nameof(GetCinemas))
+               .Produces<Page<Entities.Cinema>>()
+               .ProducesValidationProblem()
+               .ProducesProblem(StatusCodes.Status500InternalServerError);
+
+           _ = root.MapPost("/", CreateCinema)
+               .WithName(nameof(CreateCinema))
+               .Accepts<CreateCinemaRequest>("application/json")
+               .Produces<Entities.Cinema>(StatusCodes.Status201Created)
+               .ProducesValidationProblem()
+               .ProducesProblem(StatusCodes.Status500InternalServerError);
+
+           return app;
+       }
+
+       /// <summary>
+       /// Search Cinemas
+       /// </summary>
+       public static async Task<Ok<Page<Entities.Cinema>>> GetCinemas(
+           [FromServices] ISender sender,
+           CancellationToken cancellationToken,
+           [FromQuery] string? query = null,
+           [FromQuery] int offset = 0,
+           [FromQuery] int limit = Paging.DefaultLimit)
+       {
+           return TypedResults.Ok(await sender.Send(new Queries.GetCinemas.GetCinemasQuery
+           {
+               SearchTerm = query,
+               Offset = offset,
+               Limit = limit
+           }, cancellationToken));
+       }
+
+       /// <summary>
+       /// Create a Cinema
+       /// </summary>
+       public static async Task<Created<Entities.Cinema>> CreateCinema(
+           [FromBody] CreateCinemaRequest request,
+           [FromServices] ISender sender,
+           CancellationToken cancellationToken)
+       {
+           var cinema = await sender.Send(new Commands.CreateCinema.CreateCinemaCommand
+           {
+               Name = request.Name
+           }, cancellationToken);
+
+           return TypedResults.Created($"/api/cinemas/{cinema.Id}", cinema);
+       }
+   }
+   ```
+
+   Register `[JsonSerializable(typeof(Cinema))]`, `[JsonSerializable(typeof(Page<Cinema>))]` and `[JsonSerializable(typeof(CreateCinemaRequest))]` on `AppJsonSerializerContext.cs`, add the `"Cinemas"` tag in `OpenApi/DocumentInfoTransformer.cs`, and call `_ = app.MapCinemaEndpoints();` in `Extensions/WebApplicationExtensions.cs`. (If you created the solution with `--include-auth`, chain `.RequireAuthorization()` on `app.MapGroup("/api/cinemas")` too.)
+
+5. **Seed and test the new slice** (`sample-data`, `unit-testing` and `integration-testing` in `.agents/skills`).
+
+   Add a handful of `Cinema` rows to `MovieReviewsDbContextExtensions.AddData` in `src/Infrastructure/Databases/MovieReviews/Extensions/MovieReviewsDbContextExtensions.cs` and `MovieReviewsCollectionData.AddTestData` in `tests/Infrastructure.Tests.Integration/Databases/MovieReviews/MovieReviewsCollectionData.cs`, then add unit and integration tests for `GetCinemas`, `CreateCinema`, `ICinemasRepository` and `CinemaEndpoints` mirroring the existing tests alongside them. Run `dotnet test` to verify both domains run side by side.
+
+6. **Clear out the sample Movies, Authors and Reviews** (`sample-data`, `database-migrations` and `coverage` in `.agents/skills`).
+
+   Now that `Cinemas` exercises every layer, remove the sample vertical slices:
+
+   - **Application:** Delete `src/Application/Authors/`, `src/Application/Movies/` and `src/Application/Reviews/`, and remove `Author`, `Movie` and `Review` from `EntityType.cs`.
+   - **Infrastructure:** Delete `Author.cs`, `Movie.cs` and `Review.cs` from `Models/` and `Configuration/`. Remove their `DbSet` properties from `MovieReviewsDbContext.cs`, their mappings from `MovieReviewsMapper.cs`, their methods and interfaces from `EntityFrameworkMovieReviewsRepository.cs`, their registrations from `DependencyInjection.cs`, and their seed blocks from `MovieReviewsDbContextExtensions.cs`.
+   - **Migrations:** Replace the migrations in `src/Infrastructure/Databases/MovieReviews/Migrations/` with a fresh initial migration for your schema:
+
+     ```bash
+     rm src/Infrastructure/Databases/MovieReviews/Migrations/*.cs
+     dotnet ef migrations add InitialCreate \
+       --project ./src/Infrastructure \
+       --output-dir Databases/MovieReviews/Migrations
+     ```
+
+     Add `// <auto-generated />` at line 1 of the new `<Timestamp>_InitialCreate.cs` file.
+   - **Presentation:** Delete `AuthorEndpoints.cs`, `MovieEndpoints.cs`, `ReviewEndpoints.cs` and `CreateReviewRequest.cs`. Remove their serializer attributes from `AppJsonSerializerContext.cs`, their tags from `DocumentInfoTransformer.cs`, their `Map*Endpoints()` calls from `WebApplicationExtensions.cs`, and update `src/Presentation/Presentation.http` to call `/api/cinemas`.
+   - **Tests:** Delete the `Authors`, `Movies` and `Reviews` test folders across all four test projects, remove their seed blocks from `MovieReviewsCollectionData.cs`, and point the shared plumbing tests (`LoggingBehaviourTests`, `ValidationBehaviourTests`, `NotFoundExceptionTests`, `DependencyInjectionTests`, `MovieReviewsConfigurationTests`, `OpenApiDocumentTests`, `TelemetryTests`, plus `AuthenticationTests` if you used `--include-auth`) at `Cinema`, `GetCinemasQuery` and `/api/cinemas`.
+
+7. **Verify format, build and the 95% coverage gate** (`coverage` in `.agents/skills`).
+
+   ```bash
+   dotnet format --verify-no-changes
+   dotnet test -m:1 \
+     -p:CollectCoverage=true -p:CoverletOutput=../results/ -p:MergeWith="../results/coverage.json" \
+     -p:CoverletOutputFormat=opencover%2cjson \
+     -p:ExcludeByFile="**/Program.cs%2c**/Migrations/*.cs%2c**/obj/**/*.cs" \
+     -p:ExcludeByAttribute="GeneratedCodeAttribute"
+   ```
+
+</Steps>
+
+<Aside type="note" title="Renaming the database context later">
+  The internal EF Core folder is still called `Databases/MovieReviews` and the SQLite file is still `movie-reviews.db` until you rename them. Because everything in `src/Infrastructure` is `internal`, renaming `MovieReviewsDbContext` and the connection string key in `appsettings.json` is a purely internal refactor that never touches `Application` or `Presentation`.
+</Aside>
