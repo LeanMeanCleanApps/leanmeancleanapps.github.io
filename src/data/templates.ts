@@ -1,4 +1,5 @@
-// The templates on the home page. Keys, names, packages and hues match scripts/brand.mjs in the brand repository.
+// The templates on the home page. Keep each highlight to one short line, about 34 characters, so the cards line up.
+// Keys, names, packages and hues match scripts/brand.mjs in the brand repository.
 
 export interface Template {
   key: string;
@@ -24,8 +25,8 @@ export const templates: Template[] = [
     subject: 'ASP.NET Core Minimal APIs',
     highlights: [
       'Endpoints grouped by feature',
-      'OpenAPI from XML comments, browsed in Scalar',
-      'Problem Details errors and optional JWT bearer auth',
+      'OpenAPI docs browsed in Scalar',
+      'Problem Details, optional JWT auth',
     ],
   },
   {
@@ -38,8 +39,8 @@ export const templates: Template[] = [
     hue: 'violet',
     subject: 'Model Context Protocol servers',
     highlights: [
-      'Six task-shaped tools, plus resources and prompts',
-      'Streamable HTTP, with the MCP Inspector in Docker Compose',
+      'Six tools, resources and prompts',
+      'MCP Inspector in Docker Compose',
       'Optional OAuth protection',
     ],
   },
@@ -53,8 +54,8 @@ export const templates: Template[] = [
     hue: 'pink',
     subject: 'GraphQL on Hot Chocolate',
     highlights: [
-      'Hot Chocolate with the Nitro IDE built in',
-      'Relay cursor paging and DataLoaders',
+      'Hot Chocolate with Nitro built in',
+      'Relay paging and DataLoaders',
       'Optional JWT bearer auth',
     ],
   },
@@ -68,9 +69,9 @@ export const templates: Template[] = [
     hue: 'blue',
     subject: 'ASP.NET Core Web APIs',
     highlights: [
-      'Controllers grouped by feature, kept thin by Mediator',
-      'OpenAPI from XML comments, browsed in Scalar',
-      'Problem Details errors and optional JWT bearer auth',
+      'Thin controllers, grouped by feature',
+      'OpenAPI docs browsed in Scalar',
+      'Problem Details, optional JWT auth',
     ],
   },
   {
@@ -84,7 +85,7 @@ export const templates: Template[] = [
     subject: 'AWS Lambda',
     highlights: [
       'Packaged as a container image',
-      'Source-generated JSON for quick cold starts',
+      'Source-generated JSON, fast starts',
       'Paging and search for every list',
     ],
   },

@@ -37,6 +37,7 @@ html {
 }
 
 body {
+  overflow-x: clip;
   margin: 0;
   background: var(--bg);
   color: var(--text);
@@ -429,6 +430,42 @@ li {
   text-decoration: underline;
 }
 
+/* On cards, links are badges that share the full width and sit on the bottom edge. */
+.card .links {
+  gap: 0.5rem;
+}
+
+.card .links a {
+  flex: 1 1 0;
+  min-width: max-content;
+  justify-content: center;
+}
+
+.card .links a:not(.button) {
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  line-height: 1.2;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease;
+}
+
+.card .links a:not(.button):hover {
+  text-decoration: none;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+@media (max-width: 30rem) {
+  .card .links a:not(.button) {
+    gap: 0.3rem;
+    padding-inline: 0.6rem;
+    font-size: 0.9rem;
+  }
+}
+
 /* Commands wrap at spaces instead of scrolling, with the prompt hanging out to the left. */
 .commands {
   display: grid;
@@ -457,7 +494,10 @@ li {
 }
 
 .commands .word {
-  white-space: nowrap;
+  display: inline-block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-indent: 0;
 }
 
 .commands .copy {
@@ -488,11 +528,16 @@ li {
   gap: 1.25rem;
 }
 
+/* Each template card spans four rows of the grid (head, highlights, commands, badges) and shares them with
+   its neighbours, so the parts line up across a row even when one card's text runs longer. */
 .template {
   --hue: var(--hue-dark);
 
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-row: span 4;
+  grid-template-rows: subgrid;
+  row-gap: 1.25rem;
+  align-content: start;
   border-top: 4px solid var(--hue);
   transition:
     border-color 150ms ease,
@@ -509,7 +554,6 @@ li {
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 1.25rem;
 }
 
 .template-head picture {
@@ -541,10 +585,19 @@ li {
 .highlights {
   list-style: none;
   padding: 0;
-  margin: 0 0 1.25rem;
+  margin: 0;
   display: grid;
+  align-content: start;
   gap: 0.45rem;
   font-size: 0.97rem;
+}
+
+.template .commands {
+  align-self: end;
+}
+
+.template .links {
+  padding-top: 0;
 }
 
 .highlights li {
@@ -563,15 +616,13 @@ li {
   background: var(--hue);
 }
 
-.template .links a:not(.button) {
-  color: var(--text);
-}
-
 .template .links a:not(.button):hover {
+  border-color: var(--hue);
   color: var(--hue);
 }
 
 .shared {
+  grid-row: span 4;
   display: flex;
   flex-direction: column;
   background: transparent;
