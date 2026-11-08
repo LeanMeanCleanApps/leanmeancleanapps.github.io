@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-Every endpoint lives in `src/Presentation/Controllers`, one controller per feature. Requests and responses are JSON with camelCase property names, read case-insensitively. Properties with no value are left out of responses. In a solution created with `--include-auth`, every endpoint except health needs a token (see [Secure the API](../../guides/secure-the-api/)).
+Every endpoint lives in `src/Presentation/Controllers`, one controller per feature. Requests and responses are JSON with camelCase property names, read case-insensitively. Properties with no value are left out of responses. In a solution created with `--include-auth`, every endpoint except health needs a token (see [Secure the API](/webapi/guides/secure-the-api/)).
 
 The OpenAPI document at `/openapi/v1.json` describes all of this too, and Scalar at `/scalar` lets you call it. The examples use the `dotnet run` address, `https://localhost:7341`; with Docker Compose it's `http://localhost:7340`.
 
