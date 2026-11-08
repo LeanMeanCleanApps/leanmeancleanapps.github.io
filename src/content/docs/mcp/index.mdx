@@ -39,7 +39,11 @@ import Family from '../../../components/docs/Family.astro';
 
 ## Run it
 
+Four commands from nothing to a running stack:
+
 ```bash
+dotnet new install CleanModelContextProtocol.Template
+dotnet new cleanmodelcontextprotocol --name WorksOnMyMachine.Movies
 cd WorksOnMyMachine.Movies
 docker compose up -d
 ```
@@ -47,6 +51,8 @@ docker compose up -d
 Then open the MCP Inspector at [http://localhost:7325](http://localhost:7325). It's already pointed at the server on [http://localhost:7320/mcp](http://localhost:7320/mcp), so connect, open **Tools** and start clicking. The logs, traces and metrics go to the [Aspire dashboard](https://learn.microsoft.com/dotnet/aspire/fundamentals/dashboard/standalone) at [http://localhost:7322](http://localhost:7322).
 
 Want it locked down? Add `--include-auth`, `--authority` and `--audience` when you create the solution and `/mcp` needs a bearer token, with protected resource metadata so MCP clients can find your authorization server and sign in. Leave `--include-auth` off and there's no auth code at all, which is lovely on a laptop and less lovely in production.
+
+## Pick your path
 
 <CardGrid>
   <LinkCard title="Get started" description="Install the template, create a solution and call your first tool." href="/mcp/getting-started/" />

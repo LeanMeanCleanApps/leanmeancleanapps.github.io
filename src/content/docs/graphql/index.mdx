@@ -39,7 +39,11 @@ import Family from '../../../components/docs/Family.astro';
 
 ## Run it
 
+Four commands from nothing to a running stack:
+
 ```bash
+dotnet new install CleanGraphQLApi.Template
+dotnet new cleangraphqlapi --name WorksOnMyMachine.Movies
 cd WorksOnMyMachine.Movies
 docker compose up -d
 ```
@@ -47,6 +51,8 @@ docker compose up -d
 Then open Nitro, the GraphQL IDE, at [http://localhost:7330/graphql](http://localhost:7330/graphql) and start querying. The logs, traces and metrics go to the [Aspire dashboard](https://learn.microsoft.com/dotnet/aspire/fundamentals/dashboard/standalone) at [http://localhost:7332](http://localhost:7332), because `Console.WriteLine` is not an observability strategy.
 
 Want it locked down? Add `--include-auth`, `--authority` and `--audience` when you create the solution and the movie, author and review queries and the review mutations need a JWT bearer token. Leave `--include-auth` off and there's no auth code at all, which is lovely on a laptop and less lovely in production.
+
+## Pick your path
 
 <CardGrid>
   <LinkCard title="Get started" description="Install the template, create a solution and run your first query in Nitro." href="/graphql/getting-started/" />
