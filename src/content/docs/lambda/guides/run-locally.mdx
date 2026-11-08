@@ -51,7 +51,7 @@ curl -X POST "http://localhost:7350/2015-03-31/functions/function/invocations" \
   -d '{"movieId":"cb188ef6-14e7-f85f-2f78-924c2ab26b28","limit":2}'
 ```
 
-The sample data uses a fixed seed, so that movie id is the same on every machine. See the [function reference](../../reference/functions/) for every request and response.
+The sample data uses a fixed seed, so that movie id is the same on every machine. See the [function reference](/lambda/reference/functions/) for every request and response.
 
 ## Run the tests
 
@@ -68,14 +68,16 @@ The `Dockerfile` has a stage for each job, so you can build only what you need.
 | Stage | What it does |
 | --- | --- |
 | `build` | Restores and builds the solution |
-| `test` | Runs every test with coverage |
-| `coverage` | Exports the coverage report to your machine |
+| `test` | Runs every test with coverage, and saves the result instead of failing the build |
+| `results` | Exports the test results, the coverage report and the exit code to your machine |
 | `publish` | Publishes the Presentation project |
 | `run` | The Lambda image you deploy |
 
 ```bash
-docker build . --target coverage --output type=local,dest=out
+docker build . --target results --output type=local,dest=out
 ```
+
+A failing test doesn't fail the build, so the results still come out. Check `out/exit-code`: anything other than `0` means a test failed, and a pipeline built on these stages should fail on it.
 
 ## Stamp a version
 

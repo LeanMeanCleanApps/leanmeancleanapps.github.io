@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-Every tool lives in `src/Presentation/Tools`, one static class per feature. Arguments are JSON, named in camelCase. Every tool returns its result twice: as a text content block holding JSON, for models that read, and as `structuredContent`, for clients that parse, with an output schema in the tool's listing. After the text comes a `resource_link` block for each movie, author or review in the result, pointing at its `movies://`, `authors://` or `reviews://` [resource](../resources-and-prompts/), so a client can open it. In a solution created with `--include-auth`, every tool needs a token.
+Every tool lives in `src/Presentation/Tools`, one static class per feature. Arguments are JSON, named in camelCase. Every tool returns its result twice: as a text content block holding JSON, for models that read, and as `structuredContent`, for clients that parse, with an output schema in the tool's listing. After the text comes a `resource_link` block for each movie, author or review in the result, pointing at its `movies://`, `authors://` or `reviews://` [resource](/mcp/reference/resources-and-prompts/), so a client can open it. In a solution created with `--include-auth`, every tool needs a token.
 
 | Tool | Title | Read-only | Destructive | Idempotent |
 | --- | --- | --- | --- | --- |
