@@ -87,5 +87,5 @@ Docker doesn't start itself, however much we'd like it to. Start Docker Desktop 
 
 That's authentication doing its job. Every `/api/*` route requires a valid JWT bearer token when authentication is included.
 
-- In Scalar (`/scalar`), open **Authentication** at the top of the page and paste a bearer token issued by your `--authority`.
+- In Scalar (`/scalar`), find the **Authentication** box beside the introduction, pick **Bearer** under **Select Auth Type** and paste a token issued by your `--authority`. Until you pick it, the box says "No authentication selected" and every request goes without one.
 - In `src/Presentation/Presentation.http`, uncomment the `@token` line at the top of the file, paste your token after it, and uncomment the `Authorization` header on each request.
