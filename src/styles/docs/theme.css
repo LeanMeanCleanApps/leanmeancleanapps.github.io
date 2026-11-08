@@ -16,6 +16,16 @@
   --cl-box-x: max(0px, calc((100vw - var(--cl-wrap)) / 2));
 }
 
+/* The same text flow as the front page: headings break into even lines, and paragraphs, list items and
+   card descriptions don't leave one word stranded on a line of its own. */
+:is(h1, h2, h3, h4, h5, h6) {
+  text-wrap: balance;
+}
+
+:is(p, li, dd, figcaption, .sl-link-card .description) {
+  text-wrap: pretty;
+}
+
 /* The header bar runs edge to edge like the front page's, with its contents inside the box. */
 header.header {
   background-color: color-mix(in srgb, var(--sl-color-black) 85%, transparent);

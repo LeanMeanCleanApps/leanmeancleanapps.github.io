@@ -7,7 +7,9 @@ const PAGE_TITLE_ID = '_top';
 import { brand, templates } from '../../data/templates';
 
 const { data } = Astro.locals.starlightRoute.entry;
-const { title = data.title, tagline, actions = [] } = data.hero || {};
+const { title = data.title, tagline: rawTagline, actions = [] } = data.hero || {};
+// ".NET 10" and "RFC 9457" stay on one line, so a phone never splits them.
+const tagline = rawTagline?.replace(/(\.NET|RFC) (\d)/g, '$1&nbsp;$2');
 const key = Astro.locals.starlightRoute.id.split('/')[0];
 const template = templates.find((t) => t.key === key);
 const isBrand = key === brand.key;
@@ -28,7 +30,7 @@ const commands = template
 
 <div class="cl-hero not-content">
   <div class="cl-text">
-    <p class="cl-eyebrow">{isBrand ? 'The Lean Mean Clean Apps brand' : 'A Lean Mean Clean Apps template for .NET 10'}</p>
+    <p class="cl-eyebrow">{isBrand ? 'The Lean Mean Clean Apps brand' : 'A Lean Mean Clean Apps template for .NET\u00a010'}</p>
     <h1 id={PAGE_TITLE_ID} data-page-title>
       {lead}{accent && ' '}{accent && <span>{accent}</span>}
     </h1>
@@ -57,7 +59,14 @@ const commands = template
                 {command.split(' ').map((w, i) => (
                   <Fragment>
                     {i > 0 && ' '}
-                    <span class="cl-word">{w}</span>
+                    <span class="cl-word">
+                      {w.split('.').map((part, j) => (
+                        <Fragment>
+                          {j > 0 && <Fragment>.<wbr /></Fragment>}
+                          {part}
+                        </Fragment>
+                      ))}
+                    </span>
                   </Fragment>
                 ))}
               </code>
@@ -208,8 +217,12 @@ const commands = template
     margin-right: 0.45em;
   }
 
+  /* A long command wraps at spaces. A word too long for the line, such as a package name on a phone, breaks after a dot. */
   .cl-word {
-    white-space: nowrap;
+    display: inline-block;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    text-indent: 0;
   }
 
   .cl-copy {
