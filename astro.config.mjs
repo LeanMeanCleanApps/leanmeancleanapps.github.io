@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import starlightLinksValidator from 'starlight-links-validator';
 import starlightLlmsTxt from 'starlight-llms-txt';
 import starlightSidebarTopics from 'starlight-sidebar-topics';
 import { brand, templates } from './src/data/templates.ts';
@@ -125,6 +126,10 @@ export default defineConfig({
             items: sidebars[t.id],
           })),
         ),
+        starlightLinksValidator({
+          errorOnLocalLinks: false,
+          exclude: ['/', '/#*'],
+        }),
         starlightLlmsTxt({
           projectName: 'Lean Mean Clean Apps',
           description:
