@@ -1,0 +1,94 @@
+---
+title: "Troubleshooting"
+description: "Fixes for the common snags when creating, building and running a solution."
+sidebar:
+  order: 5
+---
+
+Most first-run problems aren't in the schema. They're in the machine around it: a port that's already taken, a certificate your browser hasn't met yet, or Nitro asking you to sign in to a cloud you don't use.
+
+## Nitro asks you to "Sign in"
+
+**Symptom:** Opening `https://localhost:7331/graphql` (or `http://localhost:7330/graphql` in Docker) shows a **Sign in** button or prompts you to connect a ChilliCream cloud account.
+
+Nitro is ChilliCream's GraphQL IDE embedded in Hot Chocolate. Its **Sign in** button is only for syncing workspaces with ChilliCream's cloud service. You don't need an account to browse the schema, write queries or run mutations against your local API. Nitro works perfectly well as a guest, so close the prompt and run queries straight from the editor.
+
+## `Schema_ShouldMatch_Snapshot` fails after changing a GraphQL type
+
+**Symptom:** `dotnet test` fails in `tests/Presentation.Tests.Integration/GraphQL/Schema/SchemaTests.cs` (`Schema_ShouldMatch_Snapshot`).
+
+The integration tests compare the built GraphQL schema against `tests/Presentation.Tests.Integration/GraphQL/Schema/schema.graphql` so accidental breaking changes never slip past review. A failure here means the snapshot noticed something, which is its whole job. When you intentionally add or change a query, mutation, type or description, update `tests/Presentation.Tests.Integration/GraphQL/Schema/schema.graphql` to match (see [Add a field](/graphql/guides/add-a-field/)).
+
+## Port 7330 or 7331 is already in use
+
+**Symptom:** `dotnet run` stops with `Failed to bind to address https://127.0.0.1:7331: address already in use`, or `docker compose up` fails with `Bind for 0.0.0.0:7330 failed: port is already allocated`.
+
+Each Lean Mean Clean template has its own block of ten ports so different templates don't step on each other. Clean GraphQL API uses `7330` to `7339` (`7330` HTTP, `7331` HTTPS, `7332` Aspire dashboard, `7333` and `7334` OpenTelemetry Collector). A clash usually means an earlier copy of this template is still running somewhere, quietly hogging the port.
+
+- Check what's running in Docker and stop it:
+  ```bash
+  docker compose ps
+  docker compose down
+  ```
+- Find a stray host process holding the port (`lsof -i :7330` on macOS and Linux, `netstat -ano | findstr :7330` on Windows) and stop it.
+- To move a Docker port, change the left-hand side of its mapping in `docker-compose.yml` (for example `"7335:7330"`) and check the mapped port with:
+  ```bash
+  docker compose port api 7330
+  ```
+- To move the `dotnet run` ports, edit `applicationUrl` in `src/Presentation/Properties/launchSettings.json`.
+
+## Browser certificate warning or empty `curl` reply on `dotnet run`
+
+**Symptom:** Your browser warns that `https://localhost:7331` is untrusted, `curl` fails with `SSL certificate problem: unable to get local issuer certificate`, or calling `http://localhost:7330/graphql` returns `307 Temporary Redirect` with an empty body.
+
+In the `local` environment (`dotnet run --project ./src/Presentation`), Kestrel listens on both `http://localhost:7330` and `https://localhost:7331` and redirects HTTP to HTTPS. The development certificate is new to your machine, so your browser treats it like a stranger until you introduce them.
+
+- Trust the .NET development certificate once on your machine, then restart your browser:
+  ```bash
+  dotnet dev-certs https --trust
+  ```
+- Call `https://localhost:7331/graphql` directly when using `dotnet run`, or pass `-L` to `curl` so it follows the redirect.
+- Under `docker compose up -d --build`, the container runs in the `docker` environment and serves plain HTTP on `http://localhost:7330/graphql` with no redirect and no certificate needed.
+
+## `.NET SDK` version refused by `dotnet new` or `global.json`
+
+**Symptom:** `dotnet new cleangraphqlapi` refuses to run because the SDK constraint `[10.0.100,)` isn't met, or `dotnet build` fails with `NETSDK1141` / `A compatible .NET SDK was not found`.
+
+Previews are fun, but the template only promises to work on a stable SDK. Both `.template.config/template.json` and the generated `global.json` require a stable .NET 10 SDK (`10.0.100` or newer, rolling forward to the latest feature band with `allowPrerelease: false`).
+
+- Check which SDKs are installed:
+  ```bash
+  dotnet --list-sdks
+  ```
+- Install the current stable [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0). If you only have a preview SDK installed on the machine, either install the stable SDK alongside it or set `"allowPrerelease": true` in `global.json`.
+
+## `--include-auth` fails with exit code 102
+
+**Symptom:** Running `dotnet new cleangraphqlapi --include-auth` stops before writing any files and exits with code `102` (`Invalid option(s)` / missing mandatory option `--authority`).
+
+When `--include-auth` is switched on, `--authority` is required. Stopping at the door beats shipping a solution with a blank JWT issuer. Pass the authority (and optionally `--audience`) alongside `--include-auth`:
+
+```bash
+dotnet new cleangraphqlapi --name WorksOnMyMachine.Movies \
+  --include-auth \
+  --authority "https://your-tenant.example.com" \
+  --audience "https://api.example.com"
+```
+
+See [Secure the API](/graphql/guides/secure-the-api/) for sending bearer tokens in Nitro and `curl`.
+
+## Docker is not running
+
+**Symptom:** `docker compose up -d --build` fails with `Cannot connect to the Docker daemon` or `error during connect`.
+
+Docker doesn't start itself, however much we'd like it to. Start Docker Desktop (or the Docker service on Linux) and wait for `docker info` to return cleanly before running `docker compose up -d --build`. You don't need Docker for `dotnet build`, `dotnet test` or `dotnet run --project ./src/Presentation`; the integration tests run against an in-memory SQLite database.
+
+## `SQLite Error 5: 'database is locked'`
+
+**Symptom:** Startup migration or a mutation fails with `Microsoft.Data.Sqlite.SqliteException (0x80004005): SQLite Error 5: 'database is locked'`.
+
+`dotnet run` writes to `src/Presentation/movie-reviews.db`. SQLite lets plenty of readers share a file but only one writer at a time. A lock means another process is holding an open write transaction against that file, usually a second `dotnet run` terminal or a database viewer.
+
+- Stop the other process holding `src/Presentation/movie-reviews.db`.
+- If you want to wipe the local database and re-seed the sample data from scratch, stop the API, delete `src/Presentation/movie-reviews.db` (and any `-shm` or `-wal` files beside it), and start the API again.
+- In Docker Compose, `docker compose down -v` removes the `movie-reviews-data` volume so the next `docker compose up -d` starts with a fresh database.
