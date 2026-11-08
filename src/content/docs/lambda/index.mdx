@@ -1,12 +1,14 @@
 ---
-title: Clean Lambda Function
-description: A .NET 10 dotnet new template for AWS Lambda, built with Clean Architecture minus the ceremony.
+title: "Clean Lambda Function"
+description: "A .NET 10 dotnet new template for AWS Lambda, built with Clean Architecture minus the ceremony."
 template: splash
+editUrl: false
+lastUpdated: false
 prev: false
 next: false
 hero:
   title: Clean Architecture for AWS Lambda, minus the ceremony
-  tagline: A .NET 10 template that gives you a tested, layered Lambda function in two commands. Fewer layers than an onion, more than a sandwich.
+  tagline: A .NET 10 template that gives you a tested, layered Lambda function in two commands. Your laptop does an impression of AWS until you're ready for the real thing.
   actions:
     - text: Get started
       link: /lambda/getting-started/
@@ -24,19 +26,16 @@ import Family from '../../../components/docs/Family.astro';
 
 <CardGrid>
   <Card title="Lean Mean Clean Architecture" icon="puzzle">
-    Presentation, Application and Infrastructure, with one job each. Infrastructure is `internal`, so it can't sneak
-    into places it doesn't belong.
+    Presentation, Application and Infrastructure, with one job each. Infrastructure is `internal`, so it can't sneak into places it doesn't belong.
   </Card>
   <Card title="Cold starts, but quicker" icon="rocket">
     Source-generated JSON, Mediator and Mapperly mean no reflection when Lambda wakes your function up.
   </Card>
   <Card title="Tested like it matters" icon="approve-check">
-    xUnit, Shouldly and a 95% coverage gate. Every test gets its own throwaway SQLite database, so nobody steps on
-    anybody's toes.
+    xUnit, Shouldly and a 95% coverage gate. Every test gets its own throwaway SQLite database, so nobody steps on anybody's toes.
   </Card>
   <Card title="Runs on your laptop" icon="laptop">
-    The container image includes the Lambda runtime emulator. Build it, run it, `curl` it. No AWS account needed until
-    you're ready.
+    The container image includes the Lambda runtime emulator. Build it, run it, `curl` it. No AWS account needed until you're ready.
   </Card>
 </CardGrid>
 

@@ -1,25 +1,47 @@
 ---
 title: "Set up CI"
-description: "Your solution starts with a simple pipeline. Here's what it runs and how to add more."
+description: "Your solution starts with a simple pipeline on purpose. Here's what it runs, and the checks you can add when your process calls for them."
 sidebar:
   order: 7
 ---
 
 import { Steps } from '@astrojs/starlight/components';
+import ReportCard from '../../../../components/docs/ReportCard.astro';
 
-Whichever way you made your solution, it starts with a simple pipeline: format, build, and test with a 95% coverage bar. Those are the same commands as in `AGENTS.md`, so the pipeline and your laptop agree on what "green" means. It needs no secrets, no accounts and no paid features. Everything else is yours to add when you want it.
+Your solution starts with a simple pipeline: format, build, and test with a 95% coverage bar. Those are the same commands as in `AGENTS.md`, so the pipeline and your laptop agree on what "green" means. It needs no secrets, no accounts and no paid features, and it's green on the first push.
 
-## Made with `dotnet new`
+It's minimal on purpose. We don't know your review process, your security team or your deployment target, so the pipeline stops where guessing would start. Everything else on this page is a check you can add when your process calls for it.
+
+## What runs
 
 You get `.github/workflows/ci.yml`, one GitHub Actions job that restores, checks formatting, builds, runs every test and checks the coverage total. Push to GitHub and it runs.
 
 Not on GitHub Actions? Ask your coding agent to move it. It works as Jacques, so it uses the `ci-for-your-solution` skill in `.agents/skills` to port the same commands to Azure Pipelines, GitLab, or the Jenkins box under someone's desk, then breaks something on purpose to prove the new pipeline notices.
 
-## Made with "Use this template"
+## Adding more
 
-Your copy has our Build Pipeline. Outside the LeanMeanCleanApps organisation it runs the format check, build and tests, and the Summary shows the rest as not run. That covers CodeQL, Dependency Review, the container scan, and the steps that pack, verify and publish the template. So a private copy goes green without GitHub Advanced Security, and it never tries to publish to NuGet on your behalf.
+The `ci-for-your-solution` skill lists the checks you can add, what each one catches and what it needs, from a vulnerable package check that needs nothing to CodeQL, which needs Advanced Security on a private repository. Ask your agent to add one and it will agree it with you first.
 
-### After you copy
+For a worked example of each, look at the template's own [Build Pipeline](https://github.com/LeanMeanCleanApps/CleanGraphQLApi/blob/main/.github/workflows/build-pipeline.yml). Every pull request to the template goes through these checks, and each one is a job you can lift into `ci.yml`. **Gatekeepers** fail the build and block the merge. **Tattletales** report what they find and leave the decision to a human.
+
+<ReportCard
+  checks={[
+    { name: 'Build', icon: 'approve-check', grade: 'Gatekeeper', href: 'https://github.com/LeanMeanCleanApps/CleanGraphQLApi/blob/main/.github/workflows/build-pipeline.yml', what: 'Builds the solution and the image and checks formatting with dotnet format. Warnings fail the build. Your ci.yml already does the first and last of these; the image build is the part to borrow.' },
+    { name: 'Test', icon: 'analytics', grade: 'Gatekeeper', href: 'https://github.com/LeanMeanCleanApps/CleanGraphQLApi/blob/main/.github/workflows/build-pipeline.yml', what: 'Runs every test inside the Dockerfile and fails under 95% line coverage across the whole solution, so the tests run against the same image that ships.' },
+    { name: 'CodeQL', icon: 'seti:code-search', grade: 'Gatekeeper', href: 'https://codeql.github.com', what: 'Static analysis of the C# and of the GitHub Actions workflows themselves, with the security-and-quality queries. Free on a public repository. A private one needs GitHub Advanced Security.' },
+    { name: 'Dependency review', icon: 'list-format', grade: 'Gatekeeper', href: 'https://github.com/actions/dependency-review-action', what: 'Fails a pull request that adds a package with a high or critical vulnerability, or one under a licence outside the list you allow. Ours is MIT, Apache 2.0 and BSD. Needs the dependency graph, which is free on a public repository.' },
+    { name: 'Smoke test', icon: 'rocket', grade: 'Gatekeeper', href: 'https://github.com/LeanMeanCleanApps/CleanGraphQLApi/blob/main/.github/workflows/build-pipeline.yml', what: 'Starts the image and queries the first page of movies. A scan proves nothing about whether the thing actually runs. Needs Docker on the runner, which GitHub-hosted runners have.' },
+    { name: 'Trivy', icon: 'magnifier', grade: 'Gatekeeper', href: 'https://trivy.dev', what: 'Scans the container image and the Dockerfile for high and critical problems that have a fix available, and reports them to GitHub code scanning. Needs nothing to fail the build; the code scanning upload needs Advanced Security on a private repository.' },
+    { name: 'Summary', icon: 'document', grade: 'Tattletale', href: 'https://github.com/LeanMeanCleanApps/CleanGraphQLApi/blob/main/.github/workflows/build-pipeline.yml', what: 'Sums every check up in one comment on the pull request, so you know exactly who to blame. Needs no accounts, tokens or secrets.' },
+    { name: 'Dependabot', icon: 'random', grade: 'Tattletale', href: 'https://docs.github.com/code-security/dependabot', what: 'One grouped pull request a month for NuGet packages, the Docker Compose images and GitHub Actions. Needs a dependabot.yml, which the template\'s own repository has.' },
+  ]}
+/>
+
+Borrow freely, but leave out the jobs that pack, verify and publish the template. You're shipping the API, not a template. Whatever you add, run the same commands locally that the pipeline runs, and make the checks you rely on required on `main`.
+
+## If you used "Use this template"
+
+A copy made with GitHub's **Use this template** button has the whole Build Pipeline rather than `ci.yml`. Outside the LeanMeanCleanApps organisation it runs the format check, build and tests, and the Summary shows the rest as not run: CodeQL, Dependency Review, the container scan, and the steps that pack, verify and publish the template. So a private copy goes green without GitHub Advanced Security, and it never tries to publish to NuGet on your behalf. Three things to change after you copy:
 
 <Steps>
 
@@ -30,9 +52,3 @@ Your copy has our Build Pipeline. Outside the LeanMeanCleanApps organisation it 
 3. Fill in **Where we track work** in `AGENTS.md`, so agents put their plans and handoffs where your team will see them.
 
 </Steps>
-
-## Adding more
-
-The `ci-for-your-solution` skill lists the checks you can add, what each one catches and what it needs, from a vulnerable package check that needs nothing to CodeQL, which needs Advanced Security on a private repository. Ask your agent to add one and it will agree it with you first.
-
-For a worked example of every check, read our [Build Pipeline](https://github.com/LeanMeanCleanApps/CleanGraphQLApi/blob/main/.github/workflows/build-pipeline.yml). Borrow freely, but leave out the jobs that pack and publish the template. You're shipping an app, not a template.

@@ -67,13 +67,15 @@ Returns a [page](#pages) of [authors](#author).
 
 ## reviews_list
 
-Lists reviews with their star rating and the title and author of each, in movie-title order. Filter by movie, by author, or both, or pass a `reviewId` to get one review.
+Lists reviews with their star rating and the title and author of each, in movie-title order. Filter by movie, by author, by words in the review or by a minimum star rating, or pass a `reviewId` to get one review.
 
 | Argument | Type | Default | Rules |
 | --- | --- | --- | --- |
 | `movieId` | guid | none | Only reviews of this movie |
 | `authorId` | guid | none | Only reviews by this author |
 | `reviewId` | guid | none | Get this one review instead. The other filters are ignored |
+| `query` | string | none | Only reviews whose text contains it, ignoring case. Up to 100 characters |
+| `minStars` | integer | none | Only reviews with at least this many stars, from 1 to 5 |
 | `offset` | integer | `0` | 0 or more |
 | `limit` | integer | `10` | 1 to 50 |
 

@@ -18,11 +18,11 @@ const isBrand = key === brand.key;
 const match = /^(.*?),?\s*(minus the ceremony\.?)$/i.exec(title);
 const [lead, accent] = match ? [match[1].trim() + ',', match[2].replace(/\.?$/, '.')] : [title, ''];
 
-const solution = template?.key === 'lambda' ? 'WorksOnMyMachine.Reviews' : 'WorksOnMyMachine.Movies';
+const solution = 'WorksOnMyMachine.Movies';
 const commands = template
   ? [
       `dotnet new install ${template.package}`,
-      `dotnet new ${template.shortName} --name ${solution} --authorName "Your Name"`,
+      `dotnet new ${template.shortName} --name ${solution}`,
       `cd ${solution} && docker compose up -d`,
     ]
   : [];

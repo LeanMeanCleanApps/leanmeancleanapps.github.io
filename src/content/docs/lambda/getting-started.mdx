@@ -1,11 +1,11 @@
 ---
-title: Get started
-description: Install the template, create a solution and invoke your first Lambda function locally.
+title: "Get started"
+description: "Install the template, create a solution and invoke your first Lambda function locally."
 sidebar:
   order: 1
 ---
 
-import { Steps, FileTree, Tabs, TabItem, LinkCard, CardGrid } from '@astrojs/starlight/components';
+import { Steps, FileTree, LinkCard, CardGrid } from '@astrojs/starlight/components';
 
 By the end of this page you'll have your own solution, a container running it, and a function that answers back. It takes about five minutes, or ten if Docker decides to download the internet first.
 
@@ -13,7 +13,7 @@ By the end of this page you'll have your own solution, a container running it, a
 
 You need the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) and [Docker](https://www.docker.com/products/docker-desktop). You don't need an AWS account yet. The container image ships with the Lambda runtime emulator, so your laptop can pretend to be AWS for a while.
 
-## Make it yours
+## Create and run your solution
 
 <Steps>
 
@@ -26,8 +26,8 @@ You need the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) an
 2. Create a solution. The name becomes your namespace, project names and folder, so pick something you're happy to see a lot of.
 
    ```bash
-   dotnet new cleanlambdafunction --name WorksOnMyMachine.Reviews --authorName "Your Name"
-   cd WorksOnMyMachine.Reviews
+   dotnet new cleanlambdafunction --name WorksOnMyMachine.Movies --authorName "Your Name"
+   cd WorksOnMyMachine.Movies
    ```
 
    Rather click? The template shows up in the new project dialog in Visual Studio and Rider with the same options. Fill them in properly. You never know who's reading and handing out .NET Rocks mugs... Hi Richard!
@@ -37,7 +37,7 @@ You need the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) an
 3. Have a look around. Everything you need is already here.
 
    <FileTree>
-   - WorksOnMyMachine.Reviews.slnx
+   - WorksOnMyMachine.Movies.slnx
    - Dockerfile
    - docker-compose.yml
    - src/
@@ -98,7 +98,7 @@ Hit a snag? Check [Troubleshooting](/lambda/reference/troubleshooting/).
 ## Where to next
 
 <CardGrid>
-  <LinkCard title="Run it locally" description="Try the other functions, switch databases and stamp a version." href="/lambda/guides/run-locally/" />
+  <LinkCard title="Run it locally" description="Build the image, try the other functions, follow a trace and stamp a version." href="/lambda/guides/run-locally/" />
   <LinkCard title="Make it yours" description="Add your own entity, migration, use cases and functions, then clear out the sample movies." href="/lambda/guides/make-it-yours/" />
   <LinkCard title="Add a function" description="Turn an existing query into a brand new Lambda function." href="/lambda/guides/add-a-function/" />
   <LinkCard title="Deploy to AWS" description="Push the container image and create the function for real." href="/lambda/guides/deploy-to-aws/" />

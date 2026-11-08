@@ -7,7 +7,7 @@ sidebar:
 
 import { Steps, Aside } from '@astrojs/starlight/components';
 
-This guide adds `bestReview` to the `Movie` type: the highest rated review of the movie, or null when it has none. `Movie` already carries its reviews, so this is pure Presentation work, a resolver on the type. For a field that needs new data, add a query to `src/Application` first and send it through Mediator the way the existing resolvers do.
+This guide adds `bestReview` to the `Movie` type: the highest rated review of the movie, or null when it has none. `Movie` already carries its reviews, so this is pure Presentation work, a resolver on the type. For a field that needs new data, add a query to `src/Application` first and send it through Mediator the way the existing resolvers do. [Make it yours](/graphql/guides/make-it-yours/) walks through a whole new entity, from the Application layer to the tests.
 
 <Aside type="note" title="Types are source generated">
   Every object type in `src/Presentation/GraphQL/Types` is a `static partial class` with `[ObjectType<T>]`. Hot Chocolate's source generator turns the `Configure` method and any public static methods into the schema at build time, and `AddPresentationTypes()` in `ProgramExtensions.cs` registers the lot. Nothing is discovered by reflection at startup.
@@ -63,7 +63,7 @@ This guide adds `bestReview` to the `Movie` type: the highest rated review of th
    curl "https://localhost:7331/graphql?sdl" > tests/Presentation.Tests.Integration/GraphQL/Schema/schema.graphql
    ```
 
-   The diff is the one field, described:
+   The snapshot is copied to the test output when the project builds, so run `dotnet test` without `--no-build` or it keeps comparing the old copy. The diff is the one field, described:
 
    ```graphql ins={3-4}
    "A movie that can be reviewed."
@@ -93,7 +93,7 @@ This guide adds `bestReview` to the `Movie` type: the highest rated review of th
    public async Task Movie_ShouldReturn_BestReview()
    {
        // Arrange
-       using var client = Application.CreateClient();
+       using var client = this.application.CreateClient();
        using var setupResponse = await client.GetAsync("/graphql?query={movies(first:50){nodes{id,reviews{id}}}}");
        var setupResult = (await setupResponse.Content.ReadAsStringAsync()).Deserialize<GraphData>();
        var movieId = setupResult.Data.Movies.Nodes.First(m => m.Reviews.Length > 0).Id;

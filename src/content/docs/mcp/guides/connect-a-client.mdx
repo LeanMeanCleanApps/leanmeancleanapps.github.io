@@ -14,7 +14,7 @@ No client to hand? Docker Compose can start one for you: see [Chat with it](/mcp
 <Tabs>
   <TabItem label="Claude Code">
     ```bash
-    claude mcp add --transport http acme-movies http://localhost:7320/mcp
+    claude mcp add --transport http worksonmymachine-movies http://localhost:7320/mcp
     ```
 
     Then ask it something like "which movie has the best reviews?" and watch it call `movies_search` and `movies_get` on its own.
@@ -28,7 +28,7 @@ No client to hand? Docker Compose can start one for you: see [Chat with it](/mcp
     ```json
     {
       "servers": {
-        "acme-movies": { "type": "http", "url": "http://localhost:7320/mcp" }
+        "worksonmymachine-movies": { "type": "http", "url": "http://localhost:7320/mcp" }
       }
     }
     ```
@@ -39,7 +39,7 @@ No client to hand? Docker Compose can start one for you: see [Chat with it](/mcp
     ```json
     {
       "mcpServers": {
-        "acme-movies": { "url": "http://localhost:7320/mcp" }
+        "worksonmymachine-movies": { "url": "http://localhost:7320/mcp" }
       }
     }
     ```

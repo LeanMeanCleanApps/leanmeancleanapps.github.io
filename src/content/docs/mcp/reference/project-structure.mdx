@@ -62,4 +62,4 @@ import { FileTree } from '@astrojs/starlight/components';
 | --- | --- | --- |
 | Presentation | Application, Infrastructure | References Infrastructure only to wire up dependency injection |
 | Application | none | Owns the entities, the repository interfaces and the rules |
-| Infrastructure | Application | Every class is `internal` |
+| Infrastructure | Application | Every class but `DependencyInjection` is `internal` |

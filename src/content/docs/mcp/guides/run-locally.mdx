@@ -28,8 +28,8 @@ There are two ready-made environments. `local` is for `dotnet run`: sample data 
   </TabItem>
   <TabItem label="Docker">
     ```bash
-    docker build . --target run --tag acme-movies:local
-    docker run --rm -p 7320:7320 -e DOTNET_ENVIRONMENT=docker acme-movies:local
+    docker build . --target run --tag worksonmymachine-movies:local
+    docker run --rm -p 7320:7320 -e DOTNET_ENVIRONMENT=docker worksonmymachine-movies:local
     ```
 
     Without Compose there's no collector, so the logs stay on the console and nothing else is exported. Set `OTEL_EXPORTER_OTLP_ENDPOINT` to send them to a collector of your own.
@@ -108,7 +108,7 @@ curl -X POST "https://localhost:7321/mcp" \
 dotnet test
 ```
 
-Each test class builds its own in-memory SQLite database from the migrations and the same fixed seed, and the Presentation tests talk to the server through a real `McpClient` from the C# SDK, so they exercise the same protocol path as any other client. No test can change what another one sees, and nothing touches `movie-reviews.db`.
+The tests build their own in-memory SQLite databases from the same migrations and seed, so nothing touches `movie-reviews.db`. [Test your changes](/mcp/guides/test-your-changes/) covers where a test goes, how the tests are written and how to check coverage before CI does.
 
 ## Run just one part of the Dockerfile
 
@@ -131,7 +131,7 @@ A failing test doesn't fail the build, so the results still come out. Check `out
 ## Stamp a version
 
 ```bash
-docker build . --target run --tag acme-movies:latest \
+docker build . --target run --tag worksonmymachine-movies:latest \
   --build-arg VERSION_PREFIX=1.2.3 --build-arg VERSION_SUFFIX=beta
 ```
 

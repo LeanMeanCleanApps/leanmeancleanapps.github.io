@@ -14,7 +14,7 @@ Your solution starts with four test projects and a pipeline that fails under 95%
 | Project | What it tests | How |
 | --- | --- | --- |
 | `tests/Application.Tests.Unit` | Handlers, validators and pipeline behaviours | xUnit, Shouldly and NSubstitute, with the repositories substituted |
-| `tests/Infrastructure.Tests.Integration` | The repositories against a real database | A private in-memory SQLite database per test class, built from the migrations and the fixed seed |
+| `tests/Infrastructure.Tests.Integration` | The repositories against a real database | A private in-memory SQLite database per test, built from the migrations and the fixed seed |
 | `tests/Presentation.Tests.Unit` | Tools, the result mapper and the error filters | Plain unit tests, no host |
 | `tests/Presentation.Tests.Integration` | A real MCP client calling tools, resources, prompts and completions, plus OAuth and health checks | `WebApplicationFactory` and the MCP C# SDK client |
 
@@ -71,4 +71,5 @@ The last table it prints is the merged total. `Program.cs`, the EF Core migratio
 ## Where to next
 
 - [Add a tool](/mcp/guides/add-a-tool/) ends with a test for the new tool.
+- [Make it yours](/mcp/guides/make-it-yours/) adds a whole entity, then clears the sample out without dropping under the coverage gate.
 - [Work with a coding agent](/mcp/guides/work-with-a-coding-agent/): the `test-design`, `unit-tests`, `integration-tests` and `coverage` skills hold these same rules, so an agent writes tests the same way you would.

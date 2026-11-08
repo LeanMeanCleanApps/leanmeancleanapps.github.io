@@ -45,7 +45,7 @@ There's a little CQRS in the style of the commands and queries, but reads and wr
 
 In textbook Clean Architecture, Presentation never references Infrastructure. Here it does, so it can wire up dependency injection without a fourth project whose only job is to call two methods.
 
-To keep that from turning into a free-for-all, every class in Infrastructure is `internal`. Presentation can call `AddInfrastructure` and nothing else. If you try to new up a repository from a resolver, the compiler will politely decline.
+To keep that from turning into a free-for-all, every class in Infrastructure except `DependencyInjection` is `internal`. Presentation can call `AddInfrastructure` and nothing else. If you try to new up a repository from a resolver, the compiler will politely decline.
 
 ## What happens on a query
 

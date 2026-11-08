@@ -1,6 +1,6 @@
 ---
-title: Run it locally
-description: Build the container image, invoke each function, run the tests and stamp a version.
+title: "Run it locally"
+description: "Build the container image, invoke each function, run the tests and stamp a version."
 sidebar:
   order: 2
 ---
@@ -21,8 +21,8 @@ The image is built on the [AWS Lambda .NET base image](https://gallery.ecr.aws/l
   </TabItem>
   <TabItem label="Docker">
     ```bash
-    docker build . --target run --tag acme-reviews:local
-    docker run --rm -p 7350:8080 -e Database__SeedSampleData=true acme-reviews:local
+    docker build . --target run --tag worksonmymachine-movies:local
+    docker run --rm -p 7350:8080 -e Database__SeedSampleData=true worksonmymachine-movies:local
     ```
   </TabItem>
 </Tabs>
@@ -41,11 +41,11 @@ Run the image on its own and nothing is exported, because `OTEL_EXPORTER_OTLP_EN
 
 ## Try the other functions
 
-The image runs `GetMovies` by default. The same image also has `GetAuthors` and `GetReviews`. Pass the function's full handler name to `docker run` to start a different one.
+The image runs `GetMovies` by default. The same image also has `GetAuthors` and `GetReviews`, and the `HttpGetMovies`, `HttpGetAuthors` and `HttpGetReviews` functions that take an API Gateway event. Pass the function's full handler name to `docker run` to start a different one.
 
 ```bash
-docker run --rm -p 7350:8080 -e Database__SeedSampleData=true acme-reviews:local \
-  "Presentation::WorksOnMyMachine.Reviews.Presentation.LambdaFunction.Handler_GetReviews_Generated::GetReviews"
+docker run --rm -p 7350:8080 -e Database__SeedSampleData=true worksonmymachine-movies:local \
+  "Presentation::WorksOnMyMachine.Movies.Presentation.LambdaFunction.Handler_GetReviews_Generated::GetReviews"
 
 curl -X POST "http://localhost:7350/2015-03-31/functions/function/invocations" \
   -d '{"movieId":"cb188ef6-14e7-f85f-2f78-924c2ab26b28","limit":2}'
@@ -59,7 +59,7 @@ The sample data uses a fixed seed, so that movie id is the same on every machine
 dotnet test
 ```
 
-Each test builds its own in-memory SQLite database from the migrations and the same fixed seed. No test can change what another one sees, and nothing touches the database file in `/tmp`.
+The tests build their own in-memory SQLite databases from the same migrations and seed, so nothing touches the database file in `/tmp`. [Test your changes](/lambda/guides/test-your-changes/) covers where a test goes, how the tests are written and how to check coverage before CI does.
 
 ## Run just one part of the Dockerfile
 
@@ -82,7 +82,7 @@ A failing test doesn't fail the build, so the results still come out. Check `out
 ## Stamp a version
 
 ```bash
-docker build . --target run --tag acme-reviews:latest \
+docker build . --target run --tag worksonmymachine-movies:latest \
   --build-arg VERSION_PREFIX=1.2.3 --build-arg VERSION_SUFFIX=beta
 ```
 

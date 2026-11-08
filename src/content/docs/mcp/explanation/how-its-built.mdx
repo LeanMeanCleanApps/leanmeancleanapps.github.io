@@ -1,36 +1,17 @@
 ---
 title: "How it's built"
-description: "The pipeline, the gates and the scanners that keep every pull request honest."
+description: "How the template repository itself is run: the rules on main, the monthly release and where these docs come from."
 sidebar:
   order: 3
 ---
 
-import ReportCard from '../../../../components/docs/ReportCard.astro';
+This page is about the template repository, not your solution. Your solution starts with a simpler pipeline, and [Set up CI](/mcp/guides/set-up-ci/) covers what it runs, along with every check the template runs on itself and what each one needs if you want to borrow it.
 
-This page is about how we build the template itself. Your solution starts with a simpler pipeline, covered in [Set up CI](/mcp/guides/set-up-ci/), and you can borrow any of the checks below when you're ready.
-
-These are templates we build for fun, but the pipeline doesn't know that. Every pull request goes through the same checks, and some of them are allowed to say no.
-
-**Gatekeepers** fail the build and block the merge. **Tattletales** report what they find and leave the decision to a human.
-
-## The checks
-
-<ReportCard
-  checks={[
-    { name: 'Build', icon: 'approve-check', grade: 'Gatekeeper', href: 'https://github.com/LeanMeanCleanApps/CleanModelContextProtocol/actions/workflows/build-pipeline.yml', what: 'Builds the solution and the image, checks formatting with dotnet format, and packs the template, failing if the package is over 1 MB. Warnings fail the build.' },
-    { name: 'Test', icon: 'analytics', grade: 'Gatekeeper', href: 'https://github.com/LeanMeanCleanApps/CleanModelContextProtocol/actions/workflows/build-pipeline.yml', what: 'Runs every test inside the Dockerfile and fails under 95% line coverage across the whole solution. Then it installs the packed template, creates a new solution and tests that too.' },
-    { name: 'CodeQL', icon: 'seti:code-search', grade: 'Gatekeeper', href: 'https://codeql.github.com', what: 'Static analysis of the C# and of the GitHub Actions workflows themselves, with the security-and-quality queries.' },
-    { name: 'Dependency review', icon: 'list-format', grade: 'Gatekeeper', href: 'https://github.com/actions/dependency-review-action', what: 'Fails a pull request that adds a package with a high or critical vulnerability, or one under a licence outside MIT, Apache 2.0 and BSD.' },
-    { name: 'Smoke test', icon: 'rocket', grade: 'Gatekeeper', href: 'https://github.com/LeanMeanCleanApps/CleanModelContextProtocol/actions/workflows/build-pipeline.yml', what: 'Starts the image and calls the movies_search tool. A scan proves nothing about whether the thing actually runs.' },
-    { name: 'Trivy', icon: 'magnifier', grade: 'Gatekeeper', href: 'https://trivy.dev', what: 'Scans the container image and the Dockerfile for high and critical problems that have a fix available, and reports them to GitHub code scanning.' },
-    { name: 'Summary', icon: 'document', grade: 'Tattletale', href: 'https://github.com/LeanMeanCleanApps/CleanModelContextProtocol/actions/workflows/build-pipeline.yml', what: 'Sums every check up in one comment on the pull request, so you know exactly who to blame. It needs no accounts, tokens or secrets, so a copy of the template gets it too.' },
-    { name: 'Dependabot', icon: 'random', grade: 'Tattletale', href: 'https://docs.github.com/code-security/dependabot', what: 'One grouped pull request on the 15th of each month for NuGet packages, the Docker Compose images and GitHub Actions.' },
-  ]}
-/>
+These are templates we build for fun, but the repository doesn't know that. Every pull request goes through the same checks, and some of them are allowed to say no.
 
 ## The rules on main
 
-- Every change goes through a pull request, and every check above must pass.
+- Every change goes through a pull request, and every check must pass.
 - Only the maintainer can merge. Pull requests from anyone are welcome, but the green button has one owner.
 - Commits must be signed, and merges are squashed so the history stays readable.
 - Release tags can't be moved or deleted once they exist, so a version always means the same code.
