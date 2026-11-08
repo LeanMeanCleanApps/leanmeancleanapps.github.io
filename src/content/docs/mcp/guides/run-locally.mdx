@@ -43,7 +43,7 @@ There are two ready-made environments. `local` is for `dotnet run`: sample data 
 | `/mcp` | The server. Streamable HTTP, stateless, JSON-RPC in and server-sent events out |
 | `/health/live` | Answers 200 while the process is up |
 | `/health/ready` | Answers 200 when the database can be reached |
-| `/.well-known/oauth-protected-resource/mcp` | Protected resource metadata, only when [authentication is on](../secure-the-server/) |
+| `/.well-known/oauth-protected-resource/mcp` | Protected resource metadata, only when [authentication is on](/mcp/guides/secure-the-server/) |
 | [http://localhost:7325](http://localhost:7325) | The MCP Inspector, when running with Docker Compose |
 | [http://localhost:7326](http://localhost:7326) | Open WebUI, when running with Docker Compose and the `demo` profile |
 | [http://localhost:7322](http://localhost:7322) | The Aspire dashboard, with the logs, traces and metrics, when running with Docker Compose |
@@ -83,7 +83,7 @@ OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:7323 dotnet run --project ./src/Pre
 
 ## Try the tools from the terminal
 
-The server is stateless, so a single `tools/call` works without an `initialize` first. These use the `dotnet run` address; with Docker Compose, use `http://localhost:7320/mcp` instead. The sample data uses a fixed seed, so these ids are the same on every machine. See the [tool reference](../../reference/tools/) for every argument and result.
+The server is stateless, so a single `tools/call` works without an `initialize` first. These use the `dotnet run` address; with Docker Compose, use `http://localhost:7320/mcp` instead. The sample data uses a fixed seed, so these ids are the same on every machine. See the [tool reference](/mcp/reference/tools/) for every argument and result.
 
 ```bash
 # One movie, with every review

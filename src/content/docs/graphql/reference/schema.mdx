@@ -5,7 +5,7 @@ sidebar:
   order: 1
 ---
 
-The schema lives in `src/Presentation/GraphQL`: queries in `Queries`, mutations in `Mutations`, object types in `Types` and the errors mutations return in `Errors`. The endpoint is `/graphql`, which also serves Nitro to a browser, and `/graphql?sdl` returns the schema as SDL. In a solution created with `--include-auth`, every query and mutation, `version` included, needs a token (see [Secure the API](../../guides/secure-the-api/)).
+The schema lives in `src/Presentation/GraphQL`: queries in `Queries`, mutations in `Mutations`, object types in `Types` and the errors mutations return in `Errors`. The endpoint is `/graphql`, which also serves Nitro to a browser, and `/graphql?sdl` returns the schema as SDL. In a solution created with `--include-auth`, every query and mutation, `version` included, needs a token (see [Secure the API](/graphql/guides/secure-the-api/)).
 
 Ids are the `UUID` scalar. Field and type descriptions come from the XML comments on the code, so Nitro shows the same text as this page.
 

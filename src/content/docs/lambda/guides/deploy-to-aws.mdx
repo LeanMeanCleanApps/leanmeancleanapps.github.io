@@ -63,7 +63,7 @@ The functions deploy as one container image and one CloudFormation stack. `src/P
 Each Lambda function runs one handler method. The stack already has `GetMovies`, `GetAuthors` and `GetReviews`, plus their HTTP twins `HttpGetMovies`, `HttpGetAuthors` and `HttpGetReviews`, all running the same image with a different command. They share the code but scale and bill separately. Add a method with `[LambdaFunction]`, build, and the next deploy adds its function too.
 
 <Aside type="tip">
-  Remember the [goldfish](../database/): each deployed function has its own `/tmp` database. Seed it, or better, point it at a real database before anyone relies on the data.
+  Remember the [goldfish](/lambda/guides/database/): each deployed function has its own `/tmp` database. Seed it, or better, point it at a real database before anyone relies on the data.
 </Aside>
 
 ## Send the telemetry somewhere
