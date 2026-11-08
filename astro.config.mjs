@@ -13,7 +13,7 @@ const sidebars = {
     { label: 'Start here', items: ['minimalapi/getting-started', 'minimalapi/guides/run-locally'] },
     {
       label: 'Guides',
-      items: ['minimalapi/guides/add-an-endpoint', 'minimalapi/guides/test-your-changes', 'minimalapi/guides/database', 'minimalapi/guides/secure-the-api', 'minimalapi/guides/ship-the-container', 'minimalapi/guides/set-up-ci', 'minimalapi/guides/work-with-a-coding-agent'],
+      items: ['minimalapi/guides/make-it-yours', 'minimalapi/guides/add-an-endpoint', 'minimalapi/guides/test-your-changes', 'minimalapi/guides/database', 'minimalapi/guides/secure-the-api', 'minimalapi/guides/ship-the-container', 'minimalapi/guides/set-up-ci', 'minimalapi/guides/work-with-a-coding-agent'],
     },
     { label: 'Reference', items: [{ autogenerate: { directory: 'minimalapi/reference' } }] },
     {
@@ -25,7 +25,7 @@ const sidebars = {
     { label: 'Start here', items: ['webapi/getting-started', 'webapi/guides/run-locally'] },
     {
       label: 'Guides',
-      items: ['webapi/guides/add-an-endpoint', 'webapi/guides/test-your-changes', 'webapi/guides/database', 'webapi/guides/secure-the-api', 'webapi/guides/ship-the-container', 'webapi/guides/set-up-ci', 'webapi/guides/work-with-a-coding-agent'],
+      items: ['webapi/guides/make-it-yours', 'webapi/guides/add-an-endpoint', 'webapi/guides/test-your-changes', 'webapi/guides/database', 'webapi/guides/secure-the-api', 'webapi/guides/ship-the-container', 'webapi/guides/set-up-ci', 'webapi/guides/work-with-a-coding-agent'],
     },
     { label: 'Reference', items: [{ autogenerate: { directory: 'webapi/reference' } }] },
     {
@@ -37,7 +37,7 @@ const sidebars = {
     { label: 'Start here', items: ['graphql/getting-started', 'graphql/guides/run-locally'] },
     {
       label: 'Guides',
-      items: ['graphql/guides/add-a-field', 'graphql/guides/test-your-changes', 'graphql/guides/database', 'graphql/guides/secure-the-api', 'graphql/guides/ship-the-container', 'graphql/guides/set-up-ci', 'graphql/guides/work-with-a-coding-agent'],
+      items: ['graphql/guides/make-it-yours', 'graphql/guides/add-a-field', 'graphql/guides/test-your-changes', 'graphql/guides/database', 'graphql/guides/secure-the-api', 'graphql/guides/ship-the-container', 'graphql/guides/set-up-ci', 'graphql/guides/work-with-a-coding-agent'],
     },
     { label: 'Reference', items: [{ autogenerate: { directory: 'graphql/reference' } }] },
     {
@@ -49,7 +49,7 @@ const sidebars = {
     { label: 'Start here', items: ['mcp/getting-started', 'mcp/guides/run-locally'] },
     {
       label: 'Guides',
-      items: ['mcp/guides/connect-a-client', 'mcp/guides/add-a-tool', 'mcp/guides/test-your-changes', 'mcp/guides/database', 'mcp/guides/secure-the-server', 'mcp/guides/ship-the-container', 'mcp/guides/set-up-ci', 'mcp/guides/work-with-a-coding-agent'],
+      items: ['mcp/guides/make-it-yours', 'mcp/guides/connect-a-client', 'mcp/guides/add-a-tool', 'mcp/guides/test-your-changes', 'mcp/guides/database', 'mcp/guides/secure-the-server', 'mcp/guides/ship-the-container', 'mcp/guides/set-up-ci', 'mcp/guides/work-with-a-coding-agent'],
     },
     { label: 'Reference', items: [{ autogenerate: { directory: 'mcp/reference' } }] },
     {
@@ -61,7 +61,7 @@ const sidebars = {
     { label: 'Start here', items: ['lambda/getting-started', 'lambda/guides/run-locally'] },
     {
       label: 'Guides',
-      items: ['lambda/guides/add-a-function', 'lambda/guides/test-your-changes', 'lambda/guides/database', 'lambda/guides/deploy-to-aws', 'lambda/guides/secure-the-function', 'lambda/guides/set-up-ci', 'lambda/guides/work-with-a-coding-agent'],
+      items: ['lambda/guides/make-it-yours', 'lambda/guides/add-a-function', 'lambda/guides/test-your-changes', 'lambda/guides/database', 'lambda/guides/deploy-to-aws', 'lambda/guides/secure-the-function', 'lambda/guides/set-up-ci', 'lambda/guides/work-with-a-coding-agent'],
     },
     { label: 'Reference', items: [{ autogenerate: { directory: 'lambda/reference' } }] },
     {
