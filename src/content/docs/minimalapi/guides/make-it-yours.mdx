@@ -1,35 +1,51 @@
 ---
 title: "Make it yours"
-description: "Add your own entity, migration, use cases and endpoints, then clear out the sample movies, authors and reviews without dropping below 95% coverage."
+description: "Add your own entity end to end, then clear out the sample movies, authors and reviews without dropping below the 95% coverage gate."
 sidebar:
   order: 2
 ---
 
-import { Steps, Aside } from '@astrojs/starlight/components';
+import { Steps, Aside, FileTree } from '@astrojs/starlight/components';
 
-The first thing anyone wants to do after `dotnet new` is evict *Deep Space Gardeners* and put their own domain in its place. If you delete `Movies`, `Authors` and `Reviews` straight away, half the shared plumbing tests fail to compile and the rest drop below the 95% coverage gate because the paging, validation, logging, OpenAPI and telemetry code suddenly has nothing to exercise it.
+Sooner or later you'll want to evict *Deep Space Gardeners* and move your own domain in. The tempting move is to delete `Movies`, `Authors` and `Reviews` first. Don't. Half the tests stop compiling, and the shared plumbing (paging, validation, logging, OpenAPI and telemetry) suddenly has nothing to exercise it, so coverage falls through the floor.
 
-The painless order is the other way round: build your first vertical slice alongside the sample domain, prove it works end to end, and then delete the movies. This guide adds a `Cinema` slice (`GET /api/cinemas` and `POST /api/cinemas`) and clears out the sample code at the end.
+Go the other way round. Build your first slice beside the sample domain, prove it works end to end, then take the movies out. This guide adds cinemas, with `GET /api/cinemas` to list and search them and `POST /api/cinemas` to create one, and finishes with a solution that has no movies left in it. We ran every step on a fresh solution: it ends with 79 passing tests and 99.7% line coverage.
 
 <Aside type="tip" title="Let Jacques do the typing">
-  Every step on this page has a matching skill in `.agents/skills/`: `add-a-use-case`, `mapping-with-mapperly`, `data-access-ef-core`, `database-migrations`, `expose-a-use-case`, `sample-data` and `coverage`. Point your coding agent at your domain and it will follow the same playbook.
+  Each step names the skill in `.agents/skills/` that covers it. Point your coding agent at this page and your own domain, and it follows the same recipe.
 </Aside>
+
+The code below assumes you named the solution `WorksOnMyMachine.Movies`. Swap in your own name wherever you see it.
 
 <Steps>
 
-1. **Add the entity and use cases in `src/Application`** (`add-a-use-case` in `.agents/skills`).
+1. **Add the entity and use cases to `src/Application`** (`add-a-use-case`).
 
-   Add `Cinema` to `src/Application/Common/Enums/EntityType.cs`, then create the domain record and repository interface in `src/Application/Cinemas/`:
+   The entity, the repository interface, one query and one command, each with a validator. Handlers and validators are `public`, like the samples, so Mediator's source generator and the tests can see them.
+
+   <FileTree>
+   - src/Application/Cinemas/
+     - Entities/Cinema.cs
+     - ICinemasRepository.cs
+     - Queries/GetCinemas/
+       - GetCinemasQuery.cs
+       - GetCinemasHandler.cs
+       - GetCinemasValidator.cs
+     - Commands/CreateCinema/
+       - CreateCinemaCommand.cs
+       - CreateCinemaHandler.cs
+       - CreateCinemaValidator.cs
+   </FileTree>
 
    ```csharp title="src/Application/Cinemas/Entities/Cinema.cs"
    namespace WorksOnMyMachine.Movies.Application.Cinemas.Entities;
 
-   public sealed record Cinema
-   {
-       public Guid Id { get; init; }
-
-       public string Name { get; init; } = string.Empty;
-   }
+   /// <summary>
+   /// A cinema that shows movies.
+   /// </summary>
+   /// <param name="Id">The unique identifier of the cinema.</param>
+   /// <param name="Name">The name of the cinema.</param>
+   public record Cinema(Guid Id, string Name);
    ```
 
    ```csharp title="src/Application/Cinemas/ICinemasRepository.cs"
@@ -40,13 +56,16 @@ The painless order is the other way round: build your first vertical slice along
 
    public interface ICinemasRepository
    {
-       public Task<Cinema> CreateCinema(string name, CancellationToken cancellationToken);
+       public Task<Page<Cinema>> GetCinemas(
+           string? query,
+           PageRequest page,
+           CancellationToken cancellationToken);
 
-       public Task<Page<Cinema>> GetCinemas(PageRequest page, string? searchTerm, CancellationToken cancellationToken);
+       public Task<Cinema> CreateCinema(string name, CancellationToken cancellationToken);
    }
    ```
 
-   Add a paged query in `src/Application/Cinemas/Queries/GetCinemas/` so `Common/Paging` stays covered when the sample queries go:
+   The query reuses the shared paging and search rules, so `Common/Paging` stays covered once the sample queries are gone.
 
    ```csharp title="src/Application/Cinemas/Queries/GetCinemas/GetCinemasQuery.cs"
    namespace WorksOnMyMachine.Movies.Application.Cinemas.Queries.GetCinemas;
@@ -55,12 +74,18 @@ The painless order is the other way round: build your first vertical slice along
    using Entities;
    using Mediator;
 
-   public sealed record GetCinemasQuery : IRequest<Page<Cinema>>
+   /// <summary>
+   /// Lists cinemas one page at a time, optionally only those whose name contains a search term.
+   /// </summary>
+   public class GetCinemasQuery : IRequest<Page<Cinema>>
    {
-       public string? SearchTerm { get; init; }
+       /// <summary>The words to look for in the name, ignoring case. Leave empty to list every cinema.</summary>
+       public string? Query { get; init; }
 
+       /// <summary>The number of results to skip, 0 for the first page.</summary>
        public int Offset { get; init; }
 
+       /// <summary>The largest number of results to return, from 1 to 50.</summary>
        public int Limit { get; init; } = Paging.DefaultLimit;
    }
    ```
@@ -72,14 +97,11 @@ The painless order is the other way round: build your first vertical slice along
    using Entities;
    using Mediator;
 
-   internal sealed class GetCinemasHandler(ICinemasRepository repository) : IRequestHandler<GetCinemasQuery, Page<Cinema>>
+   public class GetCinemasHandler(ICinemasRepository repository) : IRequestHandler<GetCinemasQuery, Page<Cinema>>
    {
        public async ValueTask<Page<Cinema>> Handle(GetCinemasQuery request, CancellationToken cancellationToken)
        {
-           return await repository.GetCinemas(
-               new PageRequest(request.Offset, request.Limit),
-               request.SearchTerm,
-               cancellationToken);
+           return await repository.GetCinemas(request.Query, new PageRequest(request.Offset, request.Limit), cancellationToken);
        }
    }
    ```
@@ -90,18 +112,16 @@ The painless order is the other way round: build your first vertical slice along
    using Common.Paging;
    using FluentValidation;
 
-   public sealed class GetCinemasValidator : AbstractValidator<GetCinemasQuery>
+   public class GetCinemasValidator : AbstractValidator<GetCinemasQuery>
    {
        public GetCinemasValidator()
        {
+           _ = this.RuleFor(r => r.Query).ValidSearchTerm();
            _ = this.RuleFor(r => r.Offset).ValidOffset();
            _ = this.RuleFor(r => r.Limit).ValidLimit();
-           _ = this.RuleFor(r => r.SearchTerm).ValidSearchTerm();
        }
    }
    ```
-
-   Add a command in `src/Application/Cinemas/Commands/CreateCinema/`:
 
    ```csharp title="src/Application/Cinemas/Commands/CreateCinema/CreateCinemaCommand.cs"
    namespace WorksOnMyMachine.Movies.Application.Cinemas.Commands.CreateCinema;
@@ -109,7 +129,7 @@ The painless order is the other way round: build your first vertical slice along
    using Entities;
    using Mediator;
 
-   public sealed record CreateCinemaCommand : IRequest<Cinema>
+   public class CreateCinemaCommand : IRequest<Cinema>
    {
        public string Name { get; init; } = string.Empty;
    }
@@ -121,7 +141,7 @@ The painless order is the other way round: build your first vertical slice along
    using Entities;
    using Mediator;
 
-   internal sealed class CreateCinemaHandler(ICinemasRepository repository) : IRequestHandler<CreateCinemaCommand, Cinema>
+   public class CreateCinemaHandler(ICinemasRepository repository) : IRequestHandler<CreateCinemaCommand, Cinema>
    {
        public async ValueTask<Cinema> Handle(CreateCinemaCommand request, CancellationToken cancellationToken)
        {
@@ -135,131 +155,166 @@ The painless order is the other way round: build your first vertical slice along
 
    using FluentValidation;
 
-   public sealed class CreateCinemaValidator : AbstractValidator<CreateCinemaCommand>
+   public class CreateCinemaValidator : AbstractValidator<CreateCinemaCommand>
    {
        public CreateCinemaValidator()
        {
-           _ = this.RuleFor(r => r.Name)
-               .NotEmpty()
-               .MaximumLength(100);
+           _ = this.RuleFor(r => r.Name).NotEmpty().WithMessage("A cinema needs a name.");
+           _ = this.RuleFor(r => r.Name).MaximumLength(100).WithMessage("A cinema name can't be longer than 100 characters.");
        }
    }
    ```
 
-2. **Persist and map it in `src/Infrastructure`** (`data-access-ef-core` and `mapping-with-mapperly` in `.agents/skills`).
+2. **Store and map it in `src/Infrastructure`** (`data-access-ef-core` and `mapping-with-mapperly`).
 
-   Add the EF Core model and configuration under `src/Infrastructure/Databases/MovieReviews/`:
+   Add the database model and its configuration beside the sample ones. Every model inherits `Entity`, which brings the id and the created and modified dates, and every configuration inherits `EntityConfiguration<T>`, which sets them up.
 
    ```csharp title="src/Infrastructure/Databases/MovieReviews/Models/Cinema.cs"
    namespace WorksOnMyMachine.Movies.Infrastructure.Databases.MovieReviews.Models;
 
-   internal sealed record Cinema : BaseEntity
+   using System.Diagnostics.CodeAnalysis;
+
+   [ExcludeFromCodeCoverage]
+   internal record Cinema : Entity
    {
-       public string Name { get; set; } = string.Empty;
+       public required string Name { get; init; }
    }
    ```
 
    ```csharp title="src/Infrastructure/Databases/MovieReviews/Configuration/CinemaConfiguration.cs"
    namespace WorksOnMyMachine.Movies.Infrastructure.Databases.MovieReviews.Configuration;
 
+   using Microsoft.EntityFrameworkCore;
    using Microsoft.EntityFrameworkCore.Metadata.Builders;
    using Models;
 
-   internal sealed class CinemaConfiguration : BaseConfiguration<Cinema>
+   internal class CinemaConfiguration : EntityConfiguration<Cinema>
    {
        public override void Configure(EntityTypeBuilder<Cinema> builder)
        {
            base.Configure(builder);
 
-           _ = builder.Property(e => e.Name)
-               .HasMaxLength(100)
-               .IsRequired();
+           _ = builder.Property(c => c.Name).HasMaxLength(100).UseCollation(Collations.NoCase);
+           _ = builder.HasIndex(c => c.Name);
        }
    }
    ```
 
-   Add `internal DbSet<Cinema> Cinemas { get; set; }` to `MovieReviewsDbContext.cs`, add the Mapperly method to `Mapping/MovieReviewsMapper.cs`:
+   Then wire it in:
 
-   ```csharp title="src/Infrastructure/Databases/MovieReviews/Mapping/MovieReviewsMapper.cs"
-   using AppCinema = Application.Cinemas.Entities.Cinema;
-   using InfraCinema = Models.Cinema;
-   ```
+   - **`MovieReviewsDbContext.cs`:** add `public DbSet<Cinema> Cinemas => this.Set<Cinema>();` beside the other sets.
+   - **`Mapping/MovieReviewsMapper.cs`:** add `using AppCinema = Application.Cinemas.Entities.Cinema;` and `using InfraCinema = Models.Cinema;` with the other aliases, and this method:
 
-   ```csharp title="src/Infrastructure/Databases/MovieReviews/Mapping/MovieReviewsMapper.cs"
-   [MapperIgnoreSource(nameof(InfraCinema.DateCreated))]
-   [MapperIgnoreSource(nameof(InfraCinema.DateModified))]
-   internal partial AppCinema ToDomain(InfraCinema cinema);
-   ```
+     ```csharp
+     [MapperIgnoreSource(nameof(InfraCinema.DateCreated))]
+     [MapperIgnoreSource(nameof(InfraCinema.DateModified))]
+     public partial AppCinema ToDomain(InfraCinema cinema);
+     ```
 
-   Implement `ICinemasRepository` on `EntityFrameworkMovieReviewsRepository.cs` and register it in `src/Infrastructure/DependencyInjection.cs`:
+   - **`EntityFrameworkMovieReviewsRepository.cs`:** add `using Application.Cinemas;` and `using ApplicationCinema = Application.Cinemas.Entities.Cinema;`, add `ICinemasRepository` to the interfaces the class implements, and add a `Cinemas` region. The search reuses the repository's own `ContainsPattern` and `EscapeCharacter`, so a `%` or `_` in a search term matches itself, the same as for movies.
 
-   ```csharp title="src/Infrastructure/Databases/MovieReviews/EntityFrameworkMovieReviewsRepository.cs"
-   public async Task<AppCinema> CreateCinema(string name, CancellationToken cancellationToken)
-   {
-       var utcNow = this.timeProvider.GetUtcNow().UtcDateTime;
-       var cinema = new Cinema
-       {
-           Name = name,
-           DateCreated = utcNow,
-           DateModified = utcNow
-       };
+     ```csharp
+     #region Cinemas
 
-       _ = await this.context.Cinemas.AddAsync(cinema, cancellationToken);
-       _ = await this.context.SaveChangesAsync(cancellationToken);
+     public async Task<Page<ApplicationCinema>> GetCinemas(
+         string? query,
+         PageRequest page,
+         CancellationToken cancellationToken)
+     {
+         var cinemas = this.context.Cinemas.AsQueryable();
 
-       return this.mapper.ToDomain(cinema);
-   }
+         if (!string.IsNullOrWhiteSpace(query))
+         {
+             var pattern = ContainsPattern(query);
 
-   public async Task<Page<AppCinema>> GetCinemas(PageRequest page, string? searchTerm, CancellationToken cancellationToken)
-   {
-       IQueryable<Cinema> cinemas = this.context.Cinemas.AsNoTracking();
+             cinemas = cinemas.Where(c => EF.Functions.Like(c.Name, pattern, EscapeCharacter));
+         }
 
-       if (!string.IsNullOrWhiteSpace(searchTerm))
-       {
-           var term = searchTerm.Trim();
-           cinemas = cinemas.Where(c => EF.Functions.Like(c.Name, $"%{term}%"));
-       }
+         var totalCount = await cinemas.CountAsync(cancellationToken);
 
-       var totalCount = await cinemas.CountAsync(cancellationToken);
-       var items = await cinemas
-           .OrderBy(c => c.Name)
-           .ThenBy(c => c.Id)
-           .Skip(page.Offset)
-           .Take(page.Limit)
-           .Select(c => this.mapper.ToDomain(c))
-           .ToListAsync(cancellationToken);
+         var result = await cinemas
+             .OrderBy(c => c.Name)
+             .ThenBy(c => c.Id)
+             .Skip(page.Offset)
+             .Take(page.Limit)
+             .ToListAsync(cancellationToken);
 
-       return new Page<AppCinema>(items, page.Offset, page.Limit, totalCount);
-   }
-   ```
+         return new([.. result.Select(this.mapper.ToDomain)], page.Offset, page.Limit, totalCount);
+     }
 
-   ```csharp title="src/Infrastructure/DependencyInjection.cs"
-   _ = services.AddScoped<ICinemasRepository>(sp => sp.GetRequiredService<EntityFrameworkMovieReviewsRepository>());
-   ```
+     public async Task<ApplicationCinema> CreateCinema(string name, CancellationToken cancellationToken)
+     {
+         var now = this.timeProvider.GetUtcNow().UtcDateTime;
 
-3. **Create the migration** (`database-migrations` in `.agents/skills`).
+         var cinema = new Cinema
+         {
+             Name = name,
+             DateCreated = now,
+             DateModified = now
+         };
+
+         _ = this.context.Add(cinema);
+
+         _ = await this.context.SaveChangesAsync(cancellationToken);
+
+         return this.mapper.ToDomain(cinema);
+     }
+
+     #endregion Cinemas
+     ```
+
+   - **`src/Infrastructure/DependencyInjection.cs`:** add `using Application.Cinemas;` and register the interface against the same repository, like the others:
+
+     ```csharp
+     _ = services.AddScoped<ICinemasRepository>(x =>
+         x.GetRequiredService<EntityFrameworkMovieReviewsRepository>());
+     ```
+
+   - **`Extensions/MovieReviewsDbContextExtensions.cs`** (`sample-data`): give `local` and `docker` some cinemas to look at. Add this to `AddData` before `SaveChanges`:
+
+     ```csharp
+     var cinemas = new Faker<Cinema>()
+         .UseSeed(Seed)
+         .RuleFor(c => c.Id, f => f.Random.Guid())
+         .RuleFor(c => c.Name, f => $"{f.Address.City()} Picture House")
+         .RuleFor(c => c.DateCreated, f => f.Date.Past(refDate: ReferenceDate))
+         .RuleFor(c => c.DateModified, f => f.Date.Past(refDate: ReferenceDate))
+         .Generate(5);
+
+     context.AddRange(cinemas);
+     ```
+
+3. **Add a migration** (`database-migrations`).
 
    ```bash
    dotnet tool install --global dotnet-ef
    dotnet ef migrations add AddCinemas \
      --project ./src/Infrastructure \
-     --output-dir Databases/MovieReviews/Migrations
+     --output-dir Databases/MovieReviews/Migrations \
+     --namespace WorksOnMyMachine.Movies.Infrastructure.Databases.MovieReviews.Migrations
+   sed -i '1s/^\xEF\xBB\xBF//' src/Infrastructure/Databases/MovieReviews/Migrations/*.cs
    ```
 
-   Put `// <auto-generated />` at the top of the new `<Timestamp>_AddCinemas.cs` file (EF Core already puts it on `.Designer.cs`) so the style analysers skip generated migration code.
+   Without `--namespace` the migration lands in a namespace of its own. The `sed` strips the byte order mark the tool adds. On macOS, use `sed -i ''`. Then make `// <auto-generated />` the first line of the new `<timestamp>_AddCinemas.cs`, as it is in the other migrations, so the analysers leave generated code alone.
 
-4. **Expose the endpoints in `src/Presentation`** (`expose-a-use-case` in `.agents/skills`).
+4. **Put it on endpoints in `src/Presentation`** (`expose-a-use-case` and `xml-docs-and-openapi`).
 
-   Add a request DTO in `src/Presentation/Requests/CreateCinemaRequest.cs` and the endpoint group in `src/Presentation/Endpoints/CinemaEndpoints.cs`:
+   The XML comments aren't decoration. They become the OpenAPI description, and a test fails if an operation or schema has none.
 
    ```csharp title="src/Presentation/Requests/CreateCinemaRequest.cs"
    namespace WorksOnMyMachine.Movies.Presentation.Requests;
 
    /// <summary>
-   /// The details of a new Cinema to create.
+   /// The details needed to create a cinema.
    /// </summary>
-   /// <param name="Name">The name of the cinema.</param>
-   public sealed record CreateCinemaRequest(string Name);
+   public class CreateCinemaRequest
+   {
+       /// <summary>
+       /// The name of the cinema, up to 100 characters.
+       /// </summary>
+       /// <example>The Astor</example>
+       public string Name { get; init; } = string.Empty;
+   }
    ```
 
    ```csharp title="src/Presentation/Endpoints/CinemaEndpoints.cs"
@@ -267,16 +322,18 @@ The painless order is the other way round: build your first vertical slice along
 
    using Application.Common.Paging;
    using Mediator;
+   using Microsoft.AspNetCore.Builder;
+   using Microsoft.AspNetCore.Http;
    using Microsoft.AspNetCore.Http.HttpResults;
    using Microsoft.AspNetCore.Mvc;
-   using Requests;
+   using Presentation.Requests;
    using Commands = Application.Cinemas.Commands;
    using Entities = Application.Cinemas.Entities;
    using Queries = Application.Cinemas.Queries;
 
-   internal static class CinemaEndpoints
+   public static class CinemaEndpoints
    {
-       internal static WebApplication MapCinemaEndpoints(this WebApplication app)
+       public static WebApplication MapCinemaEndpoints(this WebApplication app)
        {
            var root = app.MapGroup("/api/cinemas")
                .WithTags("Cinemas");
@@ -289,7 +346,6 @@ The painless order is the other way round: build your first vertical slice along
 
            _ = root.MapPost("/", CreateCinema)
                .WithName(nameof(CreateCinema))
-               .Accepts<CreateCinemaRequest>("application/json")
                .Produces<Entities.Cinema>(StatusCodes.Status201Created)
                .ProducesValidationProblem()
                .ProducesProblem(StatusCodes.Status500InternalServerError);
@@ -298,18 +354,32 @@ The painless order is the other way round: build your first vertical slice along
        }
 
        /// <summary>
-       /// Search Cinemas
+       /// List Cinemas
        /// </summary>
+       /// <remarks>
+       /// Returns one page of cinemas, ordered by name. Add a search term to return only the cinemas whose name
+       /// contains it, ignoring case. To fetch the next page, add the limit to the offset.
+       ///
+       /// Sample request:
+       ///
+       ///     GET /api/cinemas?query=astor&amp;offset=0&amp;limit=10
+       /// </remarks>
+       /// <param name="query">The words to look for in the name, ignoring case. Leave it out to list every cinema.</param>
+       /// <param name="offset">The number of cinemas to skip, 0 for the first page.</param>
+       /// <param name="limit">The largest number of cinemas to return, from 1 to 50.</param>
+       /// <response code="200">One page of Cinemas.</response>
+       /// <response code="400">The search term, offset or limit is not valid.</response>
+       /// <response code="500">An unexpected error occurred.</response>
        public static async Task<Ok<Page<Entities.Cinema>>> GetCinemas(
+           [FromQuery] string? query,
            [FromServices] ISender sender,
            CancellationToken cancellationToken,
-           [FromQuery] string? query = null,
            [FromQuery] int offset = 0,
            [FromQuery] int limit = Paging.DefaultLimit)
        {
            return TypedResults.Ok(await sender.Send(new Queries.GetCinemas.GetCinemasQuery
            {
-               SearchTerm = query,
+               Query = query,
                Offset = offset,
                Limit = limit
            }, cancellationToken));
@@ -318,49 +388,136 @@ The painless order is the other way round: build your first vertical slice along
        /// <summary>
        /// Create a Cinema
        /// </summary>
+       /// <remarks>
+       /// Creates a cinema. The name can't be empty or longer than 100 characters.
+       ///
+       /// Sample request:
+       ///
+       ///     POST /api/cinemas
+       ///     {
+       ///         "name": "The Astor"
+       ///     }
+       /// </remarks>
+       /// <param name="request">The cinema to create.</param>
+       /// <response code="201">The Cinema that was created.</response>
+       /// <response code="400">The request is not valid, for example the name is empty.</response>
+       /// <response code="500">An unexpected error occurred.</response>
        public static async Task<Created<Entities.Cinema>> CreateCinema(
            [FromBody] CreateCinemaRequest request,
            [FromServices] ISender sender,
            CancellationToken cancellationToken)
        {
-           var cinema = await sender.Send(new Commands.CreateCinema.CreateCinemaCommand
+           var response = await sender.Send(new Commands.CreateCinema.CreateCinemaCommand
            {
                Name = request.Name
            }, cancellationToken);
 
-           return TypedResults.Created($"/api/cinemas/{cinema.Id}", cinema);
+           return TypedResults.Created((string?)null, response);
        }
    }
    ```
 
-   Register `[JsonSerializable(typeof(Cinema))]`, `[JsonSerializable(typeof(Page<Cinema>))]` and `[JsonSerializable(typeof(CreateCinemaRequest))]` on `AppJsonSerializerContext.cs`, add the `"Cinemas"` tag in `OpenApi/DocumentInfoTransformer.cs`, and call `_ = app.MapCinemaEndpoints();` in `Extensions/WebApplicationExtensions.cs`. (If you created the solution with `--include-auth`, chain `.RequireAuthorization()` on `app.MapGroup("/api/cinemas")` too.)
+   There's no endpoint that gets one cinema by its id yet, so the 201 has no `Location` header. Add a `GetCinemaById` and switch to `TypedResults.CreatedAtRoute`, as `CreateReview` does, when you need one.
 
-5. **Seed and test the new slice** (`sample-data`, `unit-testing` and `integration-testing` in `.agents/skills`).
+   Then register it:
 
-   Add a handful of `Cinema` rows to `MovieReviewsDbContextExtensions.AddData` in `src/Infrastructure/Databases/MovieReviews/Extensions/MovieReviewsDbContextExtensions.cs` and `MovieReviewsCollectionData.AddTestData` in `tests/Infrastructure.Tests.Integration/Databases/MovieReviews/MovieReviewsCollectionData.cs`, then add unit and integration tests for `GetCinemas`, `CreateCinema`, `ICinemasRepository` and `CinemaEndpoints` mirroring the existing tests alongside them. Run `dotnet test` to verify both domains run side by side.
+   - **`Serialization/AppJsonSerializerContext.cs`** (`json-serialization`): add `using Application.Cinemas.Entities;`, then `[JsonSerializable(typeof(Cinema))]`, `[JsonSerializable(typeof(Page<Cinema>))]` and `[JsonSerializable(typeof(CreateCinemaRequest))]`.
+   - **`OpenApi/DocumentInfoTransformer.cs`:** add `CreateTag("Cinemas", "Lookup all Cinemas, search them by name, or create new ones"),` to the tags.
+   - **`Extensions/WebApplicationExtensions.cs`:** add `_ = app.MapCinemaEndpoints();` beside the other `Map*Endpoints()` calls.
+   - **`--include-auth`:** if you created the solution with it, add `_ = root.RequireAuthorization();` after `WithTags`, as the other endpoint groups do.
+   - **`Presentation.http`:** add a request for each endpoint, including one that fails validation.
 
-6. **Clear out the sample Movies, Authors and Reviews** (`sample-data`, `database-migrations` and `coverage` in `.agents/skills`).
+5. **Test the new slice** (`test-design`, `unit-tests` and `integration-tests`).
 
-   Now that `Cinemas` exercises every layer, remove the sample vertical slices:
+   Each new test has a sample test that already does the same job for movies or reviews. Copy it and rename it, and you have the shape, the names and the house style without having to think about them.
 
-   - **Application:** Delete `src/Application/Authors/`, `src/Application/Movies/` and `src/Application/Reviews/`, and remove `Author`, `Movie` and `Review` from `EntityType.cs`.
-   - **Infrastructure:** Delete `Author.cs`, `Movie.cs` and `Review.cs` from `Models/` and `Configuration/`. Remove their `DbSet` properties from `MovieReviewsDbContext.cs`, their mappings from `MovieReviewsMapper.cs`, their methods and interfaces from `EntityFrameworkMovieReviewsRepository.cs`, their registrations from `DependencyInjection.cs`, and their seed blocks from `MovieReviewsDbContextExtensions.cs`.
-   - **Migrations:** Replace the migrations in `src/Infrastructure/Databases/MovieReviews/Migrations/` with a fresh initial migration for your schema:
+   | New test | Copy from |
+   | --- | --- |
+   | `tests/Application.Tests.Unit/Cinemas/Queries/GetCinemas/GetCinemasHandlerTests.cs` | `Movies/Queries/GetMovies/GetMoviesHandlerTests.cs` |
+   | `tests/Application.Tests.Unit/Cinemas/Queries/GetCinemas/GetCinemasValidatorTests.cs` | `Movies/Queries/GetMovies/GetMoviesValidatorTests.cs` |
+   | `tests/Application.Tests.Unit/Cinemas/Commands/CreateCinema/CreateCinemaHandlerTests.cs` | `Reviews/Commands/CreateReview/CreateReviewHandlerTests.cs` |
+   | `tests/Application.Tests.Unit/Cinemas/Commands/CreateCinema/CreateCinemaValidatorTests.cs` | `Reviews/Commands/CreateReview/CreateReviewValidatorTests.cs` |
+   | A `Cinemas` region in `tests/Infrastructure.Tests.Integration/Databases/MovieReviews/EntityFrameworkMovieReviewsRepositoryTests.cs` | The `Movies` region: search, paging and create |
+   | `tests/Presentation.Tests.Unit/Endpoints/CinemaEndpointTests.cs` | `MovieEndpointTests.cs` and `ReviewEndpointTests.cs` |
+   | `tests/Presentation.Tests.Integration/Endpoints/CinemaEndpointTests.cs` | `MovieEndpointTests.cs` and `ReviewEndpointTests.cs` |
+
+   The repository tests need some cinemas. Add three to `AddTestData` in `tests/Infrastructure.Tests.Integration/Databases/MovieReviews/Extensions/MovieReviewsCollectionData.cs`, named the same way as the sample rows:
+
+   ```csharp
+   List<Cinema> cinemas =
+   [
+       new() { Id = Guid.NewGuid(), Name = "One" },
+       new() { Id = Guid.NewGuid(), Name = "Two" },
+       new() { Id = Guid.NewGuid(), Name = "Three" }
+   ];
+
+   context.Cinemas.AddRange(cinemas);
+   ```
+
+   Two existing tests in `tests/Presentation.Tests.Integration/OpenApi/OpenApiDocumentTests.cs` fail as soon as the endpoints exist. They're doing their job: they pin down exactly what the API publishes.
+
+   - **`GetOpenApiDocument_ShouldDescribe_Tags`:** add `"Cinemas"` to the expected tags.
+   - **`GetOpenApiDocument_ShouldDescribe_EveryOperation`:** add 2 to the operation count, one for each new endpoint.
+   - **`GetOpenApiDocument_ShouldDescribe_Schema`:** add `[InlineData("Cinema")]`, `[InlineData("PageOfCinema")]` and `[InlineData("CreateCinemaRequest")]`, so the new schemas have to be documented too.
+
+   ```bash
+   dotnet build
+   dotnet test
+   dotnet format --verify-no-changes
+   ```
+
+   Both domains now run side by side. Stop here if you're keeping the sample for reference, which is a perfectly respectable choice.
+
+6. **Take out the sample movies, authors and reviews** (`sample-data` and `database-migrations`).
+
+   This step is mostly deleting, but the template's own tests use the sample as their test subject, so a few of them change instead of going. Work through it layer by layer and build as you go. The compiler finds what's left faster than any list.
+
+   - **Application:** delete `src/Application/Authors/`, `Movies/` and `Reviews/`. In `Common/Enums/EntityType.cs`, replace `Author`, `Movie` and `Review` with `Cinema`. `NotFoundException` uses it, and you'll want it the day you add `GetCinemaById`.
+   - **Infrastructure:** delete `Author.cs`, `Movie.cs` and `Review.cs` from `Models/`, and the matching `*Configuration.cs` files. Then remove from:
+     - `MovieReviewsDbContext.cs`: their three `DbSet` properties.
+     - `MovieReviewsMapper.cs`: their aliases and mapping methods.
+     - `EntityFrameworkMovieReviewsRepository.cs`: the `Authors`, `Movies`, `Reviews` and `Helpers` regions, their `using` lines and aliases, and their three interfaces.
+     - `DependencyInjection.cs`: their three registrations and `using` lines.
+     - `MovieReviewsDbContextExtensions.cs`: the titles, the review texts and the author, movie and review fakers. Change the guard at the top of `AddData` to `context.Cinemas.Any()`.
+   - **Presentation:** delete `AuthorEndpoints.cs`, `MovieEndpoints.cs`, `ReviewEndpoints.cs`, `CreateReviewRequest.cs` and `UpdateReviewRequest.cs`. Then remove from:
+     - `AppJsonSerializerContext.cs`: their `[JsonSerializable]` lines and `using` lines.
+     - `DocumentInfoTransformer.cs`: their tags.
+     - `WebApplicationExtensions.cs`: their `Map*Endpoints()` calls.
+     - `Presentation.http`: the sample ids and requests.
+   - **Migrations:** replace the history with one migration for your schema. Then add `// <auto-generated />` to its first line, as in step 3.
 
      ```bash
      rm src/Infrastructure/Databases/MovieReviews/Migrations/*.cs
      dotnet ef migrations add InitialCreate \
        --project ./src/Infrastructure \
-       --output-dir Databases/MovieReviews/Migrations
+       --output-dir Databases/MovieReviews/Migrations \
+       --namespace WorksOnMyMachine.Movies.Infrastructure.Databases.MovieReviews.Migrations
+     sed -i '1s/^\xEF\xBB\xBF//' src/Infrastructure/Databases/MovieReviews/Migrations/*.cs
      ```
 
-     Add `// <auto-generated />` at line 1 of the new `<Timestamp>_InitialCreate.cs` file.
-   - **Presentation:** Delete `AuthorEndpoints.cs`, `MovieEndpoints.cs`, `ReviewEndpoints.cs` and `CreateReviewRequest.cs`. Remove their serializer attributes from `AppJsonSerializerContext.cs`, their tags from `DocumentInfoTransformer.cs`, their `Map*Endpoints()` calls from `WebApplicationExtensions.cs`, and update `src/Presentation/Presentation.http` to call `/api/cinemas`.
-   - **Tests:** Delete the `Authors`, `Movies` and `Reviews` test folders across all four test projects, remove their seed blocks from `MovieReviewsCollectionData.cs`, and point the shared plumbing tests (`LoggingBehaviourTests`, `ValidationBehaviourTests`, `NotFoundExceptionTests`, `DependencyInjectionTests`, `MovieReviewsConfigurationTests`, `OpenApiDocumentTests`, `TelemetryTests`, plus `AuthenticationTests` if you used `--include-auth`) at `Cinema`, `GetCinemasQuery` and `/api/cinemas`.
+     Delete `src/Presentation/movie-reviews.db` too, if you've run the API. It still holds the old tables, and the new migration history won't recognise it.
 
-7. **Verify format, build and the 95% coverage gate** (`coverage` in `.agents/skills`).
+   - **Tests to delete:**
+     - `tests/Application.Tests.Unit/`: the `Authors/`, `Movies/` and `Reviews/` folders.
+     - `tests/Presentation.Tests.Unit/Endpoints/` and `tests/Presentation.Tests.Integration/Endpoints/`: `AuthorEndpointTests.cs`, `MovieEndpointTests.cs` and `ReviewEndpointTests.cs`.
+     - `EntityFrameworkMovieReviewsRepositoryTests.cs`: the `Authors`, `Movies` and `Reviews` regions.
+     - `MovieReviewsCollectionData.cs`: the author, movie and review rows.
+   - **Tests to change:** these test the template's plumbing, and they used the sample as their subject. Point them at cinemas.
+
+     | Test | Change |
+     | --- | --- |
+     | `Common/Behaviours/LoggingBehaviourTests.cs` and `ValidationBehaviourTests.cs` | Use `CreateCinemaCommand`, `CreateCinemaValidator` and `Cinema` in place of `GetAuthorByIdQuery`, its validator and `Author`. The invalid case is an empty `Name`, so the expected property is `Name`. The logged message names `CreateCinemaCommand`. |
+     | `Common/Exceptions/NotFoundExceptionTests.cs` | Use `EntityType.Cinema` and a `Cinema`. The message becomes "The Cinema with the supplied id was not found." |
+     | `MovieReviewsConfigurationTests.cs` | Check a cinema loads, ignoring case: look up `"one"` and expect `"One"`. |
+     | `DependencyInjectionTests.cs` | Expect `ICinemasRepository`, 5 seeded cinemas and none when seeding is off. Use `GetCinemas` for the concurrency and same-sample-data checks. |
+     | `Telemetry/TelemetryTests.cs` | Call `/api/cinemas?limit=5` and expect a `GetCinemasQuery` span. |
+     | `OpenApi/OpenApiDocumentTests.cs` | Expect the tags `Cinemas` and `Version`, 3 operations, and the schemas `Cinema`, `PageOfCinema`, `CreateCinemaRequest` and `VersionInfo`. |
+     | `AuthenticationTests.cs`, only with `--include-auth` | Point its requests at `/api/cinemas`. |
+
+7. **Check it the way CI will** (`coverage`).
 
    ```bash
+   dotnet build
    dotnet format --verify-no-changes
    dotnet test -m:1 \
      -p:CollectCoverage=true -p:CoverletOutput=../results/ -p:MergeWith="../results/coverage.json" \
@@ -369,8 +526,10 @@ The painless order is the other way round: build your first vertical slice along
      -p:ExcludeByAttribute="GeneratedCodeAttribute"
    ```
 
+   The last table it prints is the merged total. Ours came out at 99.7%. If yours is under 95%, `coverage` says what to do about it, and it isn't "lower the number".
+
 </Steps>
 
-<Aside type="note" title="Renaming the database context later">
-  The internal EF Core folder is still called `Databases/MovieReviews` and the SQLite file is still `movie-reviews.db` until you rename them. Because everything in `src/Infrastructure` is `internal`, renaming `MovieReviewsDbContext` and the connection string key in `appsettings.json` is a purely internal refactor that never touches `Application` or `Presentation`.
-</Aside>
+## What's still called "movie reviews"
+
+The database plumbing keeps its sample name: the `Databases/MovieReviews` folder, `MovieReviewsDbContext`, `EntityFrameworkMovieReviewsRepository`, the `MovieReviews` connection string and the `movie-reviews.db` file. They all work as they are. Everything in `src/Infrastructure` is `internal`, so renaming them later is a refactor that never reaches Application or Presentation. Do it when the name starts to bother you, and change the connection string in every `appsettings.*.json` and in `docker-compose.yml` at the same time.
