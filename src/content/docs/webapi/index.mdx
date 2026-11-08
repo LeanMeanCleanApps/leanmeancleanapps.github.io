@@ -20,12 +20,6 @@ hero:
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import Family from '../../../components/docs/Family.astro';
 
-## Run it
-
-The three commands above create a solution and start it in Docker Compose, sample data and all. Then open the Scalar API reference at [http://localhost:7340/scalar](http://localhost:7340/scalar) and start poking. The logs, traces and metrics go to the [Aspire dashboard](https://learn.microsoft.com/dotnet/aspire/fundamentals/dashboard/standalone) at [http://localhost:7342](http://localhost:7342), because `Console.WriteLine` is not an observability strategy.
-
-Want it locked down? Add `--include-auth`, `--authority` and `--audience` when you create the solution and every movie, author and review endpoint needs a JWT bearer token. Leave `--include-auth` off and there's no auth code at all, which is lovely on a laptop and less lovely in production.
-
 ## What's in the box
 
 <CardGrid>
