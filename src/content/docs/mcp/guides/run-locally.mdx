@@ -17,7 +17,7 @@ There are two ready-made environments. `local` is for `dotnet run`: sample data 
     dotnet run --project ./src/Presentation
     ```
 
-    `launchSettings.json` sets the environment to `local` and listens on [https://localhost:7321](https://localhost:7321), and on `https://localhost:7321`, which redirects to it. If your browser or `curl` doesn't trust the .NET development certificate yet, run `dotnet dev-certs https --trust` once. The server is at `/mcp`.
+    `launchSettings.json` sets the environment to `local` and listens on [https://localhost:7321](https://localhost:7321), and on `http://localhost:7320`, which redirects to it. If your browser or `curl` doesn't trust the .NET development certificate yet, run `dotnet dev-certs https --trust` once. The server is at `/mcp`.
   </TabItem>
   <TabItem label="Docker Compose">
     ```bash

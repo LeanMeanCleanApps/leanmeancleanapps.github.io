@@ -37,7 +37,7 @@ See [Run it locally](/lambda/guides/run-locally/) for switching the container ha
 
 **Symptom:** `docker compose up` fails with `Bind for 0.0.0.0:7350 failed: port is already allocated`.
 
-Each Lean Mean Clean template has its own block of ten ports so different templates don't step on each other. Clean Lambda Function uses `7350` to `7359` (`7350` Lambda runtime emulator, `7352` Aspire dashboard, `7353` and `7354` OpenTelemetry Collector). A clash usually means another copy of this template is still running.
+Each Lean Mean Clean template has its own block of ten ports so different templates don't step on each other. Clean Lambda Function uses `7350` to `7359` (`7350` Lambda runtime emulator, `7352` Aspire dashboard, `7353` and `7354` OpenTelemetry Collector). A clash usually means an earlier copy of this template is still running somewhere, quietly hogging the port.
 
 - Check what's running in Docker and stop it:
   ```bash
@@ -54,7 +54,7 @@ Each Lean Mean Clean template has its own block of ten ports so different templa
 
 **Symptom:** `dotnet new cleanlambdafunction` refuses to run because the SDK constraint `[10.0.100,)` isn't met, or `dotnet build` fails with `NETSDK1141` / `A compatible .NET SDK was not found`.
 
-Both `.template.config/template.json` and the generated `global.json` require a stable .NET 10 SDK (`10.0.100` or newer, rolling forward to the latest feature band with `allowPrerelease: false`).
+Previews are fun, but the template only promises to work on a stable SDK. Both `.template.config/template.json` and the generated `global.json` require a stable .NET 10 SDK (`10.0.100` or newer, rolling forward to the latest feature band with `allowPrerelease: false`).
 
 - Check which SDKs are installed:
   ```bash
@@ -72,7 +72,7 @@ Unlike the four HTTP server templates, Clean Lambda Function doesn't have an `--
 
 **Symptom:** `docker compose up -d --build` fails with `Cannot connect to the Docker daemon` or `error during connect`.
 
-Start Docker Desktop (or the Docker service on Linux) and wait for `docker info` to return cleanly before running `docker compose up -d --build`. You don't need Docker for `dotnet build` or `dotnet test`; the integration tests invoke the handler in-process against an in-memory SQLite database.
+Docker doesn't start itself, however much we'd like it to. Start Docker Desktop (or the Docker service on Linux) and wait for `docker info` to return cleanly before running `docker compose up -d --build`. You don't need Docker for `dotnet build` or `dotnet test`; the integration tests invoke the handler in-process against an in-memory SQLite database.
 
 ## `SQLite Error 5: 'database is locked'`
 

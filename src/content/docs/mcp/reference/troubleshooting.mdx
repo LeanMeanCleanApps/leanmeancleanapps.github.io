@@ -11,7 +11,7 @@ Most first-run problems aren't in the server. They're in the plumbing around it:
 
 **Symptom:** Opening `http://localhost:7325` and clicking **Connect** fails to reach the MCP server.
 
-When started with `docker compose up -d --build`, the MCP Inspector runs inside the Compose network (`cleanmodelcontextprotocol_network`), not on your host machine. Inside that network the MCP server's hostname is `api`, not `localhost`.
+When started with `docker compose up -d --build`, the MCP Inspector runs inside the Compose network (`cleanmodelcontextprotocol_network`), not on your host machine. Inside that network the MCP server's hostname is `api`, not `localhost`. To a container, `localhost` is itself, which is a lonely place to look for a server.
 
 - In the Docker-hosted Inspector at `http://localhost:7325`, keep **Transport Type** set to `Streamable HTTP` and **URL** set to `http://api:7320/mcp`. If you change the URL to `http://localhost:7320/mcp`, the Inspector container tries to connect to itself and fails.
 - If you run a separate Inspector directly on your host machine (for example `npx @modelcontextprotocol/inspector`), point it at `http://localhost:7320/mcp` for Docker or `https://localhost:7321/mcp` for `dotnet run`.
@@ -31,7 +31,7 @@ When started with `docker compose up -d --build`, the MCP Inspector runs inside 
 
 **Symptom:** `dotnet run` stops with `Failed to bind to address https://127.0.0.1:7321: address already in use`, or `docker compose up` fails with `Bind for 0.0.0.0:7320 failed: port is already allocated`.
 
-Each Lean Mean Clean template has its own block of ten ports so different templates don't step on each other. Clean Model Context Protocol uses `7320` to `7329` (`7320` HTTP, `7321` HTTPS, `7322` Aspire dashboard, `7323` and `7324` OpenTelemetry Collector, `7325` MCP Inspector, `7326` Open WebUI chat demo). A clash usually means another copy of this template is still running.
+Each Lean Mean Clean template has its own block of ten ports so different templates don't step on each other. Clean Model Context Protocol uses `7320` to `7329` (`7320` HTTP, `7321` HTTPS, `7322` Aspire dashboard, `7323` and `7324` OpenTelemetry Collector, `7325` MCP Inspector, `7326` Open WebUI chat demo). A clash usually means an earlier copy of this template is still running somewhere, quietly hogging the port.
 
 - Check what's running in Docker and stop it:
   ```bash
@@ -49,7 +49,7 @@ Each Lean Mean Clean template has its own block of ten ports so different templa
 
 **Symptom:** `curl` or an MCP client fails against `https://localhost:7321/mcp` with a TLS certificate error, or calling `http://localhost:7320/mcp` under `dotnet run` returns `307 Temporary Redirect`.
 
-In the `local` environment (`dotnet run --project ./src/Presentation`), Kestrel listens on both `http://localhost:7320` and `https://localhost:7321` and redirects HTTP to HTTPS.
+In the `local` environment (`dotnet run --project ./src/Presentation`), Kestrel listens on both `http://localhost:7320` and `https://localhost:7321` and redirects HTTP to HTTPS. The development certificate is new to your machine, so your browser treats it like a stranger until you introduce them.
 
 - Trust the .NET development certificate once on your machine:
   ```bash
@@ -62,7 +62,7 @@ In the `local` environment (`dotnet run --project ./src/Presentation`), Kestrel 
 
 **Symptom:** `dotnet new cleanmodelcontextprotocol` refuses to run because the SDK constraint `[10.0.100,)` isn't met, or `dotnet build` fails with `NETSDK1141` / `A compatible .NET SDK was not found`.
 
-Both `.template.config/template.json` and the generated `global.json` require a stable .NET 10 SDK (`10.0.100` or newer, rolling forward to the latest feature band with `allowPrerelease: false`).
+Previews are fun, but the template only promises to work on a stable SDK. Both `.template.config/template.json` and the generated `global.json` require a stable .NET 10 SDK (`10.0.100` or newer, rolling forward to the latest feature band with `allowPrerelease: false`).
 
 - Check which SDKs are installed:
   ```bash
@@ -74,7 +74,7 @@ Both `.template.config/template.json` and the generated `global.json` require a 
 
 **Symptom:** Running `dotnet new cleanmodelcontextprotocol --include-auth` stops before writing any files and exits with code `102` (`Invalid option(s)` / missing mandatory option `--authority`).
 
-When `--include-auth` is switched on, `--authority` is required so a generated solution never starts with a blank OAuth issuer. Pass the authority (and optionally `--audience`) alongside `--include-auth`:
+When `--include-auth` is switched on, `--authority` is required. Stopping at the door beats shipping a solution with a blank OAuth issuer. Pass the authority (and optionally `--audience`) alongside `--include-auth`:
 
 ```bash
 dotnet new cleanmodelcontextprotocol --name WorksOnMyMachine.Movies \
@@ -89,13 +89,13 @@ See [Secure the server](/mcp/guides/secure-the-server/) for configuring OAuth 2.
 
 **Symptom:** `docker compose up -d --build` fails with `Cannot connect to the Docker daemon` or `error during connect`.
 
-Start Docker Desktop (or the Docker service on Linux) and wait for `docker info` to return cleanly before running `docker compose up -d --build`. You don't need Docker for `dotnet build`, `dotnet test` or `dotnet run --project ./src/Presentation`; the integration tests run against an in-memory SQLite database.
+Docker doesn't start itself, however much we'd like it to. Start Docker Desktop (or the Docker service on Linux) and wait for `docker info` to return cleanly before running `docker compose up -d --build`. You don't need Docker for `dotnet build`, `dotnet test` or `dotnet run --project ./src/Presentation`; the integration tests run against an in-memory SQLite database.
 
 ## `SQLite Error 5: 'database is locked'`
 
 **Symptom:** Startup migration or a write tool fails with `Microsoft.Data.Sqlite.SqliteException (0x80004005): SQLite Error 5: 'database is locked'`.
 
-`dotnet run` writes to `src/Presentation/movie-reviews.db`. A lock means another process is holding an open write transaction against that file, usually a second `dotnet run` terminal or a database viewer.
+`dotnet run` writes to `src/Presentation/movie-reviews.db`. SQLite lets plenty of readers share a file but only one writer at a time. A lock means another process is holding an open write transaction against that file, usually a second `dotnet run` terminal or a database viewer.
 
 - Stop the other process holding `src/Presentation/movie-reviews.db`.
 - If you want to wipe the local database and re-seed the sample data from scratch, stop the server, delete `src/Presentation/movie-reviews.db` (and any `-shm` or `-wal` files beside it), and start the server again.
