@@ -20,6 +20,19 @@ hero:
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import Family from '../../../components/docs/Family.astro';
 
+## Run it
+
+The three commands above create a solution and start it in Docker Compose. Then ask it for a page of movies. The container runs the Lambda runtime emulator on port 7350, so it answers the same way Lambda does:
+
+```bash
+curl -X POST "http://localhost:7350/2015-03-31/functions/function/invocations" \
+  -d '{"query":"space","limit":2}'
+```
+
+The logs, traces and metrics go to the [Aspire dashboard](https://learn.microsoft.com/dotnet/aspire/fundamentals/dashboard/standalone) at [http://localhost:7352](http://localhost:7352), because `Console.WriteLine` is not an observability strategy.
+
+There's no auth flag on this one. Invoked directly, AWS IAM decides who can call the function, and its HTTP routes take an API Gateway authorizer. [Secure the function](/lambda/guides/secure-the-function/) covers both.
+
 ## What's in the box
 
 <CardGrid>
@@ -39,28 +52,6 @@ import Family from '../../../components/docs/Family.astro';
     you're ready.
   </Card>
 </CardGrid>
-
-## Run it
-
-Four commands from nothing to a running function:
-
-```bash
-dotnet new install CleanLambdaFunction.Template
-dotnet new cleanlambdafunction --name WorksOnMyMachine.Reviews
-cd WorksOnMyMachine.Reviews
-docker compose up -d
-```
-
-Then ask it for a page of movies. The container runs the Lambda runtime emulator on port 7350, so it answers the same way Lambda does:
-
-```bash
-curl -X POST "http://localhost:7350/2015-03-31/functions/function/invocations" \
-  -d '{"query":"space","limit":2}'
-```
-
-The logs, traces and metrics go to the [Aspire dashboard](https://learn.microsoft.com/dotnet/aspire/fundamentals/dashboard/standalone) at [http://localhost:7352](http://localhost:7352), because `Console.WriteLine` is not an observability strategy.
-
-There's no auth flag on this one. Invoked directly, AWS IAM decides who can call the function, and its HTTP routes take an API Gateway authorizer. [Secure the function](/lambda/guides/secure-the-function/) covers both.
 
 ## Pick your path
 
