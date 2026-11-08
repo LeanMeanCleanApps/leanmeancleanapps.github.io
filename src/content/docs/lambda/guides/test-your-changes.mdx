@@ -1,0 +1,74 @@
+---
+title: "Test your changes"
+description: "Which test project a test belongs in, how the tests are written, and how to check the 95% coverage bar before CI does."
+sidebar:
+  order: 5
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Your solution starts with four test projects and a pipeline that fails under 95% line coverage. That number isn't the goal, it's the floor. The goal is that every behaviour you add has a test that would fail if someone broke it, including you, six months from now.
+
+## Where a test goes
+
+| Project | What it tests | How |
+| --- | --- | --- |
+| `tests/Application.Tests.Unit` | Handlers, validators and pipeline behaviours | xUnit, Shouldly and NSubstitute, with the repositories substituted |
+| `tests/Infrastructure.Tests.Integration` | The repositories against a real database | A private in-memory SQLite database per test class, built from the migrations and the fixed seed |
+| `tests/Presentation.Tests.Unit` | The source-generated JSON serializer | Plain unit tests, no host |
+| `tests/Presentation.Tests.Integration` | Real calls to every function, through the handler and the classes Lambda Annotations generates | A `TestLambdaContext` and a private database |
+
+Rule of thumb: test a rule where it lives. A validation rule gets a validator test, a query's filter gets a repository test, and what a caller gets back from a function gets an integration test.
+
+## What each kind of code needs
+
+Every test has `// Arrange`, `// Act` and `// Assert` sections, tests one behaviour, and is named `Method_Should<Outcome>_<Condition>`, so a failure reads as a sentence.
+
+| Code | Prove it works | Prove it says no |
+| --- | --- | --- |
+| Validator | A valid request has no errors, and each boundary value passes | One failing case per rule, asserting the message, and each value just outside a boundary |
+| Handler | The happy path returns the result and passes the values and the cancellation token to the repository | Each documented failure throws the right exception, and nothing after it runs |
+| Repository | The right rows come back or change, in order, with paging and search applied | Unknown ids return `null` or `false`, and nothing else changes |
+| Function | One test per documented success | One test per documented failure, with the error checked |
+
+For ranges, test both sides of each edge: stars `1` and `5` pass, `0` and `6` fail. A `[Theory]` with `[InlineData]` keeps that to one test.
+
+```csharp
+// tests/Application.Tests.Unit/Reviews/Commands/CreateReview/CreateReviewValidatorTests.cs
+[Theory]
+[InlineData(-1)]
+[InlineData(0)]
+[InlineData(6)]
+public void Validator_ShouldHaveValidationErrorFor_Stars(int stars)
+```
+
+## Run them
+
+```bash
+dotnet test
+```
+
+No test shares a database with another, so they run in parallel and never trip over each other. Nothing touches the function's database either, so your local data survives a test run.
+
+## Check coverage before CI does
+
+CI merges the coverage of all four projects into one total and fails under 95%. Run the same measurement from the solution root:
+
+```bash
+dotnet test -m:1 \
+  -p:CollectCoverage=true -p:CoverletOutput=../results/ -p:MergeWith="../results/coverage.json" \
+  -p:CoverletOutputFormat=opencover%2cjson \
+  -p:ExcludeByFile="**/Program.cs%2c**/Migrations/*.cs%2c**/obj/**/*.cs" \
+  -p:ExcludeByAttribute="GeneratedCodeAttribute"
+```
+
+The last table it prints is the merged total. `Program.cs`, the EF Core migrations and source-generated code are left out on purpose. Everything else counts.
+
+<Aside type="caution" title="Under 95%?">
+  Write the test for the behaviour you skipped. `[ExcludeFromCodeCoverage]` is for wiring and plain data classes only, never for code that makes a decision. Lowering the number works exactly once, and then it's just a number.
+</Aside>
+
+## Where to next
+
+- [Add a function](/lambda/guides/add-a-function/) ends with a test for the new function.
+- [Work with a coding agent](/lambda/guides/work-with-a-coding-agent/): the `test-design`, `unit-tests`, `integration-tests` and `coverage` skills hold these same rules, so an agent writes tests the same way you would.
