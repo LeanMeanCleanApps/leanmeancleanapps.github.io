@@ -1,0 +1,43 @@
+---
+title: "Work with a coding agent"
+description: "What AGENTS.md, Jacques and the skills give your coding agent, and how to get the most out of them."
+sidebar:
+  order: 6
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Your solution ships with instructions for coding agents, the same ones we use to build the template. Point Claude Code, GitHub Copilot, Cursor, Codex or anything else that reads `AGENTS.md` at the solution, and it already knows where code goes, how it's tested and which checks must pass. You still decide what gets built. The agent just stops guessing how.
+
+## What's in the box
+
+| File | What it does |
+| --- | --- |
+| `AGENTS.md` | The map: what each project is for, the commands CI runs, the rules that fail a change, and a table of skills |
+| `CLAUDE.md` | One line, `@AGENTS.md`, so Claude Code reads the same map |
+| `.agents/agents/jacques.md` | Jacques, the sous-chef persona: does the prep, follows the recipes, proves every change and leaves the big calls to you |
+| `.agents/skills/` | 32 skills, one folder each, covering every kind of change in the solution: use cases, validation, migrations, logging, telemetry, tests, coverage, Docker, CI and the controllers and OpenAPI |
+
+The skills are written for this solution, not for .NET in general. `add-a-use-case` shows the folder, the file names and the house style for a new command. `database-migrations` has the exact `dotnet ef` command. `coverage` has the same coverage command CI runs. Ask for something and the agent follows the recipe instead of improvising one.
+
+## Get started
+
+1. Open the solution in your agent of choice. Most read `AGENTS.md` without being asked. If yours doesn't, start with "Read AGENTS.md".
+2. Ask for a change the way you'd ask a colleague: "Add a query that lists the reviews an author wrote, with paging, and put it on a controller."
+3. For anything bigger than a few lines, Jacques agrees a plan first: the open decisions one at a time, each with a recommendation, then the scope in a paragraph. Answer those and the work starts.
+4. Before it says it's done, the agent runs `dotnet build`, `dotnet test` and `dotnet format --verify-no-changes`, the same checks as CI.
+
+## Make it yours
+
+- **Where we track work.** `AGENTS.md` has a line that says "Not set". Replace it with your GitHub project, Jira board or Azure Boards, and agents put their plans and handoffs there instead of asking each time.
+- **Change a rule, change the skill.** When your team decides to do something differently, update the matching `SKILL.md` in the same pull request. A skill that disagrees with the code is worse than no skill at all.
+- **Add a skill for a new pattern.** Bring in something the solution doesn't do yet, such as a message queue, and add a skill for it while it's fresh. `writing-a-skill` has the shape.
+- **Rename Jacques if you like.** He won't mind. He's a sous-chef, and he's used to it.
+
+<Aside type="tip">
+  The skills are plain Markdown. They're worth reading yourself: they're the house rules for this codebase, written down for once.
+</Aside>
+
+## What the agent won't do
+
+`AGENTS.md` tells every agent never to push to `main` or merge a pull request, never to skip, delete or weaken a test or the coverage gate, never to suppress a warning to get a green build, never to add a package with a paid licence, and never to commit secrets. It stops and asks before changing the shared layers, adding a package, or changing anything a client depends on.
