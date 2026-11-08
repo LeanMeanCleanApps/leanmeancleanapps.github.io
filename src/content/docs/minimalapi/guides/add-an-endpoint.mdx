@@ -10,7 +10,7 @@ import { Steps, Aside } from '@astrojs/starlight/components';
 This guide adds `GET /api/movies/{id}/reviews`, one page of the reviews written about a movie. The Application layer already has a `GetReviewsQuery` that filters by movie, so all the work happens in Presentation. That's the point of the layers: new ways in, same rules underneath.
 
 <Aside type="note">
-  If the query you want doesn't exist yet, add it to `src/Application` first: a query class, a handler and a FluentValidation validator, next to the others. Mediator and the validation behaviour pick them up automatically.
+  If the query you want doesn't exist yet, add it to `src/Application` first: a query class, a handler and a FluentValidation validator, next to the others. Mediator and the validation behaviour pick them up automatically. [Make it yours](/minimalapi/guides/make-it-yours/) walks through a whole new entity, from the Application layer to the tests.
 </Aside>
 
 <Steps>
@@ -24,7 +24,7 @@ This guide adds `GET /api/movies/{id}/reviews`, one page of the reviews written 
    using ReviewQueries = Application.Reviews.Queries;
    ```
 
-2. Map the route in `MapMovieEndpoints`, after the existing two. The group already has the `/api/movies` prefix, the **Movies** tag and the authorization requirement, so the new route inherits all three.
+2. Map the route in `MapMovieEndpoints`, after the existing two. The group already has the `/api/movies` prefix and the **Movies** tag, so the new route inherits both, along with the authorization requirement if you created the solution with `--include-auth`.
 
    ```csharp
    _ = root.MapGet("/{id:guid}/reviews", GetMovieReviews)
@@ -96,7 +96,9 @@ This guide adds `GET /api/movies/{id}/reviews`, one page of the reviews written 
    }
    ```
 
-5. Run it.
+5. Change one number. `GetOpenApiDocument_ShouldDescribe_EveryOperation` in `tests/Presentation.Tests.Integration/OpenApi/OpenApiDocumentTests.cs` counts the operations the API publishes, and there's one more now, so make it 11. The same test checks that every operation has a summary, a sample request and a description for each parameter, which is why step 3's comments aren't optional either.
+
+6. Run it.
 
    ```bash
    dotnet test

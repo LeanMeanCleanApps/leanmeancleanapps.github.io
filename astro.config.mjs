@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import { satteri } from '@astrojs/markdown-satteri';
 import starlightLinksValidator from 'starlight-links-validator';
 import starlightLlmsTxt from 'starlight-llms-txt';
 import starlightSidebarTopics from 'starlight-sidebar-topics';
@@ -46,10 +47,10 @@ const sidebars = {
     },
   ],
   mcp: [
-    { label: 'Start here', items: ['mcp/getting-started', 'mcp/guides/run-locally'] },
+    { label: 'Start here', items: ['mcp/getting-started', 'mcp/guides/run-locally', 'mcp/guides/connect-a-client'] },
     {
       label: 'Guides',
-      items: ['mcp/guides/make-it-yours', 'mcp/guides/connect-a-client', 'mcp/guides/add-a-tool', 'mcp/guides/test-your-changes', 'mcp/guides/database', 'mcp/guides/secure-the-server', 'mcp/guides/ship-the-container', 'mcp/guides/set-up-ci', 'mcp/guides/work-with-a-coding-agent'],
+      items: ['mcp/guides/make-it-yours', 'mcp/guides/add-a-tool', 'mcp/guides/test-your-changes', 'mcp/guides/database', 'mcp/guides/secure-the-server', 'mcp/guides/ship-the-container', 'mcp/guides/set-up-ci', 'mcp/guides/work-with-a-coding-agent'],
     },
     { label: 'Reference', items: [{ autogenerate: { directory: 'mcp/reference' } }] },
     {
@@ -61,7 +62,7 @@ const sidebars = {
     { label: 'Start here', items: ['lambda/getting-started', 'lambda/guides/run-locally'] },
     {
       label: 'Guides',
-      items: ['lambda/guides/make-it-yours', 'lambda/guides/add-a-function', 'lambda/guides/test-your-changes', 'lambda/guides/database', 'lambda/guides/deploy-to-aws', 'lambda/guides/secure-the-function', 'lambda/guides/set-up-ci', 'lambda/guides/work-with-a-coding-agent'],
+      items: ['lambda/guides/make-it-yours', 'lambda/guides/add-a-function', 'lambda/guides/test-your-changes', 'lambda/guides/database', 'lambda/guides/secure-the-function', 'lambda/guides/deploy-to-aws', 'lambda/guides/set-up-ci', 'lambda/guides/work-with-a-coding-agent'],
     },
     { label: 'Reference', items: [{ autogenerate: { directory: 'lambda/reference' } }] },
     {
@@ -77,9 +78,26 @@ const sidebars = {
   ],
 };
 
+/* Marks inline code longer than a short name, usually a file path, so the stylesheet can let it wrap
+   like text instead of sitting on a line of its own. */
+const LONG_CODE = 28;
+const markLongCode = {
+  name: 'mark-long-code',
+  element: {
+    filter: ['code'],
+    visit(node, ctx) {
+      if (ctx.parent(node)?.tagName === 'pre') return;
+      if (ctx.textContent(node).length <= LONG_CODE) return;
+      const cls = node.properties?.className;
+      ctx.setProperty(node, 'className', Array.isArray(cls) ? [...cls, 'cl-long'] : ['cl-long']);
+    },
+  },
+};
+
 export default defineConfig({
   site: 'https://leanmeancleanapps.github.io',
   trailingSlash: 'always',
+  markdown: { processor: satteri({ hastPlugins: [markLongCode] }) },
   integrations: [
     starlight({
       title: 'Lean Mean Clean Apps',

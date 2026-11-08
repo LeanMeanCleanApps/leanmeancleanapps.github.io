@@ -45,7 +45,7 @@ Each Lean Mean Clean template has its own block of ten ports so different templa
   ```
 - To move the `dotnet run` ports, edit `applicationUrl` in `src/Presentation/Properties/launchSettings.json`.
 
-## Untrusted certificate or empty `curl` reply on `dotnet run`
+## Browser certificate warning or empty `curl` reply on `dotnet run`
 
 **Symptom:** `curl` or an MCP client fails against `https://localhost:7321/mcp` with a TLS certificate error, or calling `http://localhost:7320/mcp` under `dotnet run` returns `307 Temporary Redirect`.
 

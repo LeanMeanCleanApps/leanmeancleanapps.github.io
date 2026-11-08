@@ -1,6 +1,6 @@
 ---
-title: Deploy to AWS
-description: Deploy every function to AWS Lambda as one CloudFormation stack with the Amazon.Lambda.Tools CLI.
+title: "Deploy to AWS"
+description: "Deploy every function to AWS Lambda as one CloudFormation stack with the Amazon.Lambda.Tools CLI."
 sidebar:
   order: 5
 ---
@@ -25,7 +25,7 @@ The functions deploy as one container image and one CloudFormation stack. `src/P
      "region": "ap-southeast-2",
      "configuration": "Release",
      "template": "serverless.template",
-     "stack-name": "acme-reviews"
+     "stack-name": "worksonmymachine-movies"
    }
    ```
 
@@ -40,7 +40,7 @@ The functions deploy as one container image and one CloudFormation stack. `src/P
 4. Invoke it for real. CloudFormation names each function after the stack and the resource, so look the name up first.
 
    ```bash
-   FUNCTION=$(aws cloudformation describe-stack-resource --stack-name acme-reviews \
+   FUNCTION=$(aws cloudformation describe-stack-resource --stack-name worksonmymachine-movies \
      --logical-resource-id GetMovies --query StackResourceDetail.PhysicalResourceId --output text)
 
    aws lambda invoke --function-name "$FUNCTION" \
@@ -50,7 +50,7 @@ The functions deploy as one container image and one CloudFormation stack. `src/P
    Or call it over HTTP. The stack's `ApiUrl` output is the API Gateway address.
 
    ```bash
-   API_URL=$(aws cloudformation describe-stacks --stack-name acme-reviews \
+   API_URL=$(aws cloudformation describe-stacks --stack-name worksonmymachine-movies \
      --query "Stacks[0].Outputs[?OutputKey=='ApiUrl'].OutputValue" --output text)
 
    curl "${API_URL}movies?limit=5"

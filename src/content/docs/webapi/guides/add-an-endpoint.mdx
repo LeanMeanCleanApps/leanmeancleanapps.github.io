@@ -10,7 +10,7 @@ import { Steps, Aside } from '@astrojs/starlight/components';
 This guide adds `GET /api/movies/{id}/reviews`, one page of the reviews written about a movie. The Application layer already has a `GetReviewsQuery` that filters by movie, so all the work happens in Presentation. That's the point of the layers: new ways in, same rules underneath.
 
 <Aside type="note">
-  If the query you want doesn't exist yet, add it to `src/Application` first: a query class, a handler and a FluentValidation validator, next to the others. Mediator and the validation behaviour pick them up automatically.
+  If the query you want doesn't exist yet, add it to `src/Application` first: a query class, a handler and a FluentValidation validator, next to the others. Mediator and the validation behaviour pick them up automatically. [Make it yours](/webapi/guides/make-it-yours/) walks through a whole new entity, from the Application layer to the tests.
 </Aside>
 
 <Steps>
@@ -24,7 +24,7 @@ This guide adds `GET /api/movies/{id}/reviews`, one page of the reviews written 
    using ReviewQueries = Application.Reviews.Queries;
    ```
 
-2. Add the action to the controller. `ApiControllerBase` already gives it `[ApiController]`, `[Authorize]`, `[Consumes("application/json")]` and the `Sender`, and the `[Route("api/movies")]` on the class gives the route its prefix. The XML comments aren't decoration: they become the summary, description, parameter docs and response descriptions in the OpenAPI document, and Scalar shows every one of them.
+2. Add the action to the controller. `ApiControllerBase` already gives it `[ApiController]`, `[Consumes("application/json")]` and the `Sender`, plus `[Authorize]` if you created the solution with `--include-auth`, and the `[Route("api/movies")]` on the class gives the route its prefix. The XML comments aren't decoration: they become the summary, description, parameter docs and response descriptions in the OpenAPI document, and Scalar shows every one of them.
 
    ```csharp
    /// <summary>
@@ -90,7 +90,9 @@ This guide adds `GET /api/movies/{id}/reviews`, one page of the reviews written 
    }
    ```
 
-4. Run it.
+4. Change one number. `GetOpenApiDocument_ShouldDescribe_EveryOperation` in `tests/Presentation.Tests.Integration/OpenApi/OpenApiDocumentTests.cs` counts the operations the API publishes, and there's one more now, so make it 11. The same test checks that every operation has a summary, a sample request and a description for each parameter, which is why step 2's comments aren't optional either.
+
+5. Run it.
 
    ```bash
    dotnet test

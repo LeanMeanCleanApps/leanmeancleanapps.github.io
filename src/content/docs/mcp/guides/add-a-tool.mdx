@@ -10,19 +10,20 @@ import { Steps, Aside } from '@astrojs/starlight/components';
 This guide adds `authors_get`, which returns one author with every review they've written, the mirror of the existing `movies_get`. The Application layer already has a `GetAuthorByIdQuery`, so all the work happens in Presentation. That's the point of the layers: new ways in, same rules underneath.
 
 <Aside type="note">
-  If the query you want doesn't exist yet, add it to `src/Application` first: a query class, a handler and a FluentValidation validator, next to the others. Mediator and the validation behaviour pick them up automatically.
+  If the query you want doesn't exist yet, add it to `src/Application` first: a query class, a handler and a FluentValidation validator, next to the others. Mediator and the validation behaviour pick them up automatically. [Make it yours](/mcp/guides/make-it-yours/) walks through a whole new entity, from the Application layer to the tests.
 </Aside>
 
 <Steps>
 
-1. Add the tool to `src/Presentation/Tools/AuthorTools.cs`, after `authors_search`. The class already has `[McpServerToolType]` and aliases the author queries as `Queries`. The `[Description]` attributes aren't decoration: they're the tool description and the argument descriptions the model reads to decide when and how to call it, and `UseStructuredContent` gives the result an output schema too.
+1. Add the tool to `src/Presentation/Tools/AuthorTools.cs`, after `authors_search`. The class already has `[McpServerToolType]` and aliases the author queries as `Queries`. The XML comments aren't decoration: the SDK's source generator turns the summary into the tool description and each `<param>` into an argument description, which is what the model reads to decide when and how to call it. `UseStructuredContent` gives the result an output schema too, and `IconSource` gives the tool its icon, which a test insists on.
 
    ```csharp
-   [McpServerTool(Name = "authors_get", Title = "Get author", ReadOnly = true, Idempotent = true, OpenWorld = false, UseStructuredContent = true)]
-   [Description("Get one author with their review count, average stars and every review they have written, including each movie's title.")]
-   public static async Task<AuthorResult> GetAuthor(
+   /// <summary>Get one author with their review count, average stars and every review they have written, including each movie's title.</summary>
+   /// <param name="authorId">The author's id (a GUID). Use authors_search to find it.</param>
+   [McpServerTool(Name = "authors_get", Title = "Get author", ReadOnly = true, Idempotent = true, OpenWorld = false, UseStructuredContent = true, IconSource = ItemIcons.Author)]
+   public static async partial Task<AuthorResult> GetAuthor(
        ISender sender,
-       [Description("The author's id (a GUID). Use authors_search to find it.")] Guid authorId,
+       Guid authorId,
        CancellationToken cancellationToken)
    {
        var author = await sender.Send(new Queries.GetAuthorById.GetAuthorByIdQuery
@@ -93,6 +94,8 @@ This guide adds `authors_get`, which returns one author with every review they'v
      -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
      -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"authors_get","arguments":{"authorId":"01fa8b58-05d2-abd4-e55c-2633222dd0a5"}}}'
    ```
+
+   The reply is a server-sent event, `event: message` followed by a `data:` line holding the JSON-RPC result. Its `structuredContent` is the author:
 
    ```json
    {

@@ -12,7 +12,7 @@ The `run` stage of the `Dockerfile` is the whole server: one image, built on `mc
 ## Build it
 
 ```bash
-docker build . --target run --tag acme-movies:1.2.3 \
+docker build . --target run --tag worksonmymachine-movies:1.2.3 \
   --build-arg VERSION_PREFIX=1.2.3
 ```
 
@@ -32,13 +32,13 @@ For production, pick a name like `production`, add an `appsettings.production.js
 
 ## Put it behind HTTPS
 
-The container only listens on HTTP. Outside the `local` and `Development` environments it sends an HSTS header and redirects HTTP to HTTPS, which means it expects something in front of it to end TLS: a load balancer, a reverse proxy or your platform's ingress. Tell it so:
+The container only listens on HTTP, and it expects something in front of it to end TLS: a load balancer, a reverse proxy or your platform's ingress. Outside the `local` and `Development` environments it sends an HSTS header, and it redirects HTTP to HTTPS once it knows an HTTPS port to send people to, such as `ASPNETCORE_HTTPS_PORT=443`. Tell it about the proxy too:
 
 ```bash
 ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
 ```
 
-Without that, the server thinks every request arrived over plain HTTP and redirects it, and the proxy sends it back, and the two of them go round and round until someone's pager goes off.
+Without that, the server thinks every request arrived over plain HTTP. Give it an HTTPS port in that state and it redirects the proxy's requests, the proxy sends them back, and the two of them go round and round until someone's pager goes off.
 
 ## Wire up the health checks
 

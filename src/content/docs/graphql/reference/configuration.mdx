@@ -51,7 +51,7 @@ The app always collects [OpenTelemetry](https://opentelemetry.io) traces and met
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | none | Where to send traces, metrics and logs. Nothing is exported until it's set. Docker Compose sets it to the `otel-collector` service |
 | `OTEL_EXPORTER_OTLP_PROTOCOL` | `grpc` | `grpc` or `http/protobuf` |
 | `OTEL_EXPORTER_OTLP_HEADERS` | none | Headers for every export, such as an API key for a hosted backend |
-| `OTEL_SERVICE_NAME` | `CleanGraphQLApi` | The `service.name` on everything sent |
+| `OTEL_SERVICE_NAME` | Your solution's name | The `service.name` on everything sent |
 
 Every span, metric and log also carries `service.version`, the version stamped into the build, and `deployment.environment.name`.
 

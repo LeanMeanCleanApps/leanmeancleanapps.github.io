@@ -27,8 +27,14 @@
 }
 
 /* The header bar runs edge to edge like the front page's, with its contents inside the box. */
-header.header {
+header.header,
+mobile-starlight-toc nav {
   background-color: color-mix(in srgb, var(--sl-color-black) 85%, transparent);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+header.header {
   border-bottom-color: color-mix(in srgb, var(--sl-color-white) 11%, transparent);
 }
 
@@ -121,8 +127,7 @@ h1#_top {
 }
 
 
-/* Concentric rings behind the splash pages, echoing the logo. */
-[data-has-hero] .main-frame,
+/* Concentric rings echoing the logo, for anything that asks for them. The splash pages don't: they match the front page. */
 .cl-splash-rings {
   background-image: radial-gradient(
       circle at 85% 12%,
@@ -180,21 +185,32 @@ pre {
   font-variant-ligatures: none;
 }
 
-/* Inline code reads as a chip. */
+/* Inline code reads as a chip. A chip moves to the next line whole, so an option like `--authorName` never breaks
+   at its hyphen, and only a chip wider than the column, usually a file path, breaks inside itself. The negative
+   margin gives the padding back to the line, so the line spacing stays even. */
 .sl-markdown-content :not(pre) > code {
-  border-radius: 0.4rem;
+  display: inline-block;
+  max-width: 100%;
+  margin-block: -0.1em;
   padding: 0.1em 0.35em;
+  border-radius: 0.4rem;
+  overflow-wrap: anywhere;
+  vertical-align: baseline;
 }
 
-/* Beside the sidebars a chip never breaks in half, so an option like `--authorName` stays on one line. Phones let
-   it wrap, so a reference table still fits the screen. */
-@media (min-width: 50rem) {
-  .sl-markdown-content :not(pre) > code {
-    white-space: nowrap;
-  }
+/* A long chip, usually a file path, is marked by the build and flows like text, so the words after it stay on
+   the same line as its last piece. In a table every chip stays inline so the columns can share the width, and a
+   table still too wide for the column scrolls. */
+.sl-markdown-content :not(pre) > code:is(.cl-long, :is(td, th) > code) {
+  display: inline;
+  margin-block: 0;
 }
 
-/* Tables used for reference pages. A table too wide for the column scrolls rather than being cut off. */
+.sl-markdown-content :is(td, th) > code {
+  overflow-wrap: normal;
+}
+
+/* Tables used for reference pages. A table still too wide for the column scrolls rather than being cut off. */
 .sl-markdown-content table {
   border-radius: 0.75rem;
   overflow-x: auto;
@@ -218,6 +234,7 @@ pre {
 .cl-family a {
   display: grid;
   justify-items: center;
+  align-content: start;
   gap: 0.6rem;
   padding: 1rem 0.5rem;
   border: 1px solid var(--sl-color-gray-5);
@@ -250,6 +267,17 @@ pre {
   display: block;
   font-weight: 400;
   color: var(--sl-color-gray-3);
+}
+
+/* Five cards in a narrower box keep the names and drop the subtitles, so the row stays one line of cards. */
+@media (max-width: 72rem) {
+  .cl-family {
+    grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+  }
+
+  .cl-family small {
+    display: none;
+  }
 }
 
 /* The report card on "How it's built". */

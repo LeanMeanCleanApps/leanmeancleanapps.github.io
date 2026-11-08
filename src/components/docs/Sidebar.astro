@@ -1,5 +1,5 @@
 ---
-// The five templates and the brand sit at the top of the sidebar, each with its ring logo, and the sidebar below belongs to the one you're in.
+// The five templates and the brand sit at the top of the sidebar, one line each with its ring logo, and the sidebar below belongs to the one you're in.
 import Default from '@astrojs/starlight/components/Sidebar.astro';
 import { brand, templates } from '../../data/templates';
 
@@ -12,7 +12,6 @@ const keyOf = (link: string) => link.split('/').filter(Boolean)[0];
     {
       topics.map((topic) => {
         const key = keyOf(topic.link);
-        const t = key === brand.key ? brand : templates.find((x) => x.key === key);
         const logo = key === brand.key ? '/logos/org-spectrum-small-tile.svg' : `/logos/${key}-small.svg`;
         const hue = key === brand.key ? 'org' : key;
         return (
@@ -24,7 +23,6 @@ const keyOf = (link: string) => link.split('/').filter(Boolean)[0];
             >
               <img src={logo} alt="" width="24" height="24" />
               <span>{topic.label}</span>
-              {t && <small>{t.subject}</small>}
             </a>
           </li>
         );
@@ -55,7 +53,7 @@ const keyOf = (link: string) => link.split('/').filter(Boolean)[0];
     grid-template-columns: 1.5rem 1fr;
     column-gap: 0.6rem;
     align-items: center;
-    padding: 0.35rem 0.6rem;
+    padding: 0.3rem 0.6rem;
     border-radius: 0.75rem;
     border: 1px solid transparent;
     color: var(--sl-color-gray-2);
@@ -65,16 +63,8 @@ const keyOf = (link: string) => link.split('/').filter(Boolean)[0];
   }
 
   .cl-topics img {
-    grid-row: span 2;
     width: 1.5rem;
     height: 1.5rem;
-  }
-
-  .cl-topics small {
-    grid-column: 2;
-    font-weight: 400;
-    font-size: var(--sl-text-xs);
-    color: var(--sl-color-gray-3);
   }
 
   .cl-topics a:hover {
