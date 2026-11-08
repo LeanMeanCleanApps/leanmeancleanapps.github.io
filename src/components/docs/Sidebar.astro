@@ -1,7 +1,7 @@
 ---
 // The five templates and the brand sit at the top of the sidebar, one line each with its ring logo, and the sidebar below belongs to the one you're in.
 import Default from '@astrojs/starlight/components/Sidebar.astro';
-import { brand, templates } from '../../data/templates';
+import { brand } from '../../data/templates';
 
 const { topics } = Astro.locals.starlightSidebarTopics;
 const keyOf = (link: string) => link.split('/').filter(Boolean)[0];
