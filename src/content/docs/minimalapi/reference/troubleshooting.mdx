@@ -5,7 +5,7 @@ sidebar:
   order: 5
 ---
 
-The template is set up to work out of the box, which mostly means the things that go wrong are environmental: a port already taken, a certificate the browser hasn't met yet, or Docker taking a nap.
+The template is set up to work out of the box, which mostly means the things that go wrong are environmental: a port already taken, a certificate the browser hasn't met yet, or Docker not running.
 
 ## Port 7310 or 7311 is already in use
 
@@ -75,7 +75,7 @@ Start Docker Desktop (or the Docker service on Linux) and wait for `docker info`
 
 **Symptom:** Startup migration or a write request fails with `Microsoft.Data.Sqlite.SqliteException (0x80004005): SQLite Error 5: 'database is locked'`.
 
-`dotnet run` writes to `src/Presentation/movie-reviews.db`. A lock means another process is holding an open write transaction against that file — usually a second `dotnet run` terminal or a database viewer.
+`dotnet run` writes to `src/Presentation/movie-reviews.db`. A lock means another process is holding an open write transaction against that file, usually a second `dotnet run` terminal or a database viewer.
 
 - Stop the other process holding `src/Presentation/movie-reviews.db`.
 - If you want to wipe the local database and re-seed the sample data from scratch, stop the API, delete `src/Presentation/movie-reviews.db` (and any `-shm` or `-wal` files beside it), and start the API again.
@@ -88,4 +88,4 @@ Start Docker Desktop (or the Docker service on Linux) and wait for `docker info`
 Every `/api/*` route requires a valid JWT bearer token when authentication is included.
 
 - In Scalar (`/scalar`), click **Authorize** at the top of the page and paste a bearer token issued by your `--authority`.
-- In `src/Presentation/Presentation.http`, paste your token into the `@token =` variable at the top of the file before sending requests.
+- In `src/Presentation/Presentation.http`, uncomment the `@token` line at the top of the file, paste your token after it, and uncomment the `Authorization` header on each request.

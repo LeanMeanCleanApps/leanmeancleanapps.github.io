@@ -11,13 +11,13 @@ The template is set up to work out of the box, which mostly means the things tha
 
 **Symptom:** Opening `https://localhost:7331/graphql` (or `http://localhost:7330/graphql` in Docker) shows a **Sign in** button or prompts you to connect a ChilliCream cloud account.
 
-Nitro is ChilliCream's GraphQL IDE embedded in Hot Chocolate. Its **Sign in** button is only for syncing workspaces with ChilliCream's cloud service — you don't need an account to browse the schema, write queries or run mutations against your local API. Close or ignore the prompt and run queries straight from the editor.
+Nitro is ChilliCream's GraphQL IDE embedded in Hot Chocolate. Its **Sign in** button is only for syncing workspaces with ChilliCream's cloud service. You don't need an account to browse the schema, write queries or run mutations against your local API. Close or ignore the prompt and run queries straight from the editor.
 
-## `SchemaMatchesSnapshot` fails after changing a GraphQL type
+## `Schema_ShouldMatch_Snapshot` fails after changing a GraphQL type
 
-**Symptom:** `dotnet test` fails in `tests/Presentation.Tests.Unit/SchemaSnapshotTests.cs` (`SchemaMatchesSnapshot`).
+**Symptom:** `dotnet test` fails in `tests/Presentation.Tests.Integration/GraphQL/Schema/SchemaTests.cs` (`Schema_ShouldMatch_Snapshot`).
 
-The unit tests compare the built GraphQL schema against `tests/Presentation.Tests.Unit/Schema.graphql` so accidental breaking changes never slip past review. When you intentionally add or change a query, mutation, type or description, update `tests/Presentation.Tests.Unit/Schema.graphql` to match (see [Add a field](/graphql/guides/add-a-field/)).
+The integration tests compare the built GraphQL schema against `tests/Presentation.Tests.Integration/GraphQL/Schema/schema.graphql` so accidental breaking changes never slip past review. When you intentionally add or change a query, mutation, type or description, update `tests/Presentation.Tests.Integration/GraphQL/Schema/schema.graphql` to match (see [Add a field](/graphql/guides/add-a-field/)).
 
 ## Port 7330 or 7331 is already in use
 
@@ -87,7 +87,7 @@ Start Docker Desktop (or the Docker service on Linux) and wait for `docker info`
 
 **Symptom:** Startup migration or a mutation fails with `Microsoft.Data.Sqlite.SqliteException (0x80004005): SQLite Error 5: 'database is locked'`.
 
-`dotnet run` writes to `src/Presentation/movie-reviews.db`. A lock means another process is holding an open write transaction against that file — usually a second `dotnet run` terminal or a database viewer.
+`dotnet run` writes to `src/Presentation/movie-reviews.db`. A lock means another process is holding an open write transaction against that file, usually a second `dotnet run` terminal or a database viewer.
 
 - Stop the other process holding `src/Presentation/movie-reviews.db`.
 - If you want to wipe the local database and re-seed the sample data from scratch, stop the API, delete `src/Presentation/movie-reviews.db` (and any `-shm` or `-wal` files beside it), and start the API again.

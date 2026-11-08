@@ -5,7 +5,7 @@ sidebar:
   order: 6
 ---
 
-The template is set up to work out of the box, which mostly means the things that go wrong are environmental: a port already taken, an Inspector pointed at the wrong host, or Docker taking a nap.
+The template is set up to work out of the box, which mostly means the things that go wrong are environmental: a port already taken, an Inspector pointed at the wrong host, or Docker not running.
 
 ## The MCP Inspector at `http://localhost:7325` won't connect
 
@@ -24,7 +24,7 @@ When started with `docker compose up -d --build`, the MCP Inspector runs inside 
   ```bash
   docker compose --profile demo up -d --build
   ```
-- Open `http://localhost:7326`. It needs no login (`WEBUI_AUTH` is off) and no API key — it uses Kilo's free gateway (`kilo-auto/free`) with the MCP server already connected.
+- Open `http://localhost:7326`. It needs no login (`WEBUI_AUTH` is off) and no API key. It uses Kilo's free gateway (`kilo-auto/free`) with the MCP server already connected.
 - If you generated the solution with `--include-auth`, the `chat` service is left out of `docker-compose.yml` because Open WebUI has no way to acquire and send an OAuth bearer token to the MCP server.
 
 ## Port 7320 or 7321 is already in use
@@ -95,7 +95,7 @@ Start Docker Desktop (or the Docker service on Linux) and wait for `docker info`
 
 **Symptom:** Startup migration or a write tool fails with `Microsoft.Data.Sqlite.SqliteException (0x80004005): SQLite Error 5: 'database is locked'`.
 
-`dotnet run` writes to `src/Presentation/movie-reviews.db`. A lock means another process is holding an open write transaction against that file — usually a second `dotnet run` terminal or a database viewer.
+`dotnet run` writes to `src/Presentation/movie-reviews.db`. A lock means another process is holding an open write transaction against that file, usually a second `dotnet run` terminal or a database viewer.
 
 - Stop the other process holding `src/Presentation/movie-reviews.db`.
 - If you want to wipe the local database and re-seed the sample data from scratch, stop the server, delete `src/Presentation/movie-reviews.db` (and any `-shm` or `-wal` files beside it), and start the server again.

@@ -1,11 +1,11 @@
 ---
-title: Troubleshooting
-description: Fixes for the common snags when creating, building and invoking a solution locally.
+title: "Troubleshooting"
+description: "Fixes for the common snags when creating, building and invoking a solution locally."
 sidebar:
   order: 5
 ---
 
-The template is set up to work out of the box, which mostly means the things that go wrong are environmental: a port already taken, calling the Lambda emulator like an ordinary web server, or Docker taking a nap.
+The template is set up to work out of the box, which mostly means the things that go wrong are environmental: a port already taken, calling the Lambda emulator like an ordinary web server, or Docker not running.
 
 ## Calling `http://localhost:7350` returns `404` or hangs
 
@@ -22,9 +22,9 @@ And because the emulator runs one invocation at a time per container, wait for a
 
 ## Invoking an `Http*` handler returns `400` or ignores query parameters
 
-**Symptom:** You started the container with `HttpGetMovies`, `HttpGetMovieById` or `HttpSearchReviews` as the handler and sent `{"query":"space"}`, and the function returned `400` or treated every parameter as empty.
+**Symptom:** You started the container with `HttpGetMovies`, `HttpGetAuthors` or `HttpGetReviews` as the handler and sent `{"query":"space"}`, and the function returned `400` or treated every parameter as empty.
 
-The default container entrypoint (`SearchMovies`) takes the plain JSON request object. The `Http*` handlers are wired for API Gateway HTTP API (payload format 2.0), and the emulator doesn't translate raw HTTP into an API Gateway event — you pass the event envelope that API Gateway would have sent:
+The default container handler (`GetMovies`) takes the plain JSON request object. The `Http*` handlers are wired for API Gateway HTTP API (payload format 2.0), and the emulator doesn't translate raw HTTP into an API Gateway event, so you pass the event envelope that API Gateway would have sent:
 
 ```bash
 curl -X POST "http://localhost:7350/2015-03-31/functions/function/invocations" \
@@ -66,7 +66,7 @@ Both `.template.config/template.json` and the generated `global.json` require a 
 
 **Symptom:** Running `dotnet new cleanlambdafunction --include-auth` fails with `Error: Invalid option(s): --include-auth`.
 
-Unlike the four HTTP server templates, Clean Lambda Function doesn't have an `--include-auth` template option. In AWS Lambda, authentication sits in front of the function — as an IAM policy on the function or a JWT authoriser on the API Gateway HTTP API in `src/Presentation/serverless.template` — rather than middleware inside the handler. If you copy a `dotnet new` command from one of the HTTP templates and include `--include-auth` without `--authority`, those templates exit with code `102`; on Lambda, omit `--include-auth` altogether and see [Secure the function](/lambda/guides/secure-the-function/) for adding an API Gateway JWT authoriser or IAM auth.
+Unlike the four HTTP server templates, Clean Lambda Function doesn't have an `--include-auth` template option. In AWS Lambda, authentication sits in front of the function, as an IAM policy on the function or a JWT authoriser on the API Gateway HTTP API in `src/Presentation/serverless.template`, rather than middleware inside the handler. If you copy a `dotnet new` command from one of the HTTP templates and include `--include-auth` without `--authority`, those templates exit with code `102`; on Lambda, omit `--include-auth` altogether and see [Secure the function](/lambda/guides/secure-the-function/) for adding an API Gateway JWT authoriser or IAM auth.
 
 ## Docker is not running
 
