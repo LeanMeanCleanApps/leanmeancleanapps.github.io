@@ -51,6 +51,14 @@ header.header {
   }
 }
 
+/* The home pages have no sidebars, so they use the whole box with the front page's gutter and line up with it. */
+@media (min-width: 50rem) {
+  [data-has-hero]:not([data-has-sidebar]) {
+    --sl-content-pad-x: var(--cl-gutter);
+    --sl-content-width: calc(var(--cl-wrap) - 2 * var(--cl-gutter));
+  }
+}
+
 /* Inside the box the two sidebars give up a little width so the writing keeps a readable measure. */
 @media (min-width: 72rem) {
   :root {
