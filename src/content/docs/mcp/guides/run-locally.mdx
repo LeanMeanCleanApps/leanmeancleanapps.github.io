@@ -17,7 +17,7 @@ There are two ready-made environments. `local` is for `dotnet run`: sample data 
     dotnet run --project ./src/Presentation
     ```
 
-    `launchSettings.json` sets the environment to `local` and listens on [https://localhost:7321](https://localhost:7321), and on `https://localhost:7321`, which redirects to it. If your browser or `curl` doesn't trust the .NET development certificate yet, run `dotnet dev-certs https --trust` once. The server is at `/mcp`.
+    `launchSettings.json` sets the environment to `local` and listens on [https://localhost:7321](https://localhost:7321), and on `http://localhost:7320`, which redirects to it. If your browser or `curl` doesn't trust the .NET development certificate yet, run `dotnet dev-certs https --trust` once. The server is at `/mcp`.
   </TabItem>
   <TabItem label="Docker Compose">
     ```bash
@@ -117,14 +117,16 @@ The `Dockerfile` has a stage for each job, so you can build only what you need.
 | Stage | What it does |
 | --- | --- |
 | `build` | Restores and builds the solution |
-| `test` | Runs every test with coverage |
-| `coverage` | Exports the coverage report to your machine |
+| `test` | Runs every test with coverage, and saves the result instead of failing the build |
+| `results` | Exports the test results, the coverage report and the exit code to your machine |
 | `publish` | Publishes the Presentation project |
 | `run` | The image you deploy |
 
 ```bash
-docker build . --target coverage --output type=local,dest=out
+docker build . --target results --output type=local,dest=out
 ```
+
+A failing test doesn't fail the build, so the results still come out. Check `out/exit-code`: anything other than `0` means a test failed, and a pipeline built on these stages should fail on it.
 
 ## Stamp a version
 
