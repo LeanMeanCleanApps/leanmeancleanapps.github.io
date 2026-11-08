@@ -18,6 +18,16 @@ hero:
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import Family from '../../../components/docs/Family.astro';
 
+## Run it
+
+The three commands above create a solution and start it in Docker Compose, with sample data and the Lambda runtime emulator. One more asks it for something:
+
+```bash
+curl -X POST "http://localhost:7350/2015-03-31/functions/function/invocations" -d '{"query":"space","limit":2}'
+```
+
+You get a page of movies back, the same as Lambda would send. The logs, traces and metrics go to the [Aspire dashboard](https://learn.microsoft.com/dotnet/aspire/fundamentals/dashboard/standalone) at [http://localhost:7352](http://localhost:7352), because `Console.WriteLine` is not an observability strategy. No AWS account needed, no credit card, no IAM policy you'll regret later.
+
 ## What's in the box
 
 <CardGrid>
