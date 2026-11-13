@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://leanmeancleanapps.github.io/sitemap-index.xml
