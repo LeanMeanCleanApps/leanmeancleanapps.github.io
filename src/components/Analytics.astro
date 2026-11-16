@@ -1,24 +1,11 @@
 ---
-// Visit counters, each switched on by a repository variable at build time. Without them, as in a fork or on your
-// machine, nothing is added and nobody is counted. Neither sets cookies, so there's no banner to accept.
-// - Cloudflare Web Analytics: CLOUDFLARE_ANALYTICS_TOKEN.
+// Visit counter, switched on by a repository variable at build time. Without it, as in a fork or on your machine,
+// nothing is added and nobody is counted.
 // - PostHog: POSTHOG_KEY, and POSTHOG_HOST if the project isn't in the US cloud. Its memory persistence keeps it
-//   cookie-free, at the cost of counting each page load as a new visitor.
-const token = import.meta.env.PUBLIC_CLOUDFLARE_ANALYTICS_TOKEN;
+//   cookie-free, so there's no banner to accept, at the cost of counting each page load as a new visitor.
 const posthogKey = import.meta.env.PUBLIC_POSTHOG_KEY;
 const posthogHost = import.meta.env.PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com';
 ---
-
-{
-  token && (
-    <script
-      is:inline
-      defer
-      src="https://static.cloudflareinsights.com/beacon.min.js"
-      data-cf-beacon={JSON.stringify({ token })}
-    />
-  )
-}
 
 {
   posthogKey && (
