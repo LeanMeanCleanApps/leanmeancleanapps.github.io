@@ -95,7 +95,7 @@ const markLongCode = {
 };
 
 export default defineConfig({
-  site: 'https://leanmeancleanapps.github.io',
+  site: 'https://leanmeanclean.dev',
   trailingSlash: 'always',
   markdown: { processor: satteri({ hastPlugins: [markLongCode] }) },
   integrations: [

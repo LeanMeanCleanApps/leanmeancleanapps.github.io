@@ -68,6 +68,7 @@ jobs:
           # Leave it unset to build without the counter.
           PUBLIC_POSTHOG_KEY: ${{ vars.POSTHOG_KEY || secrets.POSTHOG_KEY }}
           PUBLIC_POSTHOG_HOST: ${{ vars.POSTHOG_HOST || secrets.POSTHOG_HOST }}
+          PUBLIC_POSTHOG_UI_HOST: ${{ vars.POSTHOG_UI_HOST || secrets.POSTHOG_UI_HOST }}
 
       - name: Check Analytics
         id: analytics
