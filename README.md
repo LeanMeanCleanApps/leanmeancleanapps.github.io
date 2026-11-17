@@ -4,16 +4,16 @@
 
 # Lean Mean Clean Apps – Website
 
-The website for [Lean Mean Clean Apps](https://github.com/LeanMeanCleanApps), published at [leanmeancleanapps.github.io](https://leanmeancleanapps.github.io). It's a home page that points people at the templates and the people behind them, plus the docs for every template and the brand. One site, no framework drama, no cookie banner.
+The website for [Lean Mean Clean Apps](https://github.com/LeanMeanCleanApps), published at [leanmeanclean.dev](https://leanmeanclean.dev). It's a home page that points people at the templates and the people behind them, plus the docs for every template and the brand. One site, no framework drama, no cookie banner.
 
 | Template | Home page |
 | --- | --- |
-| Clean Minimal API | [/minimalapi/](https://leanmeancleanapps.github.io/minimalapi/) |
-| Clean Model Context Protocol | [/mcp/](https://leanmeancleanapps.github.io/mcp/) |
-| Clean GraphQL API | [/graphql/](https://leanmeancleanapps.github.io/graphql/) |
-| Clean Web API | [/webapi/](https://leanmeancleanapps.github.io/webapi/) |
-| Clean Lambda Function | [/lambda/](https://leanmeancleanapps.github.io/lambda/) |
-| The brand | [/brand/](https://leanmeancleanapps.github.io/brand/) |
+| Clean Minimal API | [/minimalapi/](https://leanmeanclean.dev/minimalapi/) |
+| Clean Model Context Protocol | [/mcp/](https://leanmeanclean.dev/mcp/) |
+| Clean GraphQL API | [/graphql/](https://leanmeanclean.dev/graphql/) |
+| Clean Web API | [/webapi/](https://leanmeanclean.dev/webapi/) |
+| Clean Lambda Function | [/lambda/](https://leanmeanclean.dev/lambda/) |
+| The brand | [/brand/](https://leanmeanclean.dev/brand/) |
 
 ## Running it locally
 
@@ -34,7 +34,7 @@ To add a page, drop a Markdown or MDX file in the template's folder and add it t
 
 ## The brand pages
 
-The brand pages at [/brand/](https://leanmeancleanapps.github.io/brand/) live in `src/content/docs/brand`, with their components in `src/components/brand` and their styles in `src/styles/docs/brand.css`. They're a sidebar topic like the templates, dressed in the organisation's colours.
+The brand pages at [/brand/](https://leanmeanclean.dev/brand/) live in `src/content/docs/brand`, with their components in `src/components/brand` and their styles in `src/styles/docs/brand.css`. They're a sidebar topic like the templates, dressed in the organisation's colours.
 
 ## The brand files
 
