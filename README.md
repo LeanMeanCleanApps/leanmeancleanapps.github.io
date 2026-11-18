@@ -30,6 +30,8 @@ The home page is `src/pages/index.astro`, the templates it lists are in `src/dat
 
 The template docs are built with [Starlight](https://starlight.astro.build). Each template has a folder in `src/content/docs` named after its key, and its `index.mdx` is the template's home page, the one its repository links to. Each template also gets its own sidebar, set in `astro.config.mjs`, and its own colour, which `src/components/docs/Head.astro` picks from the first part of the page's path. Same site, five outfits.
 
+Page titles are written for search, so `src/routeData.ts` turns "Work with the database" into "Work with the database | Clean Minimal API for .NET" in the browser tab, and leaves the heading alone. `src/data/structured-data.ts` adds the JSON-LD that tells search engines and LLMs what each template is. Give every page a short, plain title and a description and they do the rest.
+
 To add a page, drop a Markdown or MDX file in the template's folder and add it to that template's sidebar. `npm run build` checks every internal link and heading anchor across the docs and fails if one is broken.
 
 ## The brand pages
@@ -49,6 +51,8 @@ CI checks out the newest brand release into `.brand` on every build, and builds 
 ## Publishing
 
 Every push to `main`, and every morning, builds the site and publishes it to GitHub Pages. Pull requests build it without publishing, so you can break things in private.
+
+After each publish, the site tells Bing which pages changed through [IndexNow](https://www.indexnow.org/), going by each page's `lastmod` in the sitemap, which comes from its last commit. Run the Site workflow by hand to resubmit every page. The key in `public/` isn't a secret; publishing it is how IndexNow knows the site is ours.
 
 The published site counts visits with [PostHog](https://posthog.com/). It doesn't set cookies, so there's no banner to click through. The build only adds it when the `POSTHOG_KEY` repository variable or secret is set, so forks and local builds count nobody. `POSTHOG_HOST` points it at the reverse proxy on our own subdomain, which ad blockers leave alone, and `POSTHOG_UI_HOST` is only needed if the project lives in PostHog's EU cloud.
 
