@@ -3,6 +3,7 @@
 // part of the page's path.
 import Default from '@astrojs/starlight/components/Head.astro';
 import Analytics from '../Analytics.astro';
+import { breadcrumbs, graph, softwareSourceCode } from '../../data/structured-data';
 import { brand, templates } from '../../data/templates';
 
 const accents = import.meta.glob<string>('../../styles/docs/accents/*.css', { query: '?raw', import: 'default', eager: true });
@@ -13,6 +14,12 @@ const isBrand = key === brand.key;
 const accent = (template || isBrand) && accents[`../../styles/docs/accents/${key}.css`];
 const hue = template ? `:root { --cl-hue: var(--lmca-${template.key}); }` : isBrand ? ':root { --cl-hue: var(--lmca-org); }' : '';
 const image = new URL(template ? `/social/${template.key}.png` : isBrand ? '/brand/assets/social/png/brand.png' : '/og-image.png', Astro.site);
+const { id, entry } = Astro.locals.starlightRoute;
+const isHome = id === key;
+const jsonLd = graph(
+  template && isHome ? softwareSourceCode(template, entry.data.description ?? template.subject) : undefined,
+  breadcrumbs(id, entry.data.title),
+);
 const [width, height] = template || isBrand ? [1280, 640] : [1200, 630];
 ---
 
@@ -23,4 +30,5 @@ const [width, height] = template || isBrand ? [1280, 640] : [1200, 630];
 <meta property="og:image:height" content={String(height)} />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:image" content={image} />
+<script type="application/ld+json" set:html={jsonLd} />
 <Analytics />

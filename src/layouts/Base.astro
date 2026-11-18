@@ -16,12 +16,14 @@ interface Props {
   title?: string;
   description?: string;
   noindex?: boolean;
+  /** JSON-LD for the page, already stringified. */
+  structuredData?: string;
 }
 
 const org = 'Lean Mean Clean Apps';
 const tagline = 'Clean Architecture templates for .NET, minus the ceremony.';
-const { title, description = tagline, noindex = false } = Astro.props;
-const fullTitle = title ? `${title} | ${org}` : org;
+const { title, description = tagline, noindex = false, structuredData } = Astro.props;
+const fullTitle = title ? `${title} | ${org}` : `${org}: Clean Architecture templates for .NET`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const image = new URL('/og-image.png', Astro.site);
 const github = 'https://github.com/LeanMeanCleanApps';
@@ -53,6 +55,7 @@ const community = `${github}/.github/blob/main`;
     <meta property="og:image:alt" content={`${org}: ${tagline}`} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={image} />
+    {structuredData && <script type="application/ld+json" set:html={structuredData} />}
     <Analytics />
   </head>
   <body>

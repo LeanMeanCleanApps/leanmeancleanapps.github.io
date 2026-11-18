@@ -4,10 +4,11 @@ import Icon from '../components/Icon.astro';
 import Mark from '../components/Mark.astro';
 import TemplateCard from '../components/TemplateCard.astro';
 import Base from '../layouts/Base.astro';
+import { graph, organization, website } from '../data/structured-data';
 import { shared, templates } from '../data/templates';
 ---
 
-<Base>
+<Base structuredData={graph(organization, website)}>
   <section class="hero">
     <div class="wrap hero-grid">
       <div class="hero-copy">
