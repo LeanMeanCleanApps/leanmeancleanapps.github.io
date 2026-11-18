@@ -1,5 +1,5 @@
 ---
-import type { Template } from '../data/templates';
+import { lightStep, type Template } from '../data/templates';
 import CopyCommand from './CopyCommand.astro';
 import Icon from './Icon.astro';
 import Mark from './Mark.astro';
@@ -14,7 +14,7 @@ const repo = `https://github.com/${t.owner}/${t.repo}`;
 const nuget = `https://www.nuget.org/packages/${t.package}`;
 ---
 
-<article class="card template" style={`--hue-dark: var(--lmca-${t.hue}-400); --hue-light: var(--lmca-${t.hue}-700);`}>
+<article class="card template" style={`--hue-dark: var(--lmca-${t.hue}-400); --hue-light: var(--lmca-${t.hue}-${lightStep(t.hue)});`}>
   <div class="template-head">
     <Mark name={t.key} size={72} />
     <div>

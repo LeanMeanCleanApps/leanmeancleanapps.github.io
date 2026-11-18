@@ -28,6 +28,21 @@ The reserved hues for future templates:
 
 <Swatches scales={['cyan', 'red', 'lime']} />
 
+## Contrast
+
+Hues are pretty, but text still has to be read. These are the pairs that pass WCAG 2.2 AA (4.5:1 for body text) on the website's two themes. Each hue gets the bright 400 step on ink and a deep step on paper. Amber needs 800 on paper, because 700 lands at 4.4:1 on a raised card, and "nearly" isn't a contrast ratio.
+
+| Hue | Text on ink (dark) | Text on paper (light) | Paper on the light step |
+| --- | --- | --- | --- |
+| Emerald | 400, 9.6:1 | 700, 5.3:1 | 5.3:1 |
+| Violet | 400, 6.8:1 | 700, 6.8:1 | 6.8:1 |
+| Pink | 400, 7.0:1 | 700, 5.8:1 | 5.8:1 |
+| Blue | 400, 7.2:1 | 700, 6.4:1 | 6.4:1 |
+| Amber | 400, 11.0:1 | 800, 6.8:1 | 6.8:1 |
+| Leaf | 400, 8.2:1 | 700, 5.8:1 | 5.8:1 |
+
+Ink on a 500 block passes for every hue except violet, which comes in at 4.3:1. That's fine for shapes, icons and large text (3:1), so keep violet 500 for those and put body text on violet 400 or 700 instead.
+
 ## Shades in the mark
 
 Each ring takes a fixed shade from its scale. The left half uses the first shade and the right half the next one down.
