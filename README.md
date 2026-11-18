@@ -50,6 +50,8 @@ CI checks out the newest brand release into `.brand` on every build, and builds 
 
 Every push to `main`, and every morning, builds the site and publishes it to GitHub Pages. Pull requests build it without publishing, so you can break things in private.
 
+After each publish, the site tells Bing which pages changed through [IndexNow](https://www.indexnow.org/), going by each page's `lastmod` in the sitemap, which comes from its last commit. Run the Site workflow by hand to resubmit every page. The key in `public/` isn't a secret; publishing it is how IndexNow knows the site is ours.
+
 The published site counts visits with [PostHog](https://posthog.com/). It doesn't set cookies, so there's no banner to click through. The build only adds it when the `POSTHOG_KEY` repository variable or secret is set, so forks and local builds count nobody. `POSTHOG_HOST` points it at the reverse proxy on our own subdomain, which ad blockers leave alone, and `POSTHOG_UI_HOST` is only needed if the project lives in PostHog's EU cloud.
 
 ## Contributing and support

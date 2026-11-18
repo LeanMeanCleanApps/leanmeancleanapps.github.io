@@ -29,6 +29,9 @@ jobs:
       - name: Checkout
         id: checkout
         uses: actions/checkout@v7
+        with:
+          # Full history, so each page's "Last updated" and sitemap lastmod come from its own last commit.
+          fetch-depth: 0
 
       - name: Find Brand Release
         id: brand-release
@@ -119,3 +122,25 @@ jobs:
       - name: Deploy
         id: deploy
         uses: actions/deploy-pages@v5
+
+  index:
+    name: Tell Search Engines
+    runs-on: ubuntu-latest
+    needs: deploy
+    # Our own site only: a fork pinging Bing about leanmeanclean.dev would be a bit rude.
+    if: ${{ github.repository == 'LeanMeanCleanApps/leanmeancleanapps.github.io' }}
+    permissions: {}
+
+    steps:
+      - name: Submit Changed Pages
+        id: indexnow
+        # IndexNow tells Bing (and through it DuckDuckGo, Copilot and friends) which pages changed. The key isn't a
+        # secret: it's published at the site root as public/171d5277cbc2db8c8c846ceb8e6bfe4d.txt to prove the site is ours.
+        # A manual run submits every page; anything else only the pages whose lastmod moved in the last day.
+        uses: bojieyang/indexnow-action@v2
+        with:
+          sitemap-location: https://leanmeanclean.dev/sitemap-0.xml
+          key: 171d5277cbc2db8c8c846ceb8e6bfe4d
+          since: ${{ github.event_name == 'workflow_dispatch' && 36500 || 1 }}
+          since-unit: day
+          limit: 1000
