@@ -113,7 +113,7 @@ const llmsDetails = [
 function lastChanged(url) {
   const path = new URL(url).pathname.replace(/^\/|\/$/g, '');
   const candidates = path
-    ? ['.mdx', '.md', '/index.mdx', '/index.md'].map((ext) => `src/content/docs/${path}${ext}`)
+    ? [...['.mdx', '.md', '/index.mdx', '/index.md'].map((ext) => `src/content/docs/${path}${ext}`), `src/pages/${path}.astro`]
     : ['src/pages/index.astro'];
   const file = candidates.find((candidate) => existsSync(candidate));
   if (!file) return undefined;
