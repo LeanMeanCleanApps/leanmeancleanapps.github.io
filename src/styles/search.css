@@ -6,7 +6,7 @@
 :root {
   --sl-color-accent-low: color-mix(in srgb, var(--accent) 25%, var(--bg));
   --sl-color-accent: var(--accent);
-  --sl-color-accent-high: color-mix(in srgb, var(--accent) 60%, white);
+  --sl-color-accent-high: color-mix(in srgb, var(--accent) 60%, var(--text));
   --sl-color-text: var(--sl-color-gray-2);
   --sl-color-text-accent: var(--sl-color-accent-high);
   --sl-color-text-invert: var(--sl-color-accent-low);

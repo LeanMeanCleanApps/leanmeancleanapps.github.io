@@ -10,6 +10,8 @@ import '../styles/site.css';
 import '../styles/search.css';
 import Icon from '../components/Icon.astro';
 import Search from '../components/docs/Search.astro';
+import ThemeScript from '../components/ThemeScript.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
 import { templates } from '../data/templates';
 
 interface Props {
@@ -38,8 +40,10 @@ const community = `${github}/.github/blob/main`;
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
-    <meta name="color-scheme" content="dark" />
-    <meta name="theme-color" content="#0B132A" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#0B132A" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)" />
+    <ThemeScript />
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -72,6 +76,7 @@ const community = `${github}/.github/blob/main`;
           <a href="/#how">How they work</a>
           <a href="/#team">Team</a>
           <Search />
+          <ThemeToggle />
           <a class="icon-link" href={github} aria-label="Lean Mean Clean Apps on GitHub"><Icon name="github" /></a>
         </nav>
       </div>
