@@ -1,5 +1,8 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
+import { execFileSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import sitemap from '@astrojs/sitemap';
 import starlight from '@astrojs/starlight';
 import { satteri } from '@astrojs/markdown-satteri';
 import starlightLinksValidator from 'starlight-links-validator';
@@ -94,11 +97,29 @@ const markLongCode = {
   },
 };
 
+/* The date a page last changed, from git, so the sitemap's lastmod tells crawlers (and IndexNow) what's new.
+   Pages git doesn't know about, or a checkout without history, just go without a date. */
+function lastChanged(url) {
+  const path = new URL(url).pathname.replace(/^\/|\/$/g, '');
+  const candidates = path
+    ? ['.mdx', '.md', '/index.mdx', '/index.md'].map((ext) => `src/content/docs/${path}${ext}`)
+    : ['src/pages/index.astro'];
+  const file = candidates.find((candidate) => existsSync(candidate));
+  if (!file) return undefined;
+  try {
+    return execFileSync('git', ['log', '-1', '--format=%cI', '--', file], { encoding: 'utf8' }).trim() || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export default defineConfig({
   site: 'https://leanmeanclean.dev',
   trailingSlash: 'always',
   markdown: { processor: satteri({ hastPlugins: [markLongCode] }) },
   integrations: [
+    // Starlight adds this for us, but only ours can add lastmod.
+    sitemap({ serialize: (item) => ({ ...item, lastmod: lastChanged(item.url) }) }),
     starlight({
       title: 'Lean Mean Clean Apps',
       description: 'Clean Architecture templates for .NET, minus the ceremony.',
