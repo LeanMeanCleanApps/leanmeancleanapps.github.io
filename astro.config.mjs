@@ -129,6 +129,7 @@ export default defineConfig({
       editLink: { baseUrl: 'https://github.com/LeanMeanCleanApps/leanmeancleanapps.github.io/edit/main/' },
       lastUpdated: true,
       credits: false,
+      routeMiddleware: './src/routeData.ts',
       customCss: [
         './src/styles/layers.css',
         '@fontsource-variable/bricolage-grotesque',
