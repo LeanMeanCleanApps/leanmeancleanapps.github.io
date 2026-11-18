@@ -13,9 +13,9 @@ dotnet new cleanlambdafunction --name <NAME> [--authorName|-an <AUTHOR>] [--outp
 
 | Option | Default | What it changes |
 | --- | --- | --- |
-| `--name`, `-n` | The current folder's name | Replaces `CleanLambdaFunction` in every namespace, project, file and folder name, and names the output folder |
-| `--authorName`, `-an` | `Stephen Walsh` | Sets the `Authors` and `Copyright` of the Presentation project, so the assembly credits you instead of us |
-| `--output`, `-o` | A folder named after `--name` | Where the solution is created |
+| `--name`<br />`-n` | The current folder's name | Replaces `CleanLambdaFunction` in every namespace, project, file and folder name, and names the output folder |
+| `--authorName`<br />`-an` | `Stephen Walsh` | Sets the `Authors` and `Copyright` of the Presentation project, so the assembly credits you instead of us |
+| `--output`<br />`-o` | A folder named after `--name` | Where the solution is created |
 | `--no-restore` | off | Skips the package restore that otherwise runs as soon as the solution is created |
 
 The usual `dotnet new` options such as `--dry-run` and `--force` work too. Run `dotnet new cleanlambdafunction --help` for the full list.

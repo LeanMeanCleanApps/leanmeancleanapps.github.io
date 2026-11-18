@@ -178,7 +178,7 @@ export default defineConfig({
         ),
         starlightLinksValidator({
           errorOnLocalLinks: false,
-          exclude: ['/', '/#*'],
+          exclude: ['/', '/#*', '/accessibility/'],
         }),
         starlightLlmsTxt({
           projectName: 'Lean Mean Clean Apps',

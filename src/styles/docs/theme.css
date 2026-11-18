@@ -228,6 +228,7 @@ pre {
 
 .sl-markdown-content :is(td, th) > code {
   overflow-wrap: normal;
+  white-space: nowrap;
 }
 
 /* Tables used for reference pages. A table still too wide for the column scrolls rather than being cut off. */

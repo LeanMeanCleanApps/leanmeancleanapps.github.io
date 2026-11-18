@@ -62,6 +62,8 @@ The published site counts visits with [PostHog](https://posthog.com/). It doesn'
 
 Spotted a typo, a broken link or a template we forgot? Open an issue or a pull request. Branch from `main` as `feature/`, `fix/` or `chore/`, run `npm run build` before you push, and keep each change to one thing. The organisation's [contributing guide](https://github.com/LeanMeanCleanApps/.github/blob/main/CONTRIBUTING.md), [code of conduct](https://github.com/LeanMeanCleanApps/.github/blob/main/CODE_OF_CONDUCT.md) and [security policy](https://github.com/LeanMeanCleanApps/.github/blob/main/SECURITY.md) apply here too.
 
+The site aims for WCAG 2.2 AA in both themes. The [accessibility statement](https://leanmeanclean.dev/accessibility/) says what we've checked and what isn't right yet. Barrier reports land here through the accessibility barrier form, so if you change a page, keep it usable with a keyboard and a screen reader, and check it in light and dark.
+
 The site, like everything behind it, is built and maintained by the Lean Mean Clean Apps team, which is [Stephen Walsh](https://github.com/stphnwlsh) for now, with strong coffee and a healthy disregard for pomp and ceremony. If the templates save you some time, you can [sponsor the work](https://github.com/sponsors/stphnwlsh).
 
 ## Licence
