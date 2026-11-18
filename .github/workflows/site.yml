@@ -3,8 +3,8 @@ name: Site
 on:
   push:
     branches: [main]
+  # Every pull request, including one stacked on another pull request's branch, so each layer of a stack gets built.
   pull_request:
-    branches: [main]
   schedule:
     # Every morning, so a new brand release reaches the site within a day.
     - cron: "17 9 * * *"
