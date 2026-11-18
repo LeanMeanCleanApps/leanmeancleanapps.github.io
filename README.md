@@ -30,6 +30,8 @@ The home page is `src/pages/index.astro`, the templates it lists are in `src/dat
 
 The template docs are built with [Starlight](https://starlight.astro.build). Each template has a folder in `src/content/docs` named after its key, and its `index.mdx` is the template's home page, the one its repository links to. Each template also gets its own sidebar, set in `astro.config.mjs`, and its own colour, which `src/components/docs/Head.astro` picks from the first part of the page's path. Same site, five outfits.
 
+Page titles are written for search, so `src/routeData.ts` turns "Work with the database" into "Work with the database | Clean Minimal API for .NET" in the browser tab, and leaves the heading alone. `src/data/structured-data.ts` adds the JSON-LD that tells search engines and LLMs what each template is. Give every page a short, plain title and a description and they do the rest.
+
 To add a page, drop a Markdown or MDX file in the template's folder and add it to that template's sidebar. `npm run build` checks every internal link and heading anchor across the docs and fails if one is broken.
 
 The build also writes the docs out for LLMs: `llms.txt` lists the templates and their key pages, `llms-full.txt` and `llms-small.txt` hold everything, and `_llms-txt/` has one file per template and one for the brand, so a model asked about one template only has to read that one. A new template's file appears once it's in `src/data/templates.ts`.
