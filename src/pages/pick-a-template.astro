@@ -1,0 +1,104 @@
+---
+// Which template suits which job. Our five only: no comparisons with anyone else's templates.
+import CopyCommand from '../components/CopyCommand.astro';
+import Icon from '../components/Icon.astro';
+import Mark from '../components/Mark.astro';
+import Base from '../layouts/Base.astro';
+import { templates } from '../data/templates';
+
+// The sentence that sounds like the reader, and why that template fits it. Keyed like src/data/templates.ts.
+const picks: Record<string, { job: string; why: string }> = {
+  minimalapi: {
+    job: 'I want an HTTP API with as little code as possible.',
+    why: "Endpoints are plain functions grouped by feature, with OpenAPI browsed in Scalar and Problem Details for every error. It's the reference template, so it's the one to start with when you're not sure.",
+  },
+  mcp: {
+    job: 'I want AI assistants to use my app.',
+    why: 'Your use cases become Model Context Protocol tools, resources and prompts that assistants such as Claude, ChatGPT and Copilot can call. The MCP Inspector runs beside it in Docker Compose, so you can poke it yourself first.',
+  },
+  graphql: {
+    job: 'My clients want to ask for exactly the fields they need.',
+    why: "A Hot Chocolate GraphQL API with Nitro built in, Relay paging and DataLoaders, so a screen full of lists doesn't turn into a database full of queries.",
+  },
+  webapi: {
+    job: 'I want an HTTP API, and I like controllers.',
+    why: 'Thin controllers with attributes, grouped by feature, with the same OpenAPI, Scalar and Problem Details as the Minimal API. Handy when your team, or the code you already have, thinks in controllers.',
+  },
+  lambda: {
+    job: 'I want to run on AWS Lambda and pay per request.',
+    why: 'A function built with Lambda Annotations and packaged as a container image, with source-generated JSON for quick cold starts. Docker Compose runs it on your laptop the way Lambda would.',
+  },
+};
+---
+
+<Base
+  title="Pick a .NET Clean Architecture template"
+  description="Which Lean Mean Clean Apps template suits your app: a Minimal API, an MCP server, GraphQL, Web API controllers or AWS Lambda."
+>
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">Pick a template</p>
+      <h1>Which template should I use? <span>Depends who's knocking.</span></h1>
+      <p class="lede">
+        All five build the same movie review app on the same Application and Infrastructure layers. The only real
+        question is how the rest of the world talks to your app. Find the sentence that sounds like you.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="template-grid">
+        {
+          templates.map((t) => (
+            <article
+              class="card template"
+              style={`--hue-dark: var(--lmca-${t.hue}-400); --hue-light: var(--lmca-${t.hue}-700);`}
+            >
+              <div class="template-head">
+                <Mark name={t.key} size={72} />
+                <div>
+                  <h2 class="pick-job">{picks[t.key].job}</h2>
+                  <p class="subject">
+                    <a href={`/${t.key}/`}>{t.name}</a>
+                  </p>
+                </div>
+              </div>
+              <p class="pick-why">{picks[t.key].why}</p>
+              <div class="commands">
+                <CopyCommand command={`dotnet new install ${t.package}`} />
+                <CopyCommand command={`dotnet new ${t.shortName} --name WorksOnMyMachine.Movies`} />
+              </div>
+              <p class="links">
+                <a href={`/${t.key}/getting-started/`}>
+                  <Icon name="book" /> Get started
+                </a>
+                <a href={`https://github.com/${t.owner}/${t.repo}`}>
+                  <Icon name="github" /> Repository
+                </a>
+              </p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <header class="section-head">
+        <p class="eyebrow">Still not sure?</p>
+        <h2>Pick the Minimal API</h2>
+        <p>
+          It's the one most people start with. Because the Application and Infrastructure layers are identical in all
+          five, nothing you learn there is wasted if you change your mind later. Only the Presentation layer changes, and
+          that's the bit you'd be rewriting anyway.
+        </p>
+      </header>
+      <div class="actions">
+        <a class="button primary" href="/minimalapi/getting-started/">Start with the Minimal API <Icon name="arrow" /></a>
+        <a class="button" href="/#templates">Back to the templates</a>
+      </div>
+    </div>
+  </section>
+</Base>
