@@ -133,6 +133,8 @@ export default defineConfig({
     sitemap({ serialize: (item) => ({ ...item, lastmod: lastChanged(item.url) }) }),
     starlight({
       title: 'Lean Mean Clean Apps',
+      // Aussie English, so screen readers pick the right voice on every page, not just the home page.
+      locales: { root: { label: 'English', lang: 'en-AU' } },
       description: 'Clean Architecture templates for .NET, minus the ceremony.',
       favicon: '/favicon.svg',
       disable404Route: true,

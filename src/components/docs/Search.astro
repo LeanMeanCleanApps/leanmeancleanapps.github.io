@@ -62,6 +62,8 @@ if (project.trailingSlash === 'never') dataAttributes['data-strip-trailing-slash
 				) : (
 					<div class="search-container">
 						<div id="starlight__search" />
+						{/* Pagefind's result count isn't a live region, so screen readers never hear it. This one is. */}
+						<p class="sr-only" role="status" data-search-status />
 						<div class="cl-empty" data-empty>
 							<p class="cl-empty-lead">
 								Five templates, one brand, one search box. Everything in the docs is in here, including the bits we hoped you'd skim.
@@ -198,6 +200,18 @@ if (project.trailingSlash === 'never') dataAttributes['data-strip-trailing-slash
 				onIdle(async () => {
 					// @ts-expect-error — Missing types for @pagefind/default-ui package.
 					const { PagefindUI } = await import('@pagefind/default-ui');
+					const status = this.querySelector<HTMLElement>('[data-search-status]');
+					let announce: ReturnType<typeof setTimeout> | undefined;
+					if (status && container) {
+						new MutationObserver(() => {
+							clearTimeout(announce);
+							// Wait until typing settles, or every keystroke gets read out.
+							announce = setTimeout(() => {
+								const message = container.querySelector('.pagefind-ui__message')?.textContent?.trim() ?? '';
+								if (status.textContent !== message) status.textContent = message;
+							}, 600);
+						}).observe(container, { childList: true, subtree: true, characterData: true });
+					}
 					new PagefindUI({
 						...pagefindUserConfig,
 						element: '#starlight__search',
