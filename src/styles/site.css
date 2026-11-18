@@ -231,6 +231,23 @@ li {
   }
 }
 
+/* At 320 pixels (a laptop at 400% zoom) the name and three buttons don't fit, so the name goes quiet: screen
+   readers still hear it, and the logo still goes home. */
+@media (max-width: 24rem) {
+  .site-header nav {
+    gap: 0.25rem;
+  }
+
+  .site-header .brand span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
 /* Buttons and commands */
 
 .actions {

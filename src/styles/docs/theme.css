@@ -209,6 +209,7 @@ pre {
    margin gives the padding back to the line, so the line spacing stays even. */
 .sl-markdown-content :not(pre) > code {
   display: inline-block;
+  box-sizing: border-box;
   max-width: 100%;
   margin-block: -0.1em;
   padding: 0.1em 0.35em;
@@ -220,7 +221,7 @@ pre {
 /* A long chip, usually a file path, is marked by the build and flows like text, so the words after it stay on
    the same line as its last piece. In a table every chip stays inline so the columns can share the width, and a
    table still too wide for the column scrolls. */
-.sl-markdown-content :not(pre) > code:is(.cl-long, :is(td, th) > code) {
+.sl-markdown-content :not(pre) > code:is(.cl-long, :is(td, th, h2, h3, h4) > code) {
   display: inline;
   margin-block: 0;
 }
