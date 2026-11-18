@@ -139,7 +139,7 @@ jobs:
         # A manual run submits every page; anything else only the pages whose lastmod moved in the last day.
         uses: bojieyang/indexnow-action@v2
         with:
-          sitemap-location: https://leanmeanclean.dev/sitemap-0.xml
+          sitemap-location: https://leanmeanclean.dev/sitemap-index.xml
           key: 171d5277cbc2db8c8c846ceb8e6bfe4d
           since: ${{ github.event_name == 'workflow_dispatch' && 36500 || 1 }}
           since-unit: day
