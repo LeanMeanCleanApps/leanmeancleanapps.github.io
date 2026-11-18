@@ -1,0 +1,64 @@
+---
+title: Accessibility
+description: What we aim for, what we build and what we don't, what isn't right yet, and how to tell us when something gets in your way.
+template: splash
+---
+
+Clean Architecture is meant to make code easier to work with. It would be a bit rich if the docs about it were hard to use. Everyone should be able to read these pages, run the templates and take part in the project, whether that's with a mouse, a keyboard, a screen reader, a magnifier, voice control or a strong coffee and a squint.
+
+This page says what we aim for, what we've checked, what we know isn't right yet, and what happens when you tell us about a barrier.
+
+## What we aim for
+
+[WCAG 2.2](https://www.w3.org/TR/WCAG22/) Level AA, in everything we build:
+
+- **This website:** the front page, the docs for all five templates and the brand pages.
+- **The repositories:** READMEs, the docs inside them, and the issue forms.
+- **The brand:** logos, banners and social images, with alt text and colour pairs that pass contrast. The [colour page](/brand/colour/#contrast) lists them.
+- **Anything we record:** every demo video gets a text description of what it shows, and captions if anyone ever talks over one.
+- **What the templates produce:** validation and error messages that say what went wrong in plain words, API and schema descriptions that make sense to someone who can't see the UI rendering them, and logs that don't rely on colour.
+
+## What we've checked
+
+Before each release we run [axe](https://github.com/dequelabs/axe-core) over every page on this site, in both the light and dark themes. We also go through the main pages with a keyboard only, and spot check them with VoiceOver on macOS.
+
+The site follows your system's light or dark setting and its reduced motion setting. The button next to search switches themes, and remembers your choice. Every page reflows down to 320 pixels wide, which is the same as 400% zoom on a laptop, without sideways scrolling.
+
+We test in current versions of Chrome, Edge, Firefox and Safari on desktop and mobile. Older browsers will probably cope, but we don't promise.
+
+## Tools we ship but don't build
+
+Each template comes with a tool or two so you can try it without writing a client first. We didn't build them, so we can't promise how accessible they are. They're all optional, though, and everything they show is also available from the command line or straight from the endpoint.
+
+| Tool | In | What it's for | Its project |
+| --- | --- | --- | --- |
+| Scalar | Minimal API, Web API | Browsing and trying the OpenAPI description | [scalar/scalar](https://github.com/scalar/scalar) |
+| Nitro | GraphQL API | Writing and running GraphQL queries | [ChilliCream/graphql-platform](https://github.com/ChilliCream/graphql-platform) |
+| MCP Inspector | Model Context Protocol | Calling the server's tools, resources and prompts | [modelcontextprotocol/inspector](https://github.com/modelcontextprotocol/inspector) |
+| Open WebUI | Model Context Protocol | Chatting with a model that uses the server | [open-webui/open-webui](https://github.com/open-webui/open-webui) |
+| Aspire dashboard | All five, with Docker Compose | Reading logs, traces and metrics | [dotnet/aspire](https://github.com/dotnet/aspire) |
+
+If one of them gets in your way, tell us anyway. We'll report it upstream, keep track of it, and find you a workaround in the meantime.
+
+## What isn't right yet
+
+- **Code blocks repeat themselves to screen readers.** Every code block is marked as a region with the same name, so a list of landmarks has a lot of identical entries in it. It comes from Expressive Code, which draws the code blocks, so we'll raise it there instead of patching around it.
+
+That's the whole list today. If you find something that belongs on it, we'd rather know.
+
+## Found a barrier?
+
+[Report an accessibility barrier](https://github.com/LeanMeanCleanApps/leanmeancleanapps.github.io/issues/new?template=accessibility_barrier.yml). Every template and this website use the same form, so it doesn't matter where you found it.
+
+Tell us where it was and what got in the way. You don't need to quote WCAG at us, and you don't need to tell us anything about yourself. If you'd rather not use GitHub, ask the maintainer, [Stephen Walsh](https://github.com/stphnwlsh), through any of the contact details on that profile.
+
+## What happens next
+
+- **Within 7 days:** you'll get a reply saying we've seen it, whether we can reproduce it, and what we plan to do.
+- **No fix deadline:** this is a small team, which is one person for now, so we don't promise dates we might miss. Barriers that stop someone completely go to the front of the queue, ahead of new features.
+- **Along the way:** we'll keep the issue up to date, suggest a workaround where we have one, and tell you when the fix ships.
+- **If it's in someone else's tool:** we'll link the upstream report so you can follow it there.
+
+## Changing this page
+
+Spotted something this page gets wrong, or a promise we're not keeping? Open an issue or a pull request in the [website repository](https://github.com/LeanMeanCleanApps/leanmeancleanapps.github.io). How we make decisions is in [governance](https://github.com/LeanMeanCleanApps/.github/blob/main/GOVERNANCE.md).
