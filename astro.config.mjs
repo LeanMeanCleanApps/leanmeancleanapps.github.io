@@ -97,6 +97,17 @@ const markLongCode = {
   },
 };
 
+/* What llms.txt says about the templates before it lists the files: one line each, with the pages a model should
+   read first. */
+const llmsDetails = [
+  'Each template is installed with `dotnet new install <package>` and builds the same small movie review app. The Application and Infrastructure layers are identical in all five; only Presentation differs.',
+  '',
+  ...templates.map(
+    (t) =>
+      `- **${t.name}** (\`${t.package}\`, \`dotnet new ${t.shortName}\`) for ${t.subject}: [home](https://leanmeanclean.dev/${t.key}/), [getting started](https://leanmeanclean.dev/${t.key}/getting-started/), [architecture](https://leanmeanclean.dev/${t.key}/explanation/architecture/), [source](https://github.com/${t.owner}/${t.repo})`,
+  ),
+].join('\n');
+
 /* The date a page last changed, from git, so the sitemap's lastmod tells crawlers (and IndexNow) what's new.
    Pages git doesn't know about, or a checkout without history, just go without a date. */
 function lastChanged(url) {
@@ -173,6 +184,12 @@ export default defineConfig({
           projectName: 'Lean Mean Clean Apps',
           description:
             'Five dotnet new templates for .NET 10 (Minimal APIs, Model Context Protocol, GraphQL, Web API controllers and AWS Lambda) that share the same Clean Architecture Application and Infrastructure layers and differ only in Presentation, plus the Lean Mean Clean Apps brand: logos, colours, type, tokens and social templates.',
+          details: llmsDetails,
+          // One file per template, so a model asked about one template doesn't have to read all five.
+          customSets: [
+            ...templates.map((t) => ({ label: t.name, description: `every page of the ${t.name} docs`, paths: [`${t.key}/**`] })),
+            { label: 'Lean Mean Clean Apps brand', description: 'logos, colours, type, tokens and social templates', paths: [`${brand.key}/**`] },
+          ],
         }),
       ],
     }),
