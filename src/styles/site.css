@@ -1,4 +1,5 @@
-/* Colours come from tokens.css, which is copied from the brand repository. The site is dark, always. */
+/* Colours come from tokens.css, which is copied from the brand repository. Dark is the default, light is for anyone who
+   asks for it (their system setting, or the button in the header). */
 
 :root {
   --bg: var(--lmca-ink);
@@ -15,6 +16,26 @@
   --gutter: clamp(1rem, 4vw, 2rem);
 
   color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  --bg: var(--lmca-paper);
+  --bg-raised: color-mix(in srgb, var(--lmca-paper), var(--lmca-ink) 4%);
+  --bg-sunken: color-mix(in srgb, var(--lmca-paper), var(--lmca-ink) 7%);
+  --text: var(--lmca-ink);
+  --muted: var(--lmca-slate-600);
+  --border: color-mix(in srgb, var(--lmca-ink) 12%, transparent);
+  --border-strong: color-mix(in srgb, var(--lmca-ink) 24%, transparent);
+  --accent: var(--lmca-leaf-700);
+  --on-accent: var(--lmca-paper);
+
+  color-scheme: light;
+}
+
+/* Logos come in a dark-background and a light-background version. Show the one that suits the theme. */
+:root[data-theme='light'] .on-dark,
+:root:not([data-theme='light']) .on-light {
+  display: none;
 }
 
 
@@ -542,6 +563,10 @@ li {
   transition:
     border-color 150ms ease,
     transform 150ms ease;
+}
+
+:root[data-theme='light'] .template {
+  --hue: var(--hue-light);
 }
 
 

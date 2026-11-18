@@ -2,6 +2,7 @@
 // The template home pages use the same hero as the site's front page: a kicker, a headline with the
 // accent on the last line, the lede, the buttons, and the commands with copy buttons. The brand home page
 // gets the same hero with the organisation mark and no commands.
+import Mark from '../Mark.astro';
 import { LinkButton } from '@astrojs/starlight/components';
 const PAGE_TITLE_ID = '_top';
 import { brand, templates } from '../../data/templates';
@@ -86,8 +87,8 @@ const commands = template
     }
     {template && <p class="cl-quip">Three layers, the tests, a Dockerfile and a CI pipeline. Go and tell your team you've been working on it all week.</p>}
   </div>
-  {template && <img class="cl-mark" src={`/logos/${template.key}.svg`} alt="" width="480" height="480" loading="eager" decoding="async" />}
-  {isBrand && <img class="cl-mark" src="/logos/org-spectrum.svg" alt="" width="480" height="480" loading="eager" decoding="async" />}
+  {template && <Mark name={template.key} size={480} class="cl-mark" eager />}
+  {isBrand && <Mark name="org-spectrum" size={480} class="cl-mark" eager />}
 </div>
 
 <script>
@@ -178,7 +179,7 @@ const commands = template
   }
 
   .cl-actions :global(.sl-link-button.primary:hover) {
-    background: color-mix(in srgb, var(--cl-hue), white 15%);
+    background: color-mix(in srgb, var(--cl-hue), var(--sl-color-white) 15%);
   }
 
   .cl-terminal {
@@ -186,7 +187,7 @@ const commands = template
     padding: 0.75rem 0.6rem 0.75rem 1.1rem;
     max-width: 38rem;
     border-radius: 1rem;
-    background: color-mix(in srgb, var(--sl-color-black), black 25%);
+    background: color-mix(in srgb, var(--sl-color-black), var(--cl-terminal-shade, black) 25%);
     border: 1px solid var(--sl-color-gray-5);
     display: grid;
     gap: 0.15rem;
@@ -266,7 +267,7 @@ const commands = template
     font-size: var(--sl-text-sm);
   }
 
-  .cl-mark {
+  :global(.cl-mark) {
     justify-self: center;
     width: 100%;
     max-width: 24rem;
@@ -278,7 +279,7 @@ const commands = template
       grid-template-columns: minmax(0, 1fr);
     }
 
-    .cl-mark {
+    :global(.cl-mark) {
       grid-row: 1;
       max-width: 11rem;
       justify-self: start;

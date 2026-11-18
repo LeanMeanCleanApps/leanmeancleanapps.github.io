@@ -1,0 +1,12 @@
+{/* Picks the theme before anything paints: the visitor's saved choice, then their system setting. The docs get the
+   same thing from Starlight's own ThemeProvider, and both read the same storage key. */}
+<script is:inline>
+  (() => {
+    let theme = null;
+    try {
+      theme = localStorage.getItem('starlight-theme');
+    } catch {}
+    if (theme !== 'light' && theme !== 'dark') theme = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    document.documentElement.dataset.theme = theme;
+  })();
+</script>

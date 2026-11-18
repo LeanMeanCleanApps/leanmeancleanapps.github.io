@@ -112,3 +112,7 @@ export const shared = [
   'CodeQL and Trivy',
   'Monthly NuGet releases',
 ];
+
+// The step of a hue's scale that reads as text on the light theme's paper. Step 700 passes 4.5:1 for every hue but
+// amber, which needs 800 once it sits on a raised card.
+export const lightStep = (hue: string) => (hue === 'amber' ? 800 : 700);

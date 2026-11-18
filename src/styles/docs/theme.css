@@ -6,6 +6,8 @@
 
 :root {
   --cl-hue: var(--sl-color-accent);
+  /* Text that sits on a block of --cl-hue: ink on the bright dark-theme hues, paper on the deep light-theme ones. */
+  --cl-on-hue: var(--lmca-ink);
   --sl-content-width: 46rem;
   --sl-text-h1: 2.5rem;
   /* The same height as the front page's header, so moving between the two doesn't jump. */
@@ -14,6 +16,23 @@
   --cl-wrap: 84rem;
   --cl-gutter: clamp(1rem, 4vw, 2rem);
   --cl-box-x: max(0px, calc((100vw - var(--cl-wrap)) / 2));
+}
+
+:root[data-theme='light'] {
+  --cl-on-hue: var(--lmca-paper);
+  --cl-terminal-shade: var(--lmca-slate-300);
+}
+
+/* Logos come in a dark-background and a light-background version. Show the one that suits the theme. */
+:root[data-theme='light'] .on-dark,
+:root:not([data-theme='light']) .on-light {
+  display: none;
+}
+
+/* One focus ring everywhere, in the page's hue, thick enough to spot on either theme. */
+:focus-visible {
+  outline: 2px solid var(--cl-hue);
+  outline-offset: 2px;
 }
 
 /* The same text flow as the front page: headings break into even lines, and paragraphs, list items and
@@ -84,7 +103,7 @@ header.header {
 
 ::selection {
   background: var(--cl-hue);
-  color: var(--lmca-ink);
+  color: var(--cl-on-hue);
 }
 
 h1#_top {
@@ -171,7 +190,7 @@ h1#_top {
   border-radius: 0.6rem;
 }
 
-.card:nth-child(odd) .icon { background: var(--cl-hue); color: var(--lmca-ink); }
+.card:nth-child(odd) .icon { background: var(--cl-hue); color: var(--cl-on-hue); }
 .card:nth-child(even) .icon { background: var(--sl-color-accent-low); color: var(--sl-color-accent-high); }
 
 /* Asides get rounder corners. A [Hot take] title still looks like a note. */
@@ -328,7 +347,7 @@ pre {
   font-size: var(--sl-text-xs);
   font-weight: 700;
   background: var(--cl-hue);
-  color: var(--lmca-ink);
+  color: var(--cl-on-hue);
 }
 
 .cl-report .cl-grade[data-kind='Tattletale'] {

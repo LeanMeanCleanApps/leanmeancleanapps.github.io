@@ -1,5 +1,6 @@
 ---
-// A ring mark from the brand kit.
+// A ring mark from the brand kit, in its dark-background and light-background versions. The theme decides which
+// one shows (see .on-dark and .on-light in site.css and docs/theme.css).
 interface Props {
   name: string;
   size: number;
@@ -9,6 +10,8 @@ interface Props {
 }
 
 const { name, size, alt = '', class: className, eager = false } = Astro.props;
+const loading = eager ? 'eager' : 'lazy';
 ---
 
-<img class={className} src={`/logos/${name}.svg`} width={size} height={size} alt={alt} loading={eager ? 'eager' : 'lazy'} decoding="async" />
+<img class:list={[className, 'on-dark']} src={`/logos/${name}.svg`} width={size} height={size} alt={alt} loading={loading} decoding="async" />
+<img class:list={[className, 'on-light']} src={`/logos/${name}-light.svg`} width={size} height={size} alt={alt} loading={loading} decoding="async" />

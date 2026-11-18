@@ -13,6 +13,7 @@ const keyOf = (link: string) => link.split('/').filter(Boolean)[0];
       topics.map((topic) => {
         const key = keyOf(topic.link);
         const logo = key === brand.key ? '/logos/org-spectrum-small-tile.svg' : `/logos/${key}-small.svg`;
+        const logoLight = key === brand.key ? logo : `/logos/${key}-small-light.svg`;
         const hue = key === brand.key ? 'org' : key;
         return (
           <li>
@@ -21,7 +22,8 @@ const keyOf = (link: string) => link.split('/').filter(Boolean)[0];
               aria-current={topic.isCurrent ? 'true' : undefined}
               style={`--cl-topic-hue: var(--lmca-${hue})`}
             >
-              <img src={logo} alt="" width="24" height="24" />
+              <img class="on-dark" src={logo} alt="" width="24" height="24" />
+              <img class="on-light" src={logoLight} alt="" width="24" height="24" />
               <span>{topic.label}</span>
             </a>
           </li>
