@@ -32,6 +32,8 @@ The template docs are built with [Starlight](https://starlight.astro.build). Eac
 
 To add a page, drop a Markdown or MDX file in the template's folder and add it to that template's sidebar. `npm run build` checks every internal link and heading anchor across the docs and fails if one is broken.
 
+The build also writes the docs out for LLMs: `llms.txt` lists the templates and their key pages, `llms-full.txt` and `llms-small.txt` hold everything, and `_llms-txt/` has one file per template and one for the brand, so a model asked about one template only has to read that one. A new template's file appears once it's in `src/data/templates.ts`.
+
 ## The brand pages
 
 The brand pages at [/brand/](https://leanmeanclean.dev/brand/) live in `src/content/docs/brand`, with their components in `src/components/brand` and their styles in `src/styles/docs/brand.css`. They're a sidebar topic like the templates, dressed in the organisation's colours.
