@@ -22,8 +22,8 @@ const keyOf = (link: string) => link.split('/').filter(Boolean)[0];
               aria-current={topic.isCurrent ? 'true' : undefined}
               style={`--cl-topic-hue: var(--lmca-${hue})`}
             >
-              <img class="on-dark" src={logo} alt="" width="24" height="24" />
-              <img class="on-light" src={logoLight} alt="" width="24" height="24" />
+              <img class="on-dark" src={logo} alt={`${topic.label} logo`} aria-hidden="true" width="24" height="24" />
+              <img class="on-light" src={logoLight} alt={`${topic.label} logo`} aria-hidden="true" width="24" height="24" />
               <span>{topic.label}</span>
             </a>
           </li>

@@ -15,18 +15,18 @@ const isBrand = key === brand.key;
   {
     template ? (
       <a class="cl-brand" href={`/${template.key}/`}>
-        <img class="on-dark" src={`/logos/${template.key}-small.svg`} alt="" width="32" height="32" />
-        <img class="on-light" src={`/logos/${template.key}-small-light.svg`} alt="" width="32" height="32" />
+        <img class="on-dark" src={`/logos/${template.key}-small.svg`} alt={`${template.name} logo`} aria-hidden="true" width="32" height="32" />
+        <img class="on-light" src={`/logos/${template.key}-small-light.svg`} alt={`${template.name} logo`} aria-hidden="true" width="32" height="32" />
         <span>{template.name}</span>
       </a>
     ) : isBrand ? (
       <a class="cl-brand" href="/brand/">
-        <img src="/logos/org-spectrum-small-tile.svg" alt="" width="32" height="32" />
+        <img src="/logos/org-spectrum-small-tile.svg" alt="Lean Mean Clean Apps logo" aria-hidden="true" width="32" height="32" />
         <span>{brand.name}</span>
       </a>
     ) : (
       <a class="cl-brand" href="/">
-        <img src="/logos/org-spectrum-small-tile.svg" alt="" width="32" height="32" />
+        <img src="/logos/org-spectrum-small-tile.svg" alt="Lean Mean Clean Apps logo" aria-hidden="true" width="32" height="32" />
         <span>Lean Mean Clean Apps</span>
       </a>
     )
@@ -35,7 +35,7 @@ const isBrand = key === brand.key;
     {
       (template || isBrand) && (
         <a class="cl-org" href="/">
-          <img src="/logos/org-spectrum-small-tile.svg" alt="" width="20" height="20" />
+          <img src="/logos/org-spectrum-small-tile.svg" alt="Lean Mean Clean Apps logo" aria-hidden="true" width="20" height="20" />
           <span>Lean Mean Clean Apps</span>
         </a>
       )
