@@ -6,13 +6,15 @@ interface Props {
 }
 const { files, dir = 'social' } = Astro.props;
 const base = `/brand/assets/${dir}`;
+// The size reads "1280 × 640", which also gives the image its width and height so the grid doesn't jump as it loads.
+const dims = (size: string) => size.split('×').map((n) => n.trim());
 ---
 
 <div class="cl-social not-content">
   {
     files.map((f) => (
       <figure>
-        <img src={`${base}/png/${f.file}.png`} alt={f.title} loading="lazy" />
+        <img src={`${base}/png/${f.file}.png`} width={dims(f.size)[0]} height={dims(f.size)[1]} alt={f.title} loading="lazy" />
         <figcaption>
           <b>{f.title}</b>
           <span>{f.size}</span>

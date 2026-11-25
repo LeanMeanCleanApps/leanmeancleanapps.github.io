@@ -1,17 +1,26 @@
 ---
 // A ring mark from the brand kit, in its dark-background and light-background versions. The theme decides which
 // one shows (see .on-dark and .on-light in site.css and docs/theme.css).
+//
+// Every image has alt text, because search engines (Bing in particular) report empty alt text as missing. The mark
+// nearly always sits next to its own name, so it's hidden from screen readers too, or they'd read the name twice. Pass
+// decorative={false} where the mark stands alone.
+import { templates } from '../data/templates';
+
 interface Props {
   name: string;
   size: number;
   alt?: string;
+  decorative?: boolean;
   class?: string;
   eager?: boolean;
 }
 
-const { name, size, alt = '', class: className, eager = false } = Astro.props;
+const fallback = (name: string) => (templates.find((t) => t.key === name)?.name ?? 'Lean Mean Clean Apps') + ' logo';
+const { name, size, alt = fallback(Astro.props.name), decorative = true, class: className, eager = false } = Astro.props;
 const loading = eager ? 'eager' : 'lazy';
+const hidden = decorative ? 'true' : undefined;
 ---
 
-<img class:list={[className, 'on-dark']} src={`/logos/${name}.svg`} width={size} height={size} alt={alt} loading={loading} decoding="async" />
-<img class:list={[className, 'on-light']} src={`/logos/${name}-light.svg`} width={size} height={size} alt={alt} loading={loading} decoding="async" />
+<img class:list={[className, 'on-dark']} src={`/logos/${name}.svg`} width={size} height={size} alt={alt} aria-hidden={hidden} loading={loading} decoding="async" />
+<img class:list={[className, 'on-light']} src={`/logos/${name}-light.svg`} width={size} height={size} alt={alt} aria-hidden={hidden} loading={loading} decoding="async" />

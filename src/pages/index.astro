@@ -22,7 +22,7 @@ import { shared, templates } from '../data/templates';
           <a class="button primary" href="#templates">Pick a template <Icon name="arrow" /></a>
           <a class="button" href="https://github.com/LeanMeanCleanApps"><Icon name="github" /> GitHub</a>
         </div>
-        <div class="commands terminal" aria-label="Getting started">
+        <div class="commands terminal" role="group" aria-label="Getting started">
           <CopyCommand command="dotnet new install CleanMinimalApi.Template" />
           <CopyCommand command="dotnet new cleanminimalapi --name WorksOnMyMachine.Movies" />
           <CopyCommand command="cd WorksOnMyMachine.Movies && docker compose up -d" />
@@ -111,7 +111,8 @@ import { shared, templates } from '../data/templates';
             src="https://avatars.githubusercontent.com/u/868017?s=160&v=4"
             width="80"
             height="80"
-            alt=""
+            alt="Stephen Walsh"
+            aria-hidden="true"
             loading="lazy"
           />
           <h3>Stephen Walsh</h3>

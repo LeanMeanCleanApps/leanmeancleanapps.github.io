@@ -6,6 +6,11 @@ import { brand, templates } from './data/templates';
 
 export const onRequest = defineRouteMiddleware((context) => {
   const route = context.locals.starlightRoute;
+
+  // Open Graph wants the locale with an underscore (en_AU). Starlight writes the language tag (en-AU).
+  const locale = route.head.find((entry) => entry.attrs?.property === 'og:locale');
+  if (locale?.attrs) locale.attrs.content = 'en_AU';
+
   const [key, ...rest] = route.id.split('/');
   const template = templates.find((t) => t.key === key);
   const page = route.entry.data.title;

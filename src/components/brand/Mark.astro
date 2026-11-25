@@ -1,14 +1,19 @@
 ---
 // One logo file from assets/logos. variant is the part of the file name after the mark's key.
+import brand from '../../data/brand.json';
+
 interface Props {
   mark: string;
   variant?: string;
   alt?: string;
   size?: string;
 }
-const { mark, variant = 'tile', alt = '', size } = Astro.props;
+// Alt text defaults to the mark's name, because search engines report empty alt text as missing.
+const org: Record<string, string> = { 'org-spectrum': 'Spectrum', 'org-slate': 'Slate', 'org-leaf': 'Leaf' };
+const named = (key: string) => (org[key] ? `${org[key]} organisation mark` : `${brand.templates.find((t) => t.key === key)?.name ?? key} mark`);
+const { mark, variant = 'tile', alt = named(Astro.props.mark), size } = Astro.props;
 const file = variant ? `${mark}-${variant}` : mark;
 const src = `/brand/assets/logos/${mark}/svg/${file}.svg`;
 ---
 
-<img class="cl-mark" src={src} alt={alt} style={size ? `width:${size}` : undefined} loading="lazy" />
+<img class="cl-mark" src={src} width="1024" height="1024" alt={alt} style={size ? `width:${size}` : undefined} loading="lazy" />
