@@ -22,7 +22,7 @@ const items =
   {
     items.map((i) => (
       <a href={`${base}kit/logos/#${i.name.toLowerCase().replace(/\s+/g, '-')}`}>
-        <img src={`${base}assets/logos/${i.key}/svg/${i.key}-tile.svg`} alt={`${i.name} mark`} aria-hidden="true" loading="lazy" />
+        <img src={`${base}assets/logos/${i.key}/svg/${i.key}-tile.svg`} width="1024" height="1024" alt={`${i.name} mark`} aria-hidden="true" loading="lazy" />
         <span>
           <b>{i.name}</b>
           <small>{i.note}</small>
