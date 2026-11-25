@@ -4,7 +4,7 @@ import CopyCommand from '../components/CopyCommand.astro';
 import Icon from '../components/Icon.astro';
 import Mark from '../components/Mark.astro';
 import Base from '../layouts/Base.astro';
-import { templates } from '../data/templates';
+import { lightStep, templates } from '../data/templates';
 
 // The sentence that sounds like the reader, and why that template fits it. Keyed like src/data/templates.ts.
 const picks: Record<string, { job: string; why: string }> = {
@@ -53,7 +53,7 @@ const picks: Record<string, { job: string; why: string }> = {
           templates.map((t) => (
             <article
               class="card template"
-              style={`--hue-dark: var(--lmca-${t.hue}-400); --hue-light: var(--lmca-${t.hue}-700);`}
+              style={`--hue-dark: var(--lmca-${t.hue}-400); --hue-light: var(--lmca-${t.hue}-${lightStep(t.hue)});`}
             >
               <div class="template-head">
                 <Mark name={t.key} size={72} />
